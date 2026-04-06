@@ -42,6 +42,8 @@ const App = () => (
             <Toaster />
             <Sonner />
           <BrowserRouter>
+            <CodeSnippetInjector />
+            <FaviconManager />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/product/:slug" element={<ProductDetail />} />
