@@ -20,7 +20,14 @@ const AdminContentManager = () => {
     },
   });
 
-  // Promo banners
+  // TopBar texts
+  const [topbarTexts, setTopbarTexts] = useState<string[]>([
+    "সারাদেশে ডেলিভারি চার্জ মাত্র ৳৮০",
+    "১০০% খাঁটি ও প্রাকৃতিক পণ্য",
+    "৭ দিনের মানি-ব্যাক গ্যারান্টি",
+    "অর্ডার করতে কল করুন: ০১XXXXXXXXX",
+  ]);
+
   const [b1Subtitle, setB1Subtitle] = useState("সীমিত সময়ের অফার");
   const [b1Title, setB1Title] = useState("৩০% ছাড়");
   const [b1Desc, setB1Desc] = useState("সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।");
