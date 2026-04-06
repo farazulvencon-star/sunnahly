@@ -29,6 +29,7 @@ const Index = () => {
         <MoneyBackBanner />
       </main>
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
