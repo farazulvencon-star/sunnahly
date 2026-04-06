@@ -20,6 +20,7 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminLogin from "./pages/admin/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
