@@ -32,6 +32,8 @@ const AdminSettings = () => {
   const [uploadPreset, setUploadPreset] = useState("");
   const [steadfastApiKey, setSteadfastApiKey] = useState("");
   const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [logoUploading, setLogoUploading] = useState(false);
 
   useEffect(() => {
     if (settings) {
