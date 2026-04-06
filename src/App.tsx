@@ -23,6 +23,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminIncompleteOrders from "./pages/admin/AdminIncompleteOrders";
+import RecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
+                <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
