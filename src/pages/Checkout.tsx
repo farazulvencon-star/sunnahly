@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 
+const getSessionId = () => {
+  let id = sessionStorage.getItem("checkout_session_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem("checkout_session_id", id);
+  }
+  return id;
+};
+
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
@@ -22,6 +31,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useState("dhaka");
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const incompleteIdRef = useRef<string | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -50,6 +61,47 @@ const Checkout = () => {
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
   const partialPercent = settings?.partial_payment_percent?.percent || 10;
   const partialAmount = paymentMethod === "partial" ? Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge)) : 0;
+
+  // Save incomplete order data
+  const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
+    const hasAnyData = currentForm.name || currentForm.phone || currentForm.email || currentForm.address || currentForm.area;
+    if (!hasAnyData && items.length === 0) return;
+
+    const sessionId = getSessionId();
+    const payload = {
+      session_id: sessionId,
+      customer_name: currentForm.name || null,
+      customer_phone: currentForm.phone || null,
+      customer_email: currentForm.email || null,
+      shipping_address: currentForm.address || null,
+      city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
+      area: currentForm.area || null,
+      cart_items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+      cart_total: totalPrice,
+      last_activity: new Date().toISOString(),
+    };
+
+    try {
+      if (incompleteIdRef.current) {
+        await supabase.from("incomplete_orders").update(payload).eq("id", incompleteIdRef.current);
+      } else {
+        const { data } = await supabase.from("incomplete_orders").insert(payload).select("id").single();
+        if (data) incompleteIdRef.current = data.id;
+      }
+    } catch (err) {
+      console.error("Failed to save incomplete order:", err);
+    }
+  }, [items, totalPrice, city]);
+
+  // Debounced save on form change
+  useEffect(() => {
+    if (items.length === 0) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      saveIncompleteOrder(form);
+    }, 1500);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [form, city, items, saveIncompleteOrder]);
 
   if (items.length === 0) {
     return (
@@ -103,7 +155,13 @@ const Checkout = () => {
 
       await supabase.from("order_items").insert(orderItems);
 
+      // Mark incomplete order as converted
+      if (incompleteIdRef.current) {
+        await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
+      }
+
       clearCart();
+      sessionStorage.removeItem("checkout_session_id");
       toast.success("অর্ডার সফল হয়েছে!");
       navigate(`/order-success/${order.id}`);
     } catch (err: any) {
