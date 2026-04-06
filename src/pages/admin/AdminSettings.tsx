@@ -24,6 +24,9 @@ const AdminSettings = () => {
   const [insideDhaka, setInsideDhaka] = useState(60);
   const [outsideDhaka, setOutsideDhaka] = useState(120);
   const [partialPercent, setPartialPercent] = useState(10);
+  const [pixelEnabled, setPixelEnabled] = useState(false);
+  const [pixelId, setPixelId] = useState("");
+  const [pixelToken, setPixelToken] = useState("");
 
   useEffect(() => {
     if (settings) {
