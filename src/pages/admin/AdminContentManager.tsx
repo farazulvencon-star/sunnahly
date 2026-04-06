@@ -95,6 +95,7 @@ const AdminContentManager = () => {
       queryClient.invalidateQueries({ queryKey: ["promo-banners-content"] });
       queryClient.invalidateQueries({ queryKey: ["money-back-content"] });
       queryClient.invalidateQueries({ queryKey: ["footer-content"] });
+      queryClient.invalidateQueries({ queryKey: ["topbar-content"] });
       toast.success("কন্টেন্ট আপডেট হয়েছে");
     },
   });
