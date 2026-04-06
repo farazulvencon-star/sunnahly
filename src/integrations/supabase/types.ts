@@ -47,6 +47,74 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          has_unread: boolean
+          id: string
+          is_active: boolean
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          has_unread?: boolean
+          id?: string
+          is_active?: boolean
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          has_unread?: boolean
+          id?: string
+          is_active?: boolean
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          sender_type: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          sender_type?: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incomplete_orders: {
         Row: {
           area: string | null
