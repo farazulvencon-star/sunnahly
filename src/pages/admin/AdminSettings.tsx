@@ -43,6 +43,8 @@ const AdminSettings = () => {
       setPixelToken(settings.facebook_pixel?.value?.access_token || "");
       setCloudName(settings.cloudinary?.value?.cloud_name || "");
       setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
+      setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
+      setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
     }
   }, [settings]);
 
