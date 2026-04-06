@@ -1,18 +1,20 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle, Code2 } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle, Code2, Image, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { path: "/admin", icon: LayoutDashboard, label: "ড্যাশবোর্ড" },
+  { path: "/admin/hero-slides", icon: Image, label: "হিরো স্লাইড" },
   { path: "/admin/categories", icon: FolderOpen, label: "ক্যাটেগরি" },
   { path: "/admin/products", icon: Package, label: "পণ্যসমূহ" },
   { path: "/admin/orders", icon: ShoppingCart, label: "অর্ডারসমূহ" },
   { path: "/admin/incomplete-orders", icon: AlertTriangle, label: "ইনকমপ্লিট" },
   { path: "/admin/customers", icon: Users, label: "কাস্টমার" },
   { path: "/admin/chat", icon: MessageCircle, label: "চ্যাট" },
+  { path: "/admin/content", icon: FileText, label: "কন্টেন্ট" },
   { path: "/admin/code-snippets", icon: Code2, label: "কোড স্নিপেট" },
   { path: "/admin/settings", icon: Settings, label: "সেটিংস" },
 ];
