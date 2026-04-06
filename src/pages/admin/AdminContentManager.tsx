@@ -50,6 +50,8 @@ const AdminContentManager = () => {
 
   useEffect(() => {
     if (settings) {
+      const tb = settings.topbar_texts?.value;
+      if (tb?.texts) setTopbarTexts(tb.texts);
       const pb = settings.promo_banners?.value;
       if (pb) {
         setB1Subtitle(pb.banner1?.subtitle || "সীমিত সময়ের অফার");
