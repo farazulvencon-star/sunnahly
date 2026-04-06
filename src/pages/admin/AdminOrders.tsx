@@ -454,6 +454,7 @@ const AdminOrders = () => {
                 <TableHead className="text-xs font-semibold">স্ট্যাটাস</TableHead>
                 <TableHead className="text-xs font-semibold">পেমেন্ট</TableHead>
                 <TableHead className="text-xs font-semibold text-right">মোট</TableHead>
+                <TableHead className="text-xs font-semibold">কুরিয়ার</TableHead>
                 <TableHead className="text-xs font-semibold text-center">অ্যাকশন</TableHead>
               </TableRow>
             </TableHeader>
