@@ -544,11 +544,9 @@ const AdminOrders = () => {
                       const cidMatch = order.notes?.match(/\[Steadfast\] CID: (\w+)/);
                       if (cidMatch) {
                         return (
-                          <div className="text-xs">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">
-                              <Truck className="h-3 w-3 mr-1" /> {cidMatch[1]}
-                            </Badge>
-                          </div>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">
+                            <Truck className="h-3 w-3 mr-1" /> {cidMatch[1]}
+                          </Badge>
                         );
                       }
                       return (
@@ -561,6 +559,37 @@ const AdminOrders = () => {
                         >
                           {sendingCourier === order.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Truck className="h-3 w-3 mr-1" /> পাঠান</>}
                         </Button>
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const cidMatch = order.notes?.match(/\[Steadfast\] CID: (\w+)/);
+                      if (!cidMatch) return <span className="text-xs text-muted-foreground">—</span>;
+                      const status = courierStatuses[order.id];
+                      if (!status) {
+                        fetchCourierStatus(order);
+                        return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
+                      }
+                      const total = 1;
+                      const success = status === "delivered" ? 1 : 0;
+                      const cancel = status === "cancelled" ? 1 : 0;
+                      const pending = total - success - cancel;
+                      const percent = Math.round((success / total) * 100);
+                      return (
+                        <div className="text-[10px] space-y-0.5 min-w-[90px]">
+                          <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                            <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${percent}%` }} />
+                          </div>
+                          <p className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Total:</span> <span className="font-semibold">{total}</span>
+                            <span className="text-emerald-600 ml-1">Success:</span> <span className="font-semibold">{success}</span>
+                          </p>
+                          <p>
+                            <span className="text-destructive">Cancel:</span> <span className="font-semibold">{cancel}</span>
+                            {pending > 0 && <span className="text-muted-foreground ml-2">Pending: {pending}</span>}
+                          </p>
+                        </div>
                       );
                     })()}
                   </TableCell>
