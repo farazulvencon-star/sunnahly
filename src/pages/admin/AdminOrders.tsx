@@ -203,6 +203,47 @@ const AdminOrders = () => {
 
   const hasFilters = searchQuery || filterStatus !== "all" || filterPayment !== "all" || filterDateFrom || filterDateTo;
 
+  // Send to Steadfast
+  const sendToSteadfast = async (order: any) => {
+    if (!steadfastConfig?.api_key || !steadfastConfig?.secret_key) {
+      toast.error("Steadfast API Key সেটিংসে কনফিগার করুন");
+      return;
+    }
+    setSendingCourier(order.id);
+    try {
+      const res = await fetch("https://portal.steadfast.com.bd/api/v1/create_order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Api-Key": steadfastConfig.api_key,
+          "Secret-Key": steadfastConfig.secret_key,
+        },
+        body: JSON.stringify({
+          invoice: order.order_number,
+          recipient_name: order.customer_name,
+          recipient_phone: order.customer_phone,
+          recipient_address: `${order.shipping_address}${order.area ? ", " + order.area : ""}, ${order.city}`,
+          cod_amount: Number(order.due_amount) || Number(order.total),
+          note: order.notes || "",
+        }),
+      });
+      const result = await res.json();
+      if (result.status === 200) {
+        await supabase.from("orders").update({
+          notes: `${order.notes || ""}\n[Steadfast] CID: ${result.consignment?.consignment_id}, Tracking: ${result.consignment?.tracking_code}`.trim(),
+        }).eq("id", order.id);
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+        toast.success(`কুরিয়ারে পাঠানো হয়েছে! CID: ${result.consignment?.consignment_id}`);
+      } else {
+        toast.error(result.message || "Steadfast এ পাঠাতে সমস্যা হয়েছে");
+      }
+    } catch (err) {
+      toast.error("নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন");
+    } finally {
+      setSendingCourier(null);
+    }
+  };
+
   // Status counts
   const statusCounts = useMemo(() => {
     if (!orders) return {};
