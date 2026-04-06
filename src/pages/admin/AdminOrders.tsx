@@ -245,6 +245,27 @@ const AdminOrders = () => {
     }
   };
 
+  // Fetch Steadfast delivery status for an order
+  const fetchCourierStatus = async (order: any) => {
+    if (!steadfastConfig?.api_key || !steadfastConfig?.secret_key) return;
+    const cidMatch = order.notes?.match(/\[Steadfast\] CID: (\w+)/);
+    if (!cidMatch) return;
+    const cid = cidMatch[1];
+    if (courierStatuses[order.id]) return; // already fetched
+    try {
+      const res = await fetch(`https://portal.steadfast.com.bd/api/v1/status_by_cid/${cid}`, {
+        headers: {
+          "Api-Key": steadfastConfig.api_key,
+          "Secret-Key": steadfastConfig.secret_key,
+        },
+      });
+      const result = await res.json();
+      if (result.status === 200) {
+        setCourierStatuses(prev => ({ ...prev, [order.id]: result.delivery_status }));
+      }
+    } catch {}
+  };
+
   // Status counts
   const statusCounts = useMemo(() => {
     if (!orders) return {};
