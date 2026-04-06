@@ -1,6 +1,24 @@
 import { ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+const defaults = {
+  title: "৭ দিনের মানি-ব্যাক গ্যারান্টি",
+  description: "আমাদের যেকোনো পণ্যে সন্তুষ্ট না হলে ৭ দিনের মধ্যে সম্পূর্ণ টাকা ফেরত পাবেন। কোনো প্রশ্ন ছাড়াই। আপনার সন্তুষ্টিই আমাদের প্রথম অগ্রাধিকার।",
+};
 
 const MoneyBackBanner = () => {
+  const { data } = useQuery({
+    queryKey: ["money-back-content"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "money_back_banner").single();
+      return (data?.value as any) || defaults;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const content = data || defaults;
+
   return (
     <section className="py-10 md:py-16 bg-background">
       <div className="container mx-auto px-4">
@@ -9,13 +27,8 @@ const MoneyBackBanner = () => {
             <ShieldCheck className="h-10 w-10 md:h-12 md:w-12 text-primary-foreground" />
           </div>
           <div className="text-center md:text-left">
-            <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">
-              ৭ দিনের মানি-ব্যাক গ্যারান্টি
-            </h3>
-            <p className="text-primary-foreground/80 max-w-xl">
-              আমাদের যেকোনো পণ্যে সন্তুষ্ট না হলে ৭ দিনের মধ্যে সম্পূর্ণ টাকা ফেরত পাবেন।
-              কোনো প্রশ্ন ছাড়াই। আপনার সন্তুষ্টিই আমাদের প্রথম অগ্রাধিকার।
-            </p>
+            <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">{content.title}</h3>
+            <p className="text-primary-foreground/80 max-w-xl">{content.description}</p>
           </div>
         </div>
       </div>
