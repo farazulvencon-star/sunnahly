@@ -226,6 +226,7 @@ export type Database = {
           discount: number | null
           due_amount: number | null
           id: string
+          is_trashed: boolean
           notes: string | null
           order_number: string
           order_status: string
@@ -249,6 +250,7 @@ export type Database = {
           discount?: number | null
           due_amount?: number | null
           id?: string
+          is_trashed?: boolean
           notes?: string | null
           order_number?: string
           order_status?: string
@@ -272,6 +274,7 @@ export type Database = {
           discount?: number | null
           due_amount?: number | null
           id?: string
+          is_trashed?: boolean
           notes?: string | null
           order_number?: string
           order_status?: string
