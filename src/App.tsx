@@ -26,6 +26,9 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminIncompleteOrders from "./pages/admin/AdminIncompleteOrders";
 import RecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
 import AdminChat from "./pages/admin/AdminChat";
+import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
+import CodeSnippetInjector from "./components/CodeSnippetInjector";
+import FaviconManager from "./components/FaviconManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
