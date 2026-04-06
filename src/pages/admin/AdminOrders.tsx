@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,26 +6,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, ArchiveRestore, Archive } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Trash2, ArchiveRestore, Archive, Search, Eye, X } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const statusOptions = [
-  { value: "pending", label: "পেন্ডিং" },
-  { value: "confirmed", label: "কনফার্মড" },
-  { value: "processing", label: "প্রসেসিং" },
-  { value: "shipped", label: "শিপড" },
-  { value: "delivered", label: "ডেলিভারড" },
-  { value: "cancelled", label: "বাতিল" },
+  { value: "pending", label: "পেন্ডিং", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  { value: "confirmed", label: "কনফার্মড", color: "bg-blue-100 text-blue-800 border-blue-200" },
+  { value: "processing", label: "প্রসেসিং", color: "bg-purple-100 text-purple-800 border-purple-200" },
+  { value: "shipped", label: "শিপড", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+  { value: "delivered", label: "ডেলিভারড", color: "bg-green-100 text-green-800 border-green-200" },
+  { value: "cancelled", label: "বাতিল", color: "bg-red-100 text-red-800 border-red-200" },
 ];
 
 const paymentStatusOptions = [
-  { value: "pending", label: "পেন্ডিং" },
-  { value: "paid", label: "পেইড" },
-  { value: "partial", label: "আংশিক" },
-  { value: "refunded", label: "রিফান্ড" },
+  { value: "pending", label: "পেন্ডিং", color: "bg-yellow-100 text-yellow-800" },
+  { value: "paid", label: "পেইড", color: "bg-green-100 text-green-800" },
+  { value: "partial", label: "আংশিক", color: "bg-orange-100 text-orange-800" },
+  { value: "refunded", label: "রিফান্ড", color: "bg-red-100 text-red-800" },
 ];
 
 const emptyOrder = {
@@ -39,7 +42,15 @@ const AdminOrders = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showTrash, setShowTrash] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [viewOrder, setViewOrder] = useState<any>(null);
   const [newOrder, setNewOrder] = useState({ ...emptyOrder });
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPayment, setFilterPayment] = useState("all");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", showTrash],
@@ -52,6 +63,30 @@ const AdminOrders = () => {
       return data || [];
     },
   });
+
+  // Filtered orders
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    return orders.filter((o: any) => {
+      if (filterStatus !== "all" && o.order_status !== filterStatus) return false;
+      if (filterPayment !== "all" && o.payment_status !== filterPayment) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const match = o.order_number?.toLowerCase().includes(q) ||
+          o.customer_name?.toLowerCase().includes(q) ||
+          o.customer_phone?.includes(q) ||
+          o.customer_email?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (filterDateFrom && new Date(o.created_at) < new Date(filterDateFrom)) return false;
+      if (filterDateTo) {
+        const to = new Date(filterDateTo);
+        to.setHours(23, 59, 59);
+        if (new Date(o.created_at) > to) return false;
+      }
+      return true;
+    });
+  }, [orders, searchQuery, filterStatus, filterPayment, filterDateFrom, filterDateTo]);
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, field, value }: { id: string; field: string; value: any }) => {
@@ -109,7 +144,6 @@ const AdminOrders = () => {
         notes: newOrder.notes || null,
       }).select().single();
       if (error) throw error;
-
       const orderItems = newOrder.items.filter(i => i.product_name).map(i => ({
         order_id: order.id,
         product_name: i.product_name,
@@ -118,8 +152,7 @@ const AdminOrders = () => {
         total: i.price * i.quantity,
       }));
       if (orderItems.length > 0) {
-        const { error: e2 } = await supabase.from("order_items").insert(orderItems);
-        if (e2) throw e2;
+        await supabase.from("order_items").insert(orderItems);
       }
     },
     onSuccess: () => {
@@ -134,9 +167,9 @@ const AdminOrders = () => {
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
-  const allSelected = orders && orders.length > 0 && selectedIds.length === orders.length;
+  const allSelected = filteredOrders.length > 0 && selectedIds.length === filteredOrders.length;
   const toggleAll = () => {
-    setSelectedIds(allSelected ? [] : (orders?.map((o: any) => o.id) || []));
+    setSelectedIds(allSelected ? [] : filteredOrders.map((o: any) => o.id));
   };
 
   const updateItem = (index: number, field: string, value: any) => {
@@ -145,182 +178,405 @@ const AdminOrders = () => {
     setNewOrder({ ...newOrder, items });
   };
 
+  const getStatusBadge = (status: string, options: typeof statusOptions) => {
+    const opt = options.find(o => o.value === status);
+    return <Badge variant="outline" className={`text-xs font-medium ${opt?.color || ""}`}>{opt?.label || status}</Badge>;
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterStatus("all");
+    setFilterPayment("all");
+    setFilterDateFrom("");
+    setFilterDateTo("");
+  };
+
+  const hasFilters = searchQuery || filterStatus !== "all" || filterPayment !== "all" || filterDateFrom || filterDateTo;
+
+  // Status counts
+  const statusCounts = useMemo(() => {
+    if (!orders) return {};
+    const counts: Record<string, number> = { all: orders.length };
+    orders.forEach((o: any) => {
+      counts[o.order_status] = (counts[o.order_status] || 0) + 1;
+    });
+    return counts;
+  }, [orders]);
+
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-bold text-foreground">
-          {showTrash ? "ট্র্যাশ" : "অর্ডারসমূহ"} ({orders?.length || 0})
+          {showTrash ? "ট্র্যাশ" : "অর্ডারসমূহ"}
         </h1>
         <div className="flex gap-2">
           <Button variant={showTrash ? "default" : "outline"} size="sm" onClick={() => { setShowTrash(!showTrash); setSelectedIds([]); }}>
             <Archive className="h-4 w-4 mr-1" /> {showTrash ? "অর্ডার দেখুন" : "ট্র্যাশ"}
           </Button>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> অর্ডার যোগ করুন</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>ম্যানুয়াল অর্ডার</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>নাম *</Label><Input value={newOrder.customer_name} onChange={(e) => setNewOrder({ ...newOrder, customer_name: e.target.value })} /></div>
-                  <div><Label>ফোন *</Label><Input value={newOrder.customer_phone} onChange={(e) => setNewOrder({ ...newOrder, customer_phone: e.target.value })} /></div>
-                </div>
-                <div><Label>ইমেইল</Label><Input value={newOrder.customer_email} onChange={(e) => setNewOrder({ ...newOrder, customer_email: e.target.value })} /></div>
-                <div><Label>ঠিকানা *</Label><Input value={newOrder.shipping_address} onChange={(e) => setNewOrder({ ...newOrder, shipping_address: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>শহর</Label><Input value={newOrder.city} onChange={(e) => setNewOrder({ ...newOrder, city: e.target.value })} /></div>
-                  <div><Label>এলাকা</Label><Input value={newOrder.area} onChange={(e) => setNewOrder({ ...newOrder, area: e.target.value })} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>পেমেন্ট</Label>
-                    <Select value={newOrder.payment_method} onValueChange={(v) => setNewOrder({ ...newOrder, payment_method: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cod">COD</SelectItem>
-                        <SelectItem value="partial">আংশিক</SelectItem>
-                        <SelectItem value="online">অনলাইন</SelectItem>
-                      </SelectContent>
-                    </Select>
+          {!showTrash && (
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm"><Plus className="h-4 w-4 mr-1" /> অর্ডার যোগ করুন</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>ম্যানুয়াল অর্ডার</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>নাম *</Label><Input value={newOrder.customer_name} onChange={(e) => setNewOrder({ ...newOrder, customer_name: e.target.value })} /></div>
+                    <div><Label>ফোন *</Label><Input value={newOrder.customer_phone} onChange={(e) => setNewOrder({ ...newOrder, customer_phone: e.target.value })} /></div>
                   </div>
-                  <div><Label>ডেলিভারি চার্জ</Label><Input type="number" value={newOrder.delivery_charge} onChange={(e) => setNewOrder({ ...newOrder, delivery_charge: +e.target.value })} /></div>
-                </div>
-
-                <div>
-                  <Label className="mb-2 block">পণ্যসমূহ</Label>
-                  {newOrder.items.map((item, i) => (
-                    <div key={i} className="grid grid-cols-[1fr_60px_80px_32px] gap-2 mb-2 items-end">
-                      <Input placeholder="পণ্যের নাম" value={item.product_name} onChange={(e) => updateItem(i, "product_name", e.target.value)} />
-                      <Input type="number" placeholder="সংখ্যা" value={item.quantity} onChange={(e) => updateItem(i, "quantity", +e.target.value)} />
-                      <Input type="number" placeholder="দাম" value={item.price} onChange={(e) => updateItem(i, "price", +e.target.value)} />
-                      {newOrder.items.length > 1 && (
-                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setNewOrder({ ...newOrder, items: newOrder.items.filter((_, idx) => idx !== i) })}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                  <div><Label>ইমেইল</Label><Input value={newOrder.customer_email} onChange={(e) => setNewOrder({ ...newOrder, customer_email: e.target.value })} /></div>
+                  <div><Label>ঠিকানা *</Label><Input value={newOrder.shipping_address} onChange={(e) => setNewOrder({ ...newOrder, shipping_address: e.target.value })} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>শহর</Label><Input value={newOrder.city} onChange={(e) => setNewOrder({ ...newOrder, city: e.target.value })} /></div>
+                    <div><Label>এলাকা</Label><Input value={newOrder.area} onChange={(e) => setNewOrder({ ...newOrder, area: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>পেমেন্ট</Label>
+                      <Select value={newOrder.payment_method} onValueChange={(v) => setNewOrder({ ...newOrder, payment_method: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cod">COD</SelectItem>
+                          <SelectItem value="partial">আংশিক</SelectItem>
+                          <SelectItem value="online">অনলাইন</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => setNewOrder({ ...newOrder, items: [...newOrder.items, { product_name: "", quantity: 1, price: 0 }] })}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> পণ্য যোগ
+                    <div><Label>ডেলিভারি চার্জ</Label><Input type="number" value={newOrder.delivery_charge} onChange={(e) => setNewOrder({ ...newOrder, delivery_charge: +e.target.value })} /></div>
+                  </div>
+                  <div>
+                    <Label className="mb-2 block">পণ্যসমূহ</Label>
+                    {newOrder.items.map((item, i) => (
+                      <div key={i} className="grid grid-cols-[1fr_60px_80px_32px] gap-2 mb-2 items-end">
+                        <Input placeholder="পণ্যের নাম" value={item.product_name} onChange={(e) => updateItem(i, "product_name", e.target.value)} />
+                        <Input type="number" placeholder="সংখ্যা" value={item.quantity} onChange={(e) => updateItem(i, "quantity", +e.target.value)} />
+                        <Input type="number" placeholder="দাম" value={item.price} onChange={(e) => updateItem(i, "price", +e.target.value)} />
+                        {newOrder.items.length > 1 && (
+                          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setNewOrder({ ...newOrder, items: newOrder.items.filter((_, idx) => idx !== i) })}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={() => setNewOrder({ ...newOrder, items: [...newOrder.items, { product_name: "", quantity: 1, price: 0 }] })}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> পণ্য যোগ
+                    </Button>
+                  </div>
+                  <div><Label>নোট</Label><Textarea value={newOrder.notes} onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })} rows={2} /></div>
+                  <div className="bg-secondary/50 rounded-lg p-3 text-sm">
+                    <p>সাবটোটাল: ৳{newOrder.items.reduce((s, i) => s + i.price * i.quantity, 0)}</p>
+                    <p>ডেলিভারি: ৳{newOrder.delivery_charge}</p>
+                    <p className="font-bold">মোট: ৳{newOrder.items.reduce((s, i) => s + i.price * i.quantity, 0) + Number(newOrder.delivery_charge)}</p>
+                  </div>
+                  <Button className="w-full" onClick={() => addOrderMutation.mutate()} disabled={!newOrder.customer_name || !newOrder.customer_phone || !newOrder.shipping_address || addOrderMutation.isPending}>
+                    অর্ডার তৈরি করুন
                   </Button>
                 </div>
-
-                <div><Label>নোট</Label><Textarea value={newOrder.notes} onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })} rows={2} /></div>
-
-                <div className="bg-secondary/50 rounded-lg p-3 text-sm">
-                  <p>সাবটোটাল: ৳{newOrder.items.reduce((s, i) => s + i.price * i.quantity, 0)}</p>
-                  <p>ডেলিভারি: ৳{newOrder.delivery_charge}</p>
-                  <p className="font-bold">মোট: ৳{newOrder.items.reduce((s, i) => s + i.price * i.quantity, 0) + Number(newOrder.delivery_charge)}</p>
-                </div>
-
-                <Button className="w-full" onClick={() => addOrderMutation.mutate()} disabled={!newOrder.customer_name || !newOrder.customer_phone || !newOrder.shipping_address || addOrderMutation.isPending}>
-                  অর্ডার তৈরি করুন
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
+      {/* Status tabs */}
+      {!showTrash && (
+        <div className="flex flex-wrap gap-1 mb-4 border-b pb-3">
+          <button
+            onClick={() => setFilterStatus("all")}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${filterStatus === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+          >
+            সব ({statusCounts.all || 0})
+          </button>
+          {statusOptions.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => setFilterStatus(filterStatus === s.value ? "all" : s.value)}
+              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${filterStatus === s.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+            >
+              {s.label} ({statusCounts[s.value] || 0})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Filters */}
+      {!showTrash && (
+        <div className="bg-card border rounded-xl p-3 mb-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="অর্ডার নম্বর, নাম, ফোন দিয়ে খুঁজুন..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="min-w-[130px]">
+              <Label className="text-xs text-muted-foreground">পেমেন্ট</Label>
+              <Select value={filterPayment} onValueChange={setFilterPayment}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব</SelectItem>
+                  {paymentStatusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-[130px]">
+              <Label className="text-xs text-muted-foreground">তারিখ থেকে</Label>
+              <Input type="date" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} className="h-9 text-xs" />
+            </div>
+            <div className="min-w-[130px]">
+              <Label className="text-xs text-muted-foreground">তারিখ পর্যন্ত</Label>
+              <Input type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} className="h-9 text-xs" />
+            </div>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
+                <X className="h-3.5 w-3.5 mr-1" /> ফিল্টার মুছুন
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Bulk actions */}
       {selectedIds.length > 0 && (
-        <div className="bg-secondary/50 border rounded-lg p-3 mb-4 flex flex-wrap items-center gap-3">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4 flex flex-wrap items-center gap-3">
           <span className="text-sm font-medium">{selectedIds.length}টি সিলেক্টেড</span>
-          <Button size="sm" variant="outline" onClick={() => trashMutation.mutate(selectedIds)}>
-            {showTrash ? <><ArchiveRestore className="h-3.5 w-3.5 mr-1" /> রিস্টোর</> : <><Archive className="h-3.5 w-3.5 mr-1" /> ট্র্যাশে সরান</>}
-          </Button>
-          {showTrash && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size="sm" variant="destructive"><Trash2 className="h-3.5 w-3.5 mr-1" /> স্থায়ীভাবে মুছুন</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>নিশ্চিত করুন</AlertDialogTitle>
-                  <AlertDialogDescription>{selectedIds.length}টি অর্ডার স্থায়ীভাবে মুছে ফেলা হবে। এটি পূর্বাবস্থায় ফেরানো যাবে না।</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>বাতিল</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteMutation.mutate(selectedIds)}>মুছে ফেলুন</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+          <div className="flex gap-2">
+            {!showTrash && (
+              <Select onValueChange={(v) => {
+                selectedIds.forEach(id => updateMutation.mutate({ id, field: "order_status", value: v }));
+                setSelectedIds([]);
+              }}>
+                <SelectTrigger className="h-8 text-xs w-[150px]"><SelectValue placeholder="স্ট্যাটাস পরিবর্তন" /></SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            <Button size="sm" variant="outline" onClick={() => trashMutation.mutate(selectedIds)}>
+              {showTrash ? <><ArchiveRestore className="h-3.5 w-3.5 mr-1" /> রিস্টোর</> : <><Archive className="h-3.5 w-3.5 mr-1" /> ট্র্যাশে সরান</>}
+            </Button>
+            {showTrash && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive"><Trash2 className="h-3.5 w-3.5 mr-1" /> স্থায়ীভাবে মুছুন</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>নিশ্চিত করুন</AlertDialogTitle>
+                    <AlertDialogDescription>{selectedIds.length}টি অর্ডার স্থায়ীভাবে মুছে ফেলা হবে।</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>বাতিল</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate(selectedIds)}>মুছে ফেলুন</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Select all */}
-      {orders && orders.length > 0 && (
-        <div className="flex items-center gap-2 mb-3">
-          <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
-          <span className="text-sm text-muted-foreground">সব সিলেক্ট করুন</span>
-        </div>
-      )}
+      {/* Results count */}
+      <p className="text-xs text-muted-foreground mb-2">
+        {filteredOrders.length}টি অর্ডার দেখাচ্ছে {hasFilters ? `(মোট ${orders?.length || 0})` : ""}
+      </p>
 
-      <div className="space-y-3">
-        {orders?.map((order: any) => (
-          <div key={order.id} className="bg-card border rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Checkbox checked={selectedIds.includes(order.id)} onCheckedChange={() => toggleSelect(order.id)} className="mt-1" />
-              <div className="flex-1">
-                <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
-                  <div>
-                    <span className="font-bold text-primary text-sm">{order.order_number}</span>
-                    <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString("bn-BD")}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg">৳{Number(order.total)}</span>
-                    {!showTrash && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => trashMutation.mutate([order.id])}>
-                        <Archive className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    )}
-                    {showTrash && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => trashMutation.mutate([order.id])}>
-                        <ArchiveRestore className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="text-sm space-y-1 mb-3">
-                  <p><span className="text-muted-foreground">কাস্টমার:</span> {order.customer_name} ({order.customer_phone})</p>
-                  <p><span className="text-muted-foreground">ঠিকানা:</span> {order.shipping_address}, {order.city}</p>
-                  <p><span className="text-muted-foreground">পেমেন্ট:</span> {order.payment_method === "cod" ? "COD" : "আংশিক"} | বাকি: ৳{Number(order.due_amount)}</p>
-                </div>
-                <div className="text-sm mb-3 border-t pt-2">
-                  {order.order_items?.map((item: any) => (
-                    <p key={item.id} className="text-muted-foreground">{item.product_name} x{item.quantity} = ৳{Number(item.total)}</p>
-                  ))}
-                </div>
-                {!showTrash && (
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex-1 min-w-[140px]">
-                      <p className="text-xs text-muted-foreground mb-1">অর্ডার স্ট্যাটাস</p>
+      {/* Orders table */}
+      <div className="bg-card border rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-secondary/40">
+                <TableHead className="w-10">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                </TableHead>
+                <TableHead className="text-xs font-semibold">অর্ডার</TableHead>
+                <TableHead className="text-xs font-semibold">তারিখ</TableHead>
+                <TableHead className="text-xs font-semibold">কাস্টমার</TableHead>
+                <TableHead className="text-xs font-semibold">স্ট্যাটাস</TableHead>
+                <TableHead className="text-xs font-semibold">পেমেন্ট</TableHead>
+                <TableHead className="text-xs font-semibold text-right">মোট</TableHead>
+                <TableHead className="text-xs font-semibold text-center">অ্যাকশন</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredOrders.map((order: any) => (
+                <TableRow key={order.id} className={`hover:bg-secondary/20 ${selectedIds.includes(order.id) ? "bg-primary/5" : ""}`}>
+                  <TableCell>
+                    <Checkbox checked={selectedIds.includes(order.id)} onCheckedChange={() => toggleSelect(order.id)} />
+                  </TableCell>
+                  <TableCell>
+                    <button onClick={() => setViewOrder(order)} className="text-primary font-semibold text-sm hover:underline">
+                      {order.order_number}
+                    </button>
+                    <p className="text-xs text-muted-foreground">
+                      {order.order_items?.length || 0}টি পণ্য
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    {format(new Date(order.created_at), "dd/MM/yyyy")}
+                    <br />
+                    <span className="text-[10px]">{format(new Date(order.created_at), "hh:mm a")}</span>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm font-medium">{order.customer_name}</p>
+                    <p className="text-xs text-muted-foreground">{order.customer_phone}</p>
+                    {order.city && <p className="text-xs text-muted-foreground">{order.city}</p>}
+                  </TableCell>
+                  <TableCell>
+                    {!showTrash ? (
                       <Select value={order.order_status} onValueChange={(v) => updateMutation.mutate({ id: order.id, field: "order_status", value: v })}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-7 text-xs w-[110px] border-0 p-0">
+                          {getStatusBadge(order.order_status, statusOptions)}
+                        </SelectTrigger>
                         <SelectContent>
                           {statusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div className="flex-1 min-w-[140px]">
-                      <p className="text-xs text-muted-foreground mb-1">পেমেন্ট স্ট্যাটাস</p>
+                    ) : (
+                      getStatusBadge(order.order_status, statusOptions)
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {!showTrash ? (
                       <Select value={order.payment_status} onValueChange={(v) => updateMutation.mutate({ id: order.id, field: "payment_status", value: v })}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-7 text-xs w-[100px] border-0 p-0">
+                          {getStatusBadge(order.payment_status, paymentStatusOptions)}
+                        </SelectTrigger>
                         <SelectContent>
                           {paymentStatusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
+                    ) : (
+                      getStatusBadge(order.payment_status, paymentStatusOptions)
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <p className="font-bold text-sm">৳{Number(order.total)}</p>
+                    {Number(order.due_amount) > 0 && (
+                      <p className="text-[10px] text-destructive">বাকি: ৳{Number(order.due_amount)}</p>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewOrder(order)}>
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => trashMutation.mutate([order.id])}>
+                        {showTrash ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                      </Button>
                     </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {filteredOrders.length === 0 && (
+            <p className="text-center text-muted-foreground py-12 text-sm">{showTrash ? "ট্র্যাশ খালি" : "কোনো অর্ডার পাওয়া যায়নি"}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Order detail modal */}
+      <Dialog open={!!viewOrder} onOpenChange={(v) => !v && setViewOrder(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>অর্ডার: {viewOrder?.order_number}</DialogTitle></DialogHeader>
+          {viewOrder && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">কাস্টমার</p>
+                  <p className="font-medium">{viewOrder.customer_name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">ফোন</p>
+                  <p className="font-medium">{viewOrder.customer_phone}</p>
+                </div>
+                {viewOrder.customer_email && (
+                  <div>
+                    <p className="text-muted-foreground text-xs">ইমেইল</p>
+                    <p className="font-medium">{viewOrder.customer_email}</p>
                   </div>
                 )}
+                <div>
+                  <p className="text-muted-foreground text-xs">শহর</p>
+                  <p className="font-medium">{viewOrder.city}</p>
+                </div>
+              </div>
+              <div className="text-sm">
+                <p className="text-muted-foreground text-xs">ঠিকানা</p>
+                <p>{viewOrder.shipping_address}{viewOrder.area ? `, ${viewOrder.area}` : ""}</p>
+              </div>
+              {viewOrder.notes && (
+                <div className="text-sm">
+                  <p className="text-muted-foreground text-xs">নোট</p>
+                  <p>{viewOrder.notes}</p>
+                </div>
+              )}
+
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-secondary/40">
+                      <TableHead className="text-xs">পণ্য</TableHead>
+                      <TableHead className="text-xs text-center">সংখ্যা</TableHead>
+                      <TableHead className="text-xs text-right">দাম</TableHead>
+                      <TableHead className="text-xs text-right">মোট</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {viewOrder.order_items?.map((item: any) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="text-sm">{item.product_name}</TableCell>
+                        <TableCell className="text-sm text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-sm text-right">৳{Number(item.price)}</TableCell>
+                        <TableCell className="text-sm text-right font-medium">৳{Number(item.total)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="bg-secondary/30 rounded-lg p-3 text-sm space-y-1">
+                <div className="flex justify-between"><span>সাবটোটাল</span><span>৳{Number(viewOrder.subtotal)}</span></div>
+                <div className="flex justify-between"><span>ডেলিভারি</span><span>৳{Number(viewOrder.delivery_charge)}</span></div>
+                {Number(viewOrder.discount) > 0 && <div className="flex justify-between"><span>ডিসকাউন্ট</span><span>-৳{Number(viewOrder.discount)}</span></div>}
+                <div className="flex justify-between font-bold border-t pt-1"><span>মোট</span><span>৳{Number(viewOrder.total)}</span></div>
+                {Number(viewOrder.partial_payment) > 0 && <div className="flex justify-between text-xs"><span>আংশিক পেমেন্ট</span><span>৳{Number(viewOrder.partial_payment)}</span></div>}
+                {Number(viewOrder.due_amount) > 0 && <div className="flex justify-between text-destructive text-xs"><span>বাকি</span><span>৳{Number(viewOrder.due_amount)}</span></div>}
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <Label className="text-xs">অর্ডার স্ট্যাটাস</Label>
+                  <Select value={viewOrder.order_status} onValueChange={(v) => { updateMutation.mutate({ id: viewOrder.id, field: "order_status", value: v }); setViewOrder({ ...viewOrder, order_status: v }); }}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs">পেমেন্ট স্ট্যাটাস</Label>
+                  <Select value={viewOrder.payment_status} onValueChange={(v) => { updateMutation.mutate({ id: viewOrder.id, field: "payment_status", value: v }); setViewOrder({ ...viewOrder, payment_status: v }); }}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {paymentStatusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        {orders?.length === 0 && <p className="text-center text-muted-foreground py-8">{showTrash ? "ট্র্যাশ খালি" : "কোনো অর্ডার নেই"}</p>}
-      </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
