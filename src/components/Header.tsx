@@ -19,6 +19,15 @@ const Header = () => {
   const { totalItems } = useCart();
   const { user } = useAuth();
 
+  const { data: logoUrl } = useQuery({
+    queryKey: ["site-logo"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
+      return (data?.value as any)?.url || "";
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
       <div className="container mx-auto px-4">
