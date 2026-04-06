@@ -4,8 +4,9 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { Upload, Loader2, Trash2 } from "lucide-react";
 
 const AdminSettings = () => {
   const queryClient = useQueryClient();
@@ -31,6 +32,8 @@ const AdminSettings = () => {
   const [uploadPreset, setUploadPreset] = useState("");
   const [steadfastApiKey, setSteadfastApiKey] = useState("");
   const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [logoUploading, setLogoUploading] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -45,6 +48,32 @@ const AdminSettings = () => {
       setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
       setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
       setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
+      setLogoUrl(settings.site_logo?.value?.url || "");
+    }
+  }, [settings]);
+
+  const uploadLogo = useCallback(async (file: File) => {
+    const cn = settings?.cloudinary?.value?.cloud_name;
+    const preset = settings?.cloudinary?.value?.upload_preset;
+    if (!cn || !preset) {
+      toast.error("আগে Cloudinary সেটআপ করুন");
+      return;
+    }
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", preset);
+      fd.append("folder", "branding");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const result = await res.json();
+      const url = result.secure_url;
+      setLogoUrl(url);
+      updateMutation.mutate({ key: "site_logo", value: { url } });
+    } catch {
+      toast.error("লোগো আপলোড ব্যর্থ");
+    } finally {
+      setLogoUploading(false);
     }
   }, [settings]);
 
@@ -70,6 +99,38 @@ const AdminSettings = () => {
       <h1 className="text-2xl font-bold text-foreground mb-6">সেটিংস</h1>
 
       <div className="space-y-6 max-w-lg">
+        {/* Site Logo */}
+        <div className="bg-card border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">সাইট লোগো</h3>
+          <div className="flex items-center gap-4">
+            {logoUrl ? (
+              <div className="relative group">
+                <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain border rounded-lg p-1" />
+                <button
+                  onClick={() => { setLogoUrl(""); updateMutation.mutate({ key: "site_logo", value: { url: "" } }); }}
+                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="h-16 w-16 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground">
+                <Upload className="h-5 w-5" />
+              </div>
+            )}
+            <div className="flex-1">
+              <label className="cursor-pointer">
+                <Button variant="outline" size="sm" asChild disabled={logoUploading}>
+                  <span>
+                    {logoUploading ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> আপলোড হচ্ছে...</> : "লোগো আপলোড করুন"}
+                  </span>
+                </Button>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadLogo(e.target.files[0]); e.target.value = ""; }} />
+              </label>
+              <p className="text-xs text-muted-foreground mt-1">PNG বা SVG রিকমেন্ডেড। Cloudinary-তে আপলোড হবে।</p>
+            </div>
+          </div>
+        </div>
+
         {/* Payment Gateway */}
         <div className="bg-card border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">

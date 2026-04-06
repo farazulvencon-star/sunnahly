@@ -2,6 +2,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { path: "/admin", icon: LayoutDashboard, label: "ড্যাশবোর্ড" },
@@ -18,6 +20,15 @@ const AdminLayout = () => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
+  const { data: logoUrl } = useQuery({
+    queryKey: ["site-logo"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
+      return (data?.value as any)?.url || "";
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!user || !isAdmin) return <Navigate to="/admin-login" />;
 
@@ -26,7 +37,11 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className="hidden md:flex w-60 bg-card border-r flex-col">
         <div className="p-4 border-b">
-          <h1 className="font-bold text-primary text-lg">Natural Shefa</h1>
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain mb-1" />
+          ) : (
+            <h1 className="font-bold text-primary text-lg">Natural Shefa</h1>
+          )}
           <p className="text-xs text-muted-foreground">অ্যাডমিন প্যানেল</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">

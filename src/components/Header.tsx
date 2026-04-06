@@ -6,6 +6,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "হোম", href: "/" },
@@ -16,6 +18,15 @@ const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems } = useCart();
   const { user } = useAuth();
+
+  const { data: logoUrl } = useQuery({
+    queryKey: ["site-logo"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
+      return (data?.value as any)?.url || "";
+    },
+    staleTime: 1000 * 60 * 10,
+  });
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
@@ -45,13 +56,19 @@ const Header = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm md:text-lg">N</span>
-            </div>
-            <div className="leading-tight">
-              <h1 className="text-lg md:text-xl font-bold text-primary">Natural Shefa</h1>
-              <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Natural Shefa" className="h-8 md:h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm md:text-lg">N</span>
+                </div>
+                <div className="leading-tight">
+                  <h1 className="text-lg md:text-xl font-bold text-primary">Natural Shefa</h1>
+                  <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
+                </div>
+              </>
+            )}
           </Link>
 
           {/* Desktop nav */}
