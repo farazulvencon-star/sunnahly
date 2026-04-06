@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { FacebookPixelProvider } from "@/contexts/FacebookPixelContext";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
+import AllProductsPage from "./pages/AllProductsPage";
+import CategoryProducts from "./pages/CategoryProducts";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
