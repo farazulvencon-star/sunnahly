@@ -27,9 +27,10 @@ const CategorySlider = () => {
         </div>
         <div className="flex flex-wrap justify-center gap-4">
           {categories.map((cat: any) => (
-            <div
+            <Link
               key={cat.id}
-              className="w-36 md:w-44 group cursor-pointer"
+              to={`/category/${cat.slug}`}
+              className="w-36 md:w-44 group"
             >
               <div className="bg-secondary rounded-2xl p-6 flex flex-col items-center gap-3 transition-all group-hover:bg-primary group-hover:shadow-lg">
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary-foreground/20 transition-colors overflow-hidden">
@@ -43,7 +44,7 @@ const CategorySlider = () => {
                   {cat.name}
                 </h3>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         <p className="text-center text-xs text-muted-foreground mt-4">

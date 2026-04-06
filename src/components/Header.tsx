@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "হোম", href: "/" },
+  { label: "সকল পণ্য", href: "/products" },
   { label: "অর্ডার ট্র্যাক", href: "/track-order" },
 ];
 

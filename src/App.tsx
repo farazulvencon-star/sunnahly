@@ -50,6 +50,8 @@ const App = () => (
             <FaviconManager />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/products" element={<AllProductsPage />} />
+              <Route path="/category/:slug" element={<CategoryProducts />} />
               <Route path="/product/:slug" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
