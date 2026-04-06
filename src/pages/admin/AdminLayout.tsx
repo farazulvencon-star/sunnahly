@@ -2,6 +2,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { path: "/admin", icon: LayoutDashboard, label: "ড্যাশবোর্ড" },
