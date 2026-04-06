@@ -20,6 +20,15 @@ const AdminLayout = () => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
+  const { data: logoUrl } = useQuery({
+    queryKey: ["site-logo"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
+      return (data?.value as any)?.url || "";
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!user || !isAdmin) return <Navigate to="/admin-login" />;
 
