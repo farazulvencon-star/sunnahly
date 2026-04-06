@@ -56,13 +56,19 @@ const Header = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm md:text-lg">N</span>
-            </div>
-            <div className="leading-tight">
-              <h1 className="text-lg md:text-xl font-bold text-primary">Natural Shefa</h1>
-              <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Natural Shefa" className="h-8 md:h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm md:text-lg">N</span>
+                </div>
+                <div className="leading-tight">
+                  <h1 className="text-lg md:text-xl font-bold text-primary">Natural Shefa</h1>
+                  <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
+                </div>
+              </>
+            )}
           </Link>
 
           {/* Desktop nav */}
