@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Leaf } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CategorySlider = () => {
   const { data: categories } = useQuery({
