@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { path: "/admin/categories", icon: FolderOpen, label: "ক্যাটেগরি" },
   { path: "/admin/products", icon: Package, label: "পণ্যসমূহ" },
   { path: "/admin/orders", icon: ShoppingCart, label: "অর্ডারসমূহ" },
+  { path: "/admin/incomplete-orders", icon: AlertTriangle, label: "ইনকমপ্লিট" },
   { path: "/admin/customers", icon: Users, label: "কাস্টমার" },
   { path: "/admin/settings", icon: Settings, label: "সেটিংস" },
 ];

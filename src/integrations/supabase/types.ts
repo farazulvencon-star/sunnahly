@@ -47,6 +47,57 @@ export type Database = {
         }
         Relationships: []
       }
+      incomplete_orders: {
+        Row: {
+          area: string | null
+          cart_items: Json | null
+          cart_total: number | null
+          city: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          is_converted: boolean | null
+          last_activity: string
+          session_id: string
+          shipping_address: string | null
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          cart_items?: Json | null
+          cart_total?: number | null
+          city?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          is_converted?: boolean | null
+          last_activity?: string
+          session_id: string
+          shipping_address?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          cart_items?: Json | null
+          cart_total?: number | null
+          city?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          is_converted?: boolean | null
+          last_activity?: string
+          session_id?: string
+          shipping_address?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
