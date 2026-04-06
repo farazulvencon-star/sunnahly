@@ -133,6 +133,9 @@ const AdminSettings = () => {
             </div>
           </div>
 
+          {/* Favicon */}
+          <FaviconUpload settings={settings} updateMutation={updateMutation} />
+
           {/* Delivery Charge */}
           <div className="bg-card border rounded-xl p-5">
             <h3 className="font-bold text-foreground mb-4">ডেলিভারি চার্জ</h3>
