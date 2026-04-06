@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, ArchiveRestore, Archive, Search, Eye, X } from "lucide-react";
+import { Plus, Trash2, ArchiveRestore, Archive, Search, Eye, X, Truck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -44,6 +44,7 @@ const AdminOrders = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [viewOrder, setViewOrder] = useState<any>(null);
   const [newOrder, setNewOrder] = useState({ ...emptyOrder });
+  const [sendingCourier, setSendingCourier] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +52,15 @@ const AdminOrders = () => {
   const [filterPayment, setFilterPayment] = useState("all");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+
+  // Steadfast settings
+  const { data: steadfastConfig } = useQuery({
+    queryKey: ["steadfast-config"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "steadfast").single();
+      return data?.value as { api_key?: string; secret_key?: string } | null;
+    },
+  });
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", showTrash],
@@ -192,6 +202,47 @@ const AdminOrders = () => {
   };
 
   const hasFilters = searchQuery || filterStatus !== "all" || filterPayment !== "all" || filterDateFrom || filterDateTo;
+
+  // Send to Steadfast
+  const sendToSteadfast = async (order: any) => {
+    if (!steadfastConfig?.api_key || !steadfastConfig?.secret_key) {
+      toast.error("Steadfast API Key সেটিংসে কনফিগার করুন");
+      return;
+    }
+    setSendingCourier(order.id);
+    try {
+      const res = await fetch("https://portal.steadfast.com.bd/api/v1/create_order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Api-Key": steadfastConfig.api_key,
+          "Secret-Key": steadfastConfig.secret_key,
+        },
+        body: JSON.stringify({
+          invoice: order.order_number,
+          recipient_name: order.customer_name,
+          recipient_phone: order.customer_phone,
+          recipient_address: `${order.shipping_address}${order.area ? ", " + order.area : ""}, ${order.city}`,
+          cod_amount: Number(order.due_amount) || Number(order.total),
+          note: order.notes || "",
+        }),
+      });
+      const result = await res.json();
+      if (result.status === 200) {
+        await supabase.from("orders").update({
+          notes: `${order.notes || ""}\n[Steadfast] CID: ${result.consignment?.consignment_id}, Tracking: ${result.consignment?.tracking_code}`.trim(),
+        }).eq("id", order.id);
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+        toast.success(`কুরিয়ারে পাঠানো হয়েছে! CID: ${result.consignment?.consignment_id}`);
+      } else {
+        toast.error(result.message || "Steadfast এ পাঠাতে সমস্যা হয়েছে");
+      }
+    } catch (err) {
+      toast.error("নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন");
+    } finally {
+      setSendingCourier(null);
+    }
+  };
 
   // Status counts
   const statusCounts = useMemo(() => {
@@ -403,6 +454,7 @@ const AdminOrders = () => {
                 <TableHead className="text-xs font-semibold">স্ট্যাটাস</TableHead>
                 <TableHead className="text-xs font-semibold">পেমেন্ট</TableHead>
                 <TableHead className="text-xs font-semibold text-right">মোট</TableHead>
+                <TableHead className="text-xs font-semibold">কুরিয়ার</TableHead>
                 <TableHead className="text-xs font-semibold text-center">অ্যাকশন</TableHead>
               </TableRow>
             </TableHeader>
@@ -463,6 +515,31 @@ const AdminOrders = () => {
                     {Number(order.due_amount) > 0 && (
                       <p className="text-[10px] text-destructive">বাকি: ৳{Number(order.due_amount)}</p>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const cidMatch = order.notes?.match(/\[Steadfast\] CID: (\w+)/);
+                      if (cidMatch) {
+                        return (
+                          <div className="text-xs">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">
+                              <Truck className="h-3 w-3 mr-1" /> {cidMatch[1]}
+                            </Badge>
+                          </div>
+                        );
+                      }
+                      return (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={sendingCourier === order.id}
+                          onClick={() => sendToSteadfast(order)}
+                        >
+                          {sendingCourier === order.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Truck className="h-3 w-3 mr-1" /> পাঠান</>}
+                        </Button>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1">

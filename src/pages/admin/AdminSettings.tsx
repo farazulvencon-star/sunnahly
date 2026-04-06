@@ -29,6 +29,8 @@ const AdminSettings = () => {
   const [pixelToken, setPixelToken] = useState("");
   const [cloudName, setCloudName] = useState("");
   const [uploadPreset, setUploadPreset] = useState("");
+  const [steadfastApiKey, setSteadfastApiKey] = useState("");
+  const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -41,6 +43,8 @@ const AdminSettings = () => {
       setPixelToken(settings.facebook_pixel?.value?.access_token || "");
       setCloudName(settings.cloudinary?.value?.cloud_name || "");
       setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
+      setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
+      setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
     }
   }, [settings]);
 
@@ -158,6 +162,29 @@ const AdminSettings = () => {
             <Button variant="outline" onClick={() => updateMutation.mutate({
               key: "cloudinary",
               value: { cloud_name: cloudName, upload_preset: uploadPreset },
+            })}>
+              সেভ করুন
+            </Button>
+          </div>
+        </div>
+
+        {/* Steadfast Courier */}
+        <div className="bg-card border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-1">Steadfast Courier</h3>
+          <p className="text-sm text-muted-foreground mb-4">এক ক্লিকে অর্ডার কুরিয়ারে পাঠান</p>
+          <div className="space-y-3">
+            <div>
+              <Label>API Key</Label>
+              <Input placeholder="আপনার Steadfast API Key" value={steadfastApiKey} onChange={(e) => setSteadfastApiKey(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Secret Key</Label>
+              <Input placeholder="আপনার Steadfast Secret Key" value={steadfastSecretKey} onChange={(e) => setSteadfastSecretKey(e.target.value)} className="mt-1" type="password" />
+            </div>
+            <p className="text-xs text-muted-foreground">Steadfast Dashboard → API Settings থেকে কী নিন</p>
+            <Button variant="outline" onClick={() => updateMutation.mutate({
+              key: "steadfast",
+              value: { api_key: steadfastApiKey, secret_key: steadfastSecretKey },
             })}>
               সেভ করুন
             </Button>
