@@ -510,17 +510,23 @@ const AdminProducts = () => {
                 <div>
                   <h4 className="font-medium text-sm mb-3 flex items-center gap-2"><Image className="h-4 w-4" /> পণ্যের ছবি</h4>
 
-                  {/* Cloudinary Upload */}
-                  {hasCloudinary && (
-                    <div className="mb-3">
-                      <label className="flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
-                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
-                        <span className="text-sm text-muted-foreground">{uploading ? "আপলোড হচ্ছে..." : "ছবি আপলোড করুন (Cloudinary)"}</span>
+                  {/* Upload Area */}
+                  <div className="mb-3">
+                    {hasCloudinary ? (
+                      <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg p-6 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                        {uploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Upload className="h-6 w-6 text-muted-foreground" />}
+                        <span className="text-sm font-medium">{uploading ? "আপলোড হচ্ছে..." : "ক্লিক করুন বা ড্র্যাগ করুন"}</span>
+                        <span className="text-xs text-muted-foreground">PNG, JPG, WEBP — অটো অপটিমাইজ হবে</span>
                         <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
                       </label>
-                      <p className="text-xs text-muted-foreground mt-1">ছবি অটো-অপটিমাইজ ও রিসাইজ হবে</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">ছবি আপলোড করতে <span className="text-primary font-medium">Settings → Cloudinary</span> সেটআপ করুন</p>
+                        <p className="text-xs text-muted-foreground mt-1">অথবা নিচে URL দিয়ে ছবি যোগ করুন</p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* URL Input */}
                   <div className="flex gap-2 mb-3">
@@ -528,25 +534,50 @@ const AdminProducts = () => {
                     <Button type="button" variant="outline" onClick={addImage} disabled={!imageUrl.trim()}>যোগ</Button>
                   </div>
 
-                  {/* Image Grid */}
-                  <div className="grid grid-cols-4 gap-3">
-                    {form.images.map((img, i) => (
-                      <div key={i} className="relative group border rounded-lg overflow-hidden aspect-square">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button variant="destructive" size="sm" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                  {/* Image Grid / Gallery */}
+                  {form.images.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-3">
+                      {form.images.map((img, i) => (
+                        <div key={i} className="relative group border rounded-lg overflow-hidden aspect-square">
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                            {i > 0 && (
+                              <Button variant="secondary" size="sm" className="h-7 w-7 p-0" onClick={() => {
+                                const imgs = [...form.images];
+                                [imgs[i - 1], imgs[i]] = [imgs[i], imgs[i - 1]];
+                                setForm({ ...form, images: imgs });
+                              }}>
+                                ←
+                              </Button>
+                            )}
+                            <Button variant="destructive" size="sm" className="h-7 w-7 p-0" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                            {i < form.images.length - 1 && (
+                              <Button variant="secondary" size="sm" className="h-7 w-7 p-0" onClick={() => {
+                                const imgs = [...form.images];
+                                [imgs[i], imgs[i + 1]] = [imgs[i + 1], imgs[i]];
+                                setForm({ ...form, images: imgs });
+                              }}>
+                                →
+                              </Button>
+                            )}
+                          </div>
+                          {i === 0 && <Badge className="absolute top-1 left-1 text-[10px]">প্রধান</Badge>}
                         </div>
-                        {i === 0 && <Badge className="absolute top-1 left-1 text-[10px]">প্রধান</Badge>}
-                      </div>
-                    ))}
-                    {form.images.length === 0 && !hasCloudinary && (
-                      <div className="col-span-4 border-2 border-dashed rounded-lg p-6 text-center text-muted-foreground text-sm">
-                        কোনো ছবি নেই। Settings থেকে Cloudinary সেটআপ করুন অথবা URL দিন।
-                      </div>
-                    )}
-                  </div>
+                      ))}
+                      {/* Add more images tile */}
+                      {hasCloudinary && (
+                        <label className="border-2 border-dashed rounded-lg aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                          {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+                          <span className="text-[10px] text-muted-foreground mt-1">আরও ছবি</span>
+                          <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                        </label>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center py-2">এখনো কোনো ছবি যোগ করা হয়নি</p>
+                  )}
                 </div>
 
                 {/* Video Section */}
