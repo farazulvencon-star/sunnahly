@@ -310,6 +310,8 @@ export type Database = {
           slug: string
           stock: number | null
           updated_at: string
+          video_thumbnail: string | null
+          video_url: string | null
         }
         Insert: {
           badge?: string | null
@@ -331,6 +333,8 @@ export type Database = {
           slug: string
           stock?: number | null
           updated_at?: string
+          video_thumbnail?: string | null
+          video_url?: string | null
         }
         Update: {
           badge?: string | null
@@ -352,6 +356,8 @@ export type Database = {
           slug?: string
           stock?: number | null
           updated_at?: string
+          video_thumbnail?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
