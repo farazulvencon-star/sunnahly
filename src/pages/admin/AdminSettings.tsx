@@ -8,6 +8,63 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Upload, Loader2, Trash2 } from "lucide-react";
 
+const FaviconUpload = ({ settings, updateMutation }: { settings: any; updateMutation: any }) => {
+  const [faviconUrl, setFaviconUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (settings?.site_favicon) setFaviconUrl(settings.site_favicon.value?.url || "");
+  }, [settings]);
+
+  const upload = async (file: File) => {
+    const cn = settings?.cloudinary?.value?.cloud_name;
+    const preset = settings?.cloudinary?.value?.upload_preset;
+    if (!cn || !preset) { toast.error("আগে Cloudinary সেটআপ করুন"); return; }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", preset);
+      fd.append("folder", "branding");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const result = await res.json();
+      setFaviconUrl(result.secure_url);
+      updateMutation.mutate({ key: "site_favicon", value: { url: result.secure_url } });
+    } catch { toast.error("ফেভিকন আপলোড ব্যর্থ"); }
+    finally { setUploading(false); }
+  };
+
+  return (
+    <div className="bg-card border rounded-xl p-5">
+      <h3 className="font-bold text-foreground mb-4">ফেভিকন</h3>
+      <div className="flex items-center gap-4">
+        {faviconUrl ? (
+          <div className="relative group">
+            <img src={faviconUrl} alt="Favicon" className="h-10 w-10 object-contain border rounded-lg p-1" />
+            <button onClick={() => { setFaviconUrl(""); updateMutation.mutate({ key: "site_favicon", value: { url: "" } }); }}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="h-10 w-10 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground">
+            <Upload className="h-4 w-4" />
+          </div>
+        )}
+        <div className="flex-1">
+          <label className="cursor-pointer">
+            <Button variant="outline" size="sm" asChild disabled={uploading}>
+              <span>{uploading ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> আপলোড হচ্ছে...</> : "ফেভিকন আপলোড"}</span>
+            </Button>
+            <input type="file" accept="image/png,image/x-icon,image/svg+xml" className="hidden" onChange={(e) => { if (e.target.files?.[0]) upload(e.target.files[0]); e.target.value = ""; }} />
+          </label>
+          <p className="text-xs text-muted-foreground mt-1">PNG, ICO, বা SVG। ব্রাউজার ট্যাবে দেখাবে।</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminSettings = () => {
   const queryClient = useQueryClient();
 
@@ -132,6 +189,9 @@ const AdminSettings = () => {
               </div>
             </div>
           </div>
+
+          {/* Favicon */}
+          <FaviconUpload settings={settings} updateMutation={updateMutation} />
 
           {/* Delivery Charge */}
           <div className="bg-card border rounded-xl p-5">
