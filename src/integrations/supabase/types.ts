@@ -115,6 +115,45 @@ export type Database = {
           },
         ]
       }
+      code_snippets: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          language: string
+          name: string
+          placement: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          name: string
+          placement?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          name?: string
+          placement?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       incomplete_orders: {
         Row: {
           area: string | null
