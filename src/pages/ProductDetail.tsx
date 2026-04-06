@@ -166,6 +166,7 @@ const ProductDetail = () => {
         </div>
       </main>
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
