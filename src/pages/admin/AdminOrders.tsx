@@ -44,6 +44,7 @@ const AdminOrders = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [viewOrder, setViewOrder] = useState<any>(null);
   const [newOrder, setNewOrder] = useState({ ...emptyOrder });
+  const [sendingCourier, setSendingCourier] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +52,15 @@ const AdminOrders = () => {
   const [filterPayment, setFilterPayment] = useState("all");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+
+  // Steadfast settings
+  const { data: steadfastConfig } = useQuery({
+    queryKey: ["steadfast-config"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "steadfast").single();
+      return data?.value as { api_key?: string; secret_key?: string } | null;
+    },
+  });
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", showTrash],
