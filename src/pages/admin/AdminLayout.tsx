@@ -37,7 +37,11 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className="hidden md:flex w-60 bg-card border-r flex-col">
         <div className="p-4 border-b">
-          <h1 className="font-bold text-primary text-lg">Natural Shefa</h1>
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain mb-1" />
+          ) : (
+            <h1 className="font-bold text-primary text-lg">Natural Shefa</h1>
+          )}
           <p className="text-xs text-muted-foreground">অ্যাডমিন প্যানেল</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
