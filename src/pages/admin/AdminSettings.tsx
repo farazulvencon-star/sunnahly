@@ -27,6 +27,8 @@ const AdminSettings = () => {
   const [pixelEnabled, setPixelEnabled] = useState(false);
   const [pixelId, setPixelId] = useState("");
   const [pixelToken, setPixelToken] = useState("");
+  const [cloudName, setCloudName] = useState("");
+  const [uploadPreset, setUploadPreset] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -37,6 +39,8 @@ const AdminSettings = () => {
       setPixelEnabled(settings.facebook_pixel?.value?.enabled || false);
       setPixelId(settings.facebook_pixel?.value?.pixel_id || "");
       setPixelToken(settings.facebook_pixel?.value?.access_token || "");
+      setCloudName(settings.cloudinary?.value?.cloud_name || "");
+      setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
     }
   }, [settings]);
 
