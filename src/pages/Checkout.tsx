@@ -123,6 +123,12 @@ const Checkout = () => {
       toast.error("সকল প্রয়োজনীয় তথ্য পূরণ করুন");
       return;
     }
+    // Facebook Pixel - InitiateCheckout
+    window.fbq?.("track", "InitiateCheckout", {
+      value: grandTotal,
+      currency: "BDT",
+      num_items: items.length,
+    });
     setLoading(true);
     try {
       const { data: order, error } = await supabase.from("orders").insert({
