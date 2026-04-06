@@ -12,7 +12,8 @@ const AllProducts = () => {
         .from("products")
         .select("*, categories(name)")
         .eq("is_active", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(8);
       return data || [];
     },
   });
@@ -28,24 +29,7 @@ const AllProducts = () => {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {products.map((p: any) => (
-              <ProductCard
-                key={p.id}
-                id={p.id}
-                name={p.name}
-                price={Number(p.price)}
-                originalPrice={p.original_price ? Number(p.original_price) : undefined}
-                image={p.images?.[0] || "/placeholder.svg"}
-                badge={p.badge}
-                slug={p.slug}
-                categoryName={p.categories?.name}
-              />
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Link to="/products">
-              <Button variant="outline" size="lg">সকল পণ্য দেখুন →</Button>
-            </Link>
-          </div>
+            <ProductCard
               key={p.id}
               id={p.id}
               name={p.name}
@@ -57,6 +41,11 @@ const AllProducts = () => {
               categoryName={p.categories?.name}
             />
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link to="/products">
+            <Button variant="outline" size="lg">সকল পণ্য দেখুন →</Button>
+          </Link>
         </div>
       </div>
     </section>
