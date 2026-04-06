@@ -48,9 +48,13 @@ const Header = () => {
                     {item.label}
                   </Link>
                 ))}
-                <Link to={user ? "/dashboard" : "/auth"} className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">
-                  {user ? "ড্যাশবোর্ড" : "লগইন / সাইনআপ"}
-                </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">আমার একাউন্ট</Link>
+                  </>
+                ) : (
+                  <Link to="/auth" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">লগইন / সাইনআপ</Link>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
