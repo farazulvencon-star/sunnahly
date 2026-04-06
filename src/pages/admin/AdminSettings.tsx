@@ -42,8 +42,14 @@ const AdminSettings = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: any }) => {
-      const { error } = await supabase.from("site_settings").update({ value }).eq("key", key);
-      if (error) throw error;
+      const existing = settings?.[key];
+      if (existing) {
+        const { error } = await supabase.from("site_settings").update({ value }).eq("key", key);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("site_settings").insert({ key, value });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
