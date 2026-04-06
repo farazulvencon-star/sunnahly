@@ -24,6 +24,9 @@ const AdminSettings = () => {
   const [insideDhaka, setInsideDhaka] = useState(60);
   const [outsideDhaka, setOutsideDhaka] = useState(120);
   const [partialPercent, setPartialPercent] = useState(10);
+  const [pixelEnabled, setPixelEnabled] = useState(false);
+  const [pixelId, setPixelId] = useState("");
+  const [pixelToken, setPixelToken] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -31,13 +34,22 @@ const AdminSettings = () => {
       setInsideDhaka(settings.delivery_charge?.value?.inside_dhaka || 60);
       setOutsideDhaka(settings.delivery_charge?.value?.outside_dhaka || 120);
       setPartialPercent(settings.partial_payment_percent?.value?.percent || 10);
+      setPixelEnabled(settings.facebook_pixel?.value?.enabled || false);
+      setPixelId(settings.facebook_pixel?.value?.pixel_id || "");
+      setPixelToken(settings.facebook_pixel?.value?.access_token || "");
     }
   }, [settings]);
 
   const updateMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: any }) => {
-      const { error } = await supabase.from("site_settings").update({ value }).eq("key", key);
-      if (error) throw error;
+      const existing = settings?.[key];
+      if (existing) {
+        const { error } = await supabase.from("site_settings").update({ value }).eq("key", key);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("site_settings").insert({ key, value });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
@@ -90,6 +102,40 @@ const AdminSettings = () => {
           <Button variant="outline" className="mt-3" onClick={() => updateMutation.mutate({ key: "delivery_charge", value: { inside_dhaka: insideDhaka, outside_dhaka: outsideDhaka } })}>
             সেভ করুন
           </Button>
+        </div>
+
+        {/* Facebook Pixel */}
+        <div className="bg-card border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-bold text-foreground">Facebook Pixel</h3>
+              <p className="text-sm text-muted-foreground">কাস্টমার ট্র্যাকিং চালু/বন্ধ করুন</p>
+            </div>
+            <Switch checked={pixelEnabled}
+              onCheckedChange={(v) => {
+                setPixelEnabled(v);
+                updateMutation.mutate({
+                  key: "facebook_pixel",
+                  value: { enabled: v, pixel_id: pixelId, access_token: pixelToken },
+                });
+              }} />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <Label>Pixel ID</Label>
+              <Input placeholder="যেমন: 123456789012345" value={pixelId} onChange={(e) => setPixelId(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Access Token (Conversions API)</Label>
+              <Input placeholder="আপনার Access Token দিন" value={pixelToken} onChange={(e) => setPixelToken(e.target.value)} className="mt-1" type="password" />
+            </div>
+            <Button variant="outline" onClick={() => updateMutation.mutate({
+              key: "facebook_pixel",
+              value: { enabled: pixelEnabled, pixel_id: pixelId, access_token: pixelToken },
+            })}>
+              সেভ করুন
+            </Button>
+          </div>
         </div>
       </div>
     </div>

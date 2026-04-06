@@ -39,6 +39,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prev, { ...item, quantity: 1 }];
     });
+    // Facebook Pixel AddToCart
+    window.fbq?.("track", "AddToCart", {
+      content_name: item.name,
+      content_ids: [item.id],
+      content_type: "product",
+      value: item.price,
+      currency: "BDT",
+    });
   };
 
   const removeItem = (id: string) => {
