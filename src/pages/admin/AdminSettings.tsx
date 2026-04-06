@@ -29,6 +29,8 @@ const AdminSettings = () => {
   const [pixelToken, setPixelToken] = useState("");
   const [cloudName, setCloudName] = useState("");
   const [uploadPreset, setUploadPreset] = useState("");
+  const [steadfastApiKey, setSteadfastApiKey] = useState("");
+  const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
 
   useEffect(() => {
     if (settings) {
