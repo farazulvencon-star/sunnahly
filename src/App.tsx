@@ -23,6 +23,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminIncompleteOrders from "./pages/admin/AdminIncompleteOrders";
+import RecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
