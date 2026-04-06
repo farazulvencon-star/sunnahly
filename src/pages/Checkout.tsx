@@ -168,6 +168,14 @@ const Checkout = () => {
 
       clearCart();
       sessionStorage.removeItem("checkout_session_id");
+      // Facebook Pixel - Purchase
+      window.fbq?.("track", "Purchase", {
+        value: grandTotal,
+        currency: "BDT",
+        content_ids: items.map((i) => i.id),
+        content_type: "product",
+        num_items: items.length,
+      });
       toast.success("অর্ডার সফল হয়েছে!");
       navigate(`/order-success/${order.id}`);
     } catch (err: any) {
