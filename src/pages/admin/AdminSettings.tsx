@@ -27,6 +27,8 @@ const AdminSettings = () => {
   const [pixelEnabled, setPixelEnabled] = useState(false);
   const [pixelId, setPixelId] = useState("");
   const [pixelToken, setPixelToken] = useState("");
+  const [cloudName, setCloudName] = useState("");
+  const [uploadPreset, setUploadPreset] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -37,6 +39,8 @@ const AdminSettings = () => {
       setPixelEnabled(settings.facebook_pixel?.value?.enabled || false);
       setPixelId(settings.facebook_pixel?.value?.pixel_id || "");
       setPixelToken(settings.facebook_pixel?.value?.access_token || "");
+      setCloudName(settings.cloudinary?.value?.cloud_name || "");
+      setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
     }
   }, [settings]);
 
@@ -135,9 +139,32 @@ const AdminSettings = () => {
             })}>
               সেভ করুন
             </Button>
+        </div>
+
+        {/* Cloudinary */}
+        <div className="bg-card border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-1">Cloudinary (ছবি ও ভিডিও)</h3>
+          <p className="text-sm text-muted-foreground mb-4">ছবি অটো-অপটিমাইজ ও রিসাইজ হবে</p>
+          <div className="space-y-3">
+            <div>
+              <Label>Cloud Name</Label>
+              <Input placeholder="যেমন: my-cloud" value={cloudName} onChange={(e) => setCloudName(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Upload Preset (Unsigned)</Label>
+              <Input placeholder="যেমন: ml_default" value={uploadPreset} onChange={(e) => setUploadPreset(e.target.value)} className="mt-1" />
+              <p className="text-xs text-muted-foreground mt-1">Cloudinary Dashboard → Settings → Upload → Upload Presets → Unsigned preset তৈরি করুন</p>
+            </div>
+            <Button variant="outline" onClick={() => updateMutation.mutate({
+              key: "cloudinary",
+              value: { cloud_name: cloudName, upload_preset: uploadPreset },
+            })}>
+              সেভ করুন
+            </Button>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

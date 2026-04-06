@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, Filter, ChevronDown, Package, CheckSquare, Square } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy, Package, CheckSquare, Square, Upload, Video, Image, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 
 const emptyProduct = {
   name: "", slug: "", description: "", short_description: "", price: 0, original_price: null as number | null,
   sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_active: true, category_id: null as string | null,
-  meta_title: "", meta_description: "", focus_keyword: "",
+  meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "",
 };
 
 const AdminProducts = () => {
@@ -29,6 +29,8 @@ const AdminProducts = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("general");
+  const [uploading, setUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
 
   const { data: products } = useQuery({
     queryKey: ["admin-products"],
@@ -45,6 +47,81 @@ const AdminProducts = () => {
       return data || [];
     },
   });
+
+  const { data: cloudinaryConfig } = useQuery({
+    queryKey: ["cloudinary-config"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "cloudinary").single();
+      return data?.value as { cloud_name?: string; upload_preset?: string } || null;
+    },
+  });
+
+  const hasCloudinary = !!(cloudinaryConfig?.cloud_name && cloudinaryConfig?.upload_preset);
+
+  const uploadToCloudinary = useCallback(async (file: File, resourceType: "image" | "video" = "image") => {
+    if (!cloudinaryConfig?.cloud_name || !cloudinaryConfig?.upload_preset) {
+      toast.error("Cloudinary সেটআপ করুন (Settings → Cloudinary)");
+      return null;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", cloudinaryConfig.upload_preset);
+    formData.append("folder", "products");
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloud_name}/${resourceType}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("আপলোড ব্যর্থ হয়েছে");
+    return await res.json();
+  }, [cloudinaryConfig]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      const uploads = await Promise.all(
+        Array.from(files).map(async (file) => {
+          const result = await uploadToCloudinary(file, "image");
+          if (!result) return null;
+          // Use Cloudinary transformation for optimized delivery
+          const optimizedUrl = result.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_800/");
+          return optimizedUrl;
+        })
+      );
+      const validUrls = uploads.filter(Boolean) as string[];
+      if (validUrls.length) {
+        setForm(prev => ({ ...prev, images: [...prev.images, ...validUrls] }));
+        toast.success(`${validUrls.length}টি ছবি আপলোড হয়েছে`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "ছবি আপলোড ব্যর্থ");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoUploading(true);
+    try {
+      const result = await uploadToCloudinary(file, "video");
+      if (result) {
+        const videoUrl = result.secure_url;
+        const thumbnail = result.secure_url.replace(/\.\w+$/, ".jpg").replace("/upload/", "/upload/f_auto,q_auto,w_600,so_1/");
+        setForm(prev => ({ ...prev, video_url: videoUrl, video_thumbnail: thumbnail }));
+        toast.success("ভিডিও আপলোড হয়েছে");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "ভিডিও আপলোড ব্যর্থ");
+    } finally {
+      setVideoUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -137,6 +214,7 @@ const AdminProducts = () => {
       sku: product.sku || "", stock: product.stock, images: product.images || [], badge: product.badge || "",
       is_featured: product.is_featured, is_active: product.is_active, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
+      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
     });
     setActiveTab("general");
     setOpen(true);
@@ -150,6 +228,7 @@ const AdminProducts = () => {
       sku: "", stock: product.stock, images: product.images || [], badge: product.badge || "",
       is_featured: false, is_active: false, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
+      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
     });
     setActiveTab("general");
     setOpen(true);
@@ -167,11 +246,8 @@ const AdminProducts = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.length === filteredProducts.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredProducts.map((p: any) => p.id));
-    }
+    if (selectedIds.length === filteredProducts.length) setSelectedIds([]);
+    else setSelectedIds(filteredProducts.map((p: any) => p.id));
   };
 
   const seoScore = useMemo(() => {
@@ -195,9 +271,14 @@ const AdminProducts = () => {
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Package className="h-6 w-6" /> পণ্যসমূহ
         </h1>
-        <Button onClick={() => { setEditing(null); setForm(emptyProduct); setActiveTab("general"); setOpen(true); }} className="gap-1.5">
-          <Plus className="h-4 w-4" /> নতুন পণ্য যোগ করুন
-        </Button>
+        <div className="flex items-center gap-2">
+          {!hasCloudinary && (
+            <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded">Cloudinary সেটআপ করুন</span>
+          )}
+          <Button onClick={() => { setEditing(null); setForm(emptyProduct); setActiveTab("general"); setOpen(true); }} className="gap-1.5">
+            <Plus className="h-4 w-4" /> নতুন পণ্য
+          </Button>
+        </div>
       </div>
 
       {/* Status Tabs */}
@@ -229,12 +310,11 @@ const AdminProducts = () => {
           <option value="">সব ক্যাটেগরি</option>
           {categories?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-
         {selectedIds.length > 0 && (
           <div className="flex items-center gap-2 ml-auto">
             <span className="text-sm text-muted-foreground">{selectedIds.length}টি নির্বাচিত</span>
-            <Button size="sm" variant="outline" onClick={() => bulkStatusMutation.mutate({ ids: selectedIds, is_active: true })}>সক্রিয় করুন</Button>
-            <Button size="sm" variant="outline" onClick={() => bulkStatusMutation.mutate({ ids: selectedIds, is_active: false })}>নিষ্ক্রিয় করুন</Button>
+            <Button size="sm" variant="outline" onClick={() => bulkStatusMutation.mutate({ ids: selectedIds, is_active: true })}>সক্রিয়</Button>
+            <Button size="sm" variant="outline" onClick={() => bulkStatusMutation.mutate({ ids: selectedIds, is_active: false })}>নিষ্ক্রিয়</Button>
             <Button size="sm" variant="destructive" onClick={() => { if (confirm(`${selectedIds.length}টি পণ্য মুছে ফেলতে চান?`)) bulkDeleteMutation.mutate(selectedIds); }}>মুছুন</Button>
           </div>
         )}
@@ -247,7 +327,7 @@ const AdminProducts = () => {
             <thead>
               <tr className="border-b bg-muted/50">
                 <th className="w-10 p-3">
-                  <button onClick={toggleAll} className="flex items-center justify-center">
+                  <button onClick={toggleAll}>
                     {selectedIds.length === filteredProducts.length && filteredProducts.length > 0
                       ? <CheckSquare className="h-4 w-4 text-primary" />
                       : <Square className="h-4 w-4 text-muted-foreground" />}
@@ -268,25 +348,26 @@ const AdminProducts = () => {
               {filteredProducts.map((product: any) => (
                 <tr key={product.id} className={`border-b hover:bg-muted/30 transition-colors ${selectedIds.includes(product.id) ? "bg-primary/5" : ""}`}>
                   <td className="p-3">
-                    <button onClick={() => toggleSelect(product.id)} className="flex items-center justify-center">
+                    <button onClick={() => toggleSelect(product.id)}>
                       {selectedIds.includes(product.id)
                         ? <CheckSquare className="h-4 w-4 text-primary" />
                         : <Square className="h-4 w-4 text-muted-foreground" />}
                     </button>
                   </td>
                   <td className="p-3">
-                    <img src={product.images?.[0] || "/placeholder.svg"} alt="" className="w-10 h-10 rounded object-cover" />
+                    <div className="relative">
+                      <img src={product.images?.[0] || "/placeholder.svg"} alt="" className="w-10 h-10 rounded object-cover" />
+                      {product.video_url && <Video className="absolute -bottom-1 -right-1 h-3.5 w-3.5 text-primary bg-background rounded-full p-0.5" />}
+                    </div>
                   </td>
                   <td className="p-3">
-                    <div>
-                      <button onClick={() => openEdit(product)} className="font-medium text-primary hover:underline text-left">
-                        {product.name}
-                      </button>
-                      <div className="text-xs text-muted-foreground mt-0.5">/{product.slug}</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        {product.is_featured && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">ফিচার্ড</Badge>}
-                        {product.badge && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.badge}</Badge>}
-                      </div>
+                    <button onClick={() => openEdit(product)} className="font-medium text-primary hover:underline text-left">
+                      {product.name}
+                    </button>
+                    <div className="text-xs text-muted-foreground mt-0.5">/{product.slug}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                      {product.is_featured && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">ফিচার্ড</Badge>}
+                      {product.badge && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.badge}</Badge>}
                     </div>
                   </td>
                   <td className="p-3 text-muted-foreground">{product.sku || "—"}</td>
@@ -297,9 +378,7 @@ const AdminProducts = () => {
                   </td>
                   <td className="p-3">
                     <div className="font-bold text-foreground">৳{Number(product.price)}</div>
-                    {product.original_price && (
-                      <div className="text-xs text-muted-foreground line-through">৳{Number(product.original_price)}</div>
-                    )}
+                    {product.original_price && <div className="text-xs text-muted-foreground line-through">৳{Number(product.original_price)}</div>}
                   </td>
                   <td className="p-3 text-muted-foreground">{product.categories?.name || "—"}</td>
                   <td className="p-3">
@@ -307,39 +386,29 @@ const AdminProducts = () => {
                       ? <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">সক্রিয়</Badge>
                       : <Badge variant="secondary" className="bg-muted text-muted-foreground">ড্রাফট</Badge>}
                   </td>
-                  <td className="p-3 text-xs text-muted-foreground">
-                    {new Date(product.created_at).toLocaleDateString("bn-BD")}
-                  </td>
+                  <td className="p-3 text-xs text-muted-foreground">{new Date(product.created_at).toLocaleDateString("bn-BD")}</td>
                   <td className="p-3">
                     <div className="flex items-center justify-end gap-0.5">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" title="সম্পাদনা" onClick={() => openEdit(product)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" title="ডুপ্লিকেট" onClick={() => duplicateProduct(product)}>
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="সম্পাদনা" onClick={() => openEdit(product)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="ডুপ্লিকেট" onClick={() => duplicateProduct(product)}><Copy className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="মুছুন"
-                        onClick={() => { if (confirm("মুছে ফেলতে চান?")) deleteMutation.mutate(product.id); }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                        onClick={() => { if (confirm("মুছে ফেলতে চান?")) deleteMutation.mutate(product.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filteredProducts.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="p-8 text-center text-muted-foreground">কোনো পণ্য পাওয়া যায়নি</td>
-                </tr>
+                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">কোনো পণ্য পাওয়া যায়নি</td></tr>
               )}
             </tbody>
           </table>
         </div>
         <div className="p-3 border-t text-xs text-muted-foreground">
-          মোট {filteredProducts.length}টি পণ্য দেখাচ্ছে {products?.length !== filteredProducts.length ? `(সর্বমোট ${products?.length})` : ""}
+          মোট {filteredProducts.length}টি পণ্য {products?.length !== filteredProducts.length ? `(সর্বমোট ${products?.length})` : ""}
         </div>
       </div>
 
-      {/* Add/Edit Dialog - WordPress Style with Tabs */}
+      {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditing(null); setForm(emptyProduct); setActiveTab("general"); } }}>
         <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0">
           <DialogHeader className="p-6 pb-0">
@@ -347,7 +416,7 @@ const AdminProducts = () => {
           </DialogHeader>
 
           <div className="p-6 pt-4">
-            {/* Product Title - Always visible like WordPress */}
+            {/* Product Title */}
             <div className="mb-5">
               <Input placeholder="পণ্যের নাম লিখুন" className="text-lg h-12 font-medium"
                 value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -358,21 +427,21 @@ const AdminProducts = () => {
               </div>
             </div>
 
-            {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
                 {[
                   { value: "general", label: "সাধারণ" },
                   { value: "description", label: "বিবরণ" },
-                  { value: "images", label: "ছবি" },
+                  { value: "media", label: "মিডিয়া", icon: <Image className="h-3.5 w-3.5" /> },
                   { value: "inventory", label: "ইনভেন্টরি" },
                   { value: "seo", label: "SEO" },
                 ].map(t => (
                   <TabsTrigger key={t.value} value={t.value}
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2.5 text-sm">
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2.5 text-sm gap-1.5">
+                    {t.icon}
                     {t.label}
                     {t.value === "seo" && form.focus_keyword && (
-                      <span className={`ml-1.5 text-[10px] font-bold ${seoColor}`}>{seoScore}%</span>
+                      <span className={`ml-1 text-[10px] font-bold ${seoColor}`}>{seoScore}%</span>
                     )}
                   </TabsTrigger>
                 ))}
@@ -413,7 +482,7 @@ const AdminProducts = () => {
                   <div className="flex items-center justify-between border rounded-lg p-3">
                     <div>
                       <Label className="text-sm">পাবলিশ স্ট্যাটাস</Label>
-                      <p className="text-xs text-muted-foreground">{form.is_active ? "সক্রিয় — ওয়েবসাইটে দেখাবে" : "ড্রাফট — দেখাবে না"}</p>
+                      <p className="text-xs text-muted-foreground">{form.is_active ? "সক্রিয়" : "ড্রাফট"}</p>
                     </div>
                     <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
                   </div>
@@ -425,8 +494,8 @@ const AdminProducts = () => {
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">সংক্ষিপ্ত বিবরণ</Label>
                   <Textarea value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })}
-                    placeholder="পণ্যের সংক্ষিপ্ত বিবরণ লিখুন (পণ্যের পাশে দেখাবে)" rows={3} />
-                  <p className="text-xs text-muted-foreground mt-1">{form.short_description.length}/200 অক্ষর</p>
+                    placeholder="পণ্যের সংক্ষিপ্ত বিবরণ লিখুন" rows={3} />
+                  <p className="text-xs text-muted-foreground mt-1">{form.short_description.length}/200</p>
                 </div>
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">বিস্তারিত বিবরণ</Label>
@@ -435,30 +504,83 @@ const AdminProducts = () => {
                 </div>
               </TabsContent>
 
-              {/* Images Tab */}
-              <TabsContent value="images" className="space-y-4 mt-4">
+              {/* Media Tab (Images + Video) */}
+              <TabsContent value="media" className="space-y-6 mt-4">
+                {/* Images Section */}
                 <div>
-                  <Label className="text-xs font-medium mb-1.5 block">ছবি URL যোগ করুন</Label>
-                  <div className="flex gap-2">
-                    <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/image.jpg" className="flex-1" />
-                    <Button type="button" variant="outline" onClick={addImage}>যোগ করুন</Button>
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2"><Image className="h-4 w-4" /> পণ্যের ছবি</h4>
+
+                  {/* Cloudinary Upload */}
+                  {hasCloudinary && (
+                    <div className="mb-3">
+                      <label className="flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+                        <span className="text-sm text-muted-foreground">{uploading ? "আপলোড হচ্ছে..." : "ছবি আপলোড করুন (Cloudinary)"}</span>
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-1">ছবি অটো-অপটিমাইজ ও রিসাইজ হবে</p>
+                    </div>
+                  )}
+
+                  {/* URL Input */}
+                  <div className="flex gap-2 mb-3">
+                    <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="অথবা URL দিন: https://..." className="flex-1" />
+                    <Button type="button" variant="outline" onClick={addImage} disabled={!imageUrl.trim()}>যোগ</Button>
+                  </div>
+
+                  {/* Image Grid */}
+                  <div className="grid grid-cols-4 gap-3">
+                    {form.images.map((img, i) => (
+                      <div key={i} className="relative group border rounded-lg overflow-hidden aspect-square">
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button variant="destructive" size="sm" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        {i === 0 && <Badge className="absolute top-1 left-1 text-[10px]">প্রধান</Badge>}
+                      </div>
+                    ))}
+                    {form.images.length === 0 && !hasCloudinary && (
+                      <div className="col-span-4 border-2 border-dashed rounded-lg p-6 text-center text-muted-foreground text-sm">
+                        কোনো ছবি নেই। Settings থেকে Cloudinary সেটআপ করুন অথবা URL দিন।
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {form.images.map((img, i) => (
-                    <div key={i} className="relative group border rounded-lg overflow-hidden aspect-square">
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Button variant="destructive" size="sm" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                      {i === 0 && <Badge className="absolute top-1 left-1 text-[10px]">প্রধান</Badge>}
+
+                {/* Video Section */}
+                <div className="border-t pt-5">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2"><Video className="h-4 w-4" /> পণ্যের ভিডিও</h4>
+
+                  {hasCloudinary && (
+                    <div className="mb-3">
+                      <label className="flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                        {videoUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5 text-muted-foreground" />}
+                        <span className="text-sm text-muted-foreground">{videoUploading ? "ভিডিও আপলোড হচ্ছে..." : "ভিডিও আপলোড করুন (Cloudinary)"}</span>
+                        <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={videoUploading} />
+                      </label>
                     </div>
-                  ))}
-                  {form.images.length === 0 && (
-                    <div className="col-span-4 border-2 border-dashed rounded-lg p-8 text-center text-muted-foreground">
-                      কোনো ছবি যোগ হয়নি। উপরে URL দিয়ে ছবি যোগ করুন।
+                  )}
+
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs font-medium mb-1.5 block">ভিডিও URL</Label>
+                      <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })}
+                        placeholder="YouTube, Cloudinary বা অন্য ভিডিও URL" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium mb-1.5 block">ভিডিও থাম্বনেইল URL</Label>
+                      <Input value={form.video_thumbnail} onChange={(e) => setForm({ ...form, video_thumbnail: e.target.value })}
+                        placeholder="থাম্বনেইল ছবির URL" />
+                    </div>
+                  </div>
+
+                  {form.video_url && (
+                    <div className="mt-3 border rounded-lg overflow-hidden">
+                      <video src={form.video_url} controls className="w-full max-h-48 bg-black" poster={form.video_thumbnail}>
+                        আপনার ব্রাউজার ভিডিও সাপোর্ট করে না
+                      </video>
                     </div>
                   )}
                 </div>
@@ -468,8 +590,8 @@ const AdminProducts = () => {
               <TabsContent value="inventory" className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-xs font-medium mb-1.5 block">SKU (Stock Keeping Unit)</Label>
-                    <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="যেমন: NS-001" />
+                    <Label className="text-xs font-medium mb-1.5 block">SKU</Label>
+                    <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="NS-001" />
                   </div>
                   <div>
                     <Label className="text-xs font-medium mb-1.5 block">স্টক পরিমাণ</Label>
@@ -479,7 +601,7 @@ const AdminProducts = () => {
                 <div className="border rounded-lg p-4 bg-muted/30">
                   <h4 className="font-medium text-sm mb-2">স্টক অবস্থা</h4>
                   <p className={`text-sm ${form.stock <= 0 ? "text-destructive" : form.stock <= 5 ? "text-yellow-600" : "text-green-600"}`}>
-                    {form.stock <= 0 ? "স্টক নেই — পণ্য অর্ডার করা যাবে না" : form.stock <= 5 ? `কম স্টক — মাত্র ${form.stock}টি বাকি` : `স্টকে আছে — ${form.stock}টি`}
+                    {form.stock <= 0 ? "স্টক নেই" : form.stock <= 5 ? `কম স্টক — মাত্র ${form.stock}টি বাকি` : `স্টকে আছে — ${form.stock}টি`}
                   </p>
                 </div>
               </TabsContent>
@@ -500,10 +622,10 @@ const AdminProducts = () => {
                       {form.focus_keyword ? "✓" : "○"} ফোকাস কীওয়ার্ড সেট করা হয়েছে
                     </p>
                     <p className={form.meta_title ? "text-green-600" : "text-muted-foreground"}>
-                      {form.meta_title ? "✓" : "○"} SEO টাইটেল সেট করা হয়েছে {form.meta_title && `(${form.meta_title.length} অক্ষর)`}
+                      {form.meta_title ? "✓" : "○"} SEO টাইটেল {form.meta_title && `(${form.meta_title.length})`}
                     </p>
                     <p className={form.meta_description ? "text-green-600" : "text-muted-foreground"}>
-                      {form.meta_description ? "✓" : "○"} মেটা ডেসক্রিপশন সেট করা হয়েছে {form.meta_description && `(${form.meta_description.length} অক্ষর)`}
+                      {form.meta_description ? "✓" : "○"} মেটা ডেসক্রিপশন {form.meta_description && `(${form.meta_description.length})`}
                     </p>
                     {form.focus_keyword && (
                       <>
@@ -523,27 +645,22 @@ const AdminProducts = () => {
 
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">ফোকাস কীওয়ার্ড</Label>
-                  <Input value={form.focus_keyword} onChange={(e) => setForm({ ...form, focus_keyword: e.target.value })}
-                    placeholder="যেমন: অর্গানিক নারকেল তেল" />
-                  <p className="text-xs text-muted-foreground mt-1">সার্চ ইঞ্জিনে র‍্যাংক করতে চান এমন কীওয়ার্ড</p>
+                  <Input value={form.focus_keyword} onChange={(e) => setForm({ ...form, focus_keyword: e.target.value })} placeholder="অর্গানিক নারকেল তেল" />
                 </div>
-
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">SEO টাইটেল</Label>
-                  <Input value={form.meta_title} onChange={(e) => setForm({ ...form, meta_title: e.target.value })}
-                    placeholder={form.name || "পণ্যের SEO টাইটেল"} />
+                  <Input value={form.meta_title} onChange={(e) => setForm({ ...form, meta_title: e.target.value })} placeholder={form.name || "SEO টাইটেল"} />
                   <div className="flex justify-between mt-1">
                     <p className="text-xs text-muted-foreground">গুগলে যে টাইটেল দেখাবে</p>
                     <p className={`text-xs ${form.meta_title.length > 60 ? "text-red-500" : "text-muted-foreground"}`}>{form.meta_title.length}/60</p>
                   </div>
                 </div>
-
                 <div>
                   <Label className="text-xs font-medium mb-1.5 block">মেটা ডেসক্রিপশন</Label>
                   <Textarea value={form.meta_description} onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
-                    placeholder="পণ্যের সংক্ষিপ্ত বিবরণ যা গুগল সার্চে দেখাবে..." rows={3} />
+                    placeholder="গুগল সার্চে যে বিবরণ দেখাবে..." rows={3} />
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-muted-foreground">গুগল সার্চ রেজাল্টে যে বিবরণ দেখাবে</p>
+                    <p className="text-xs text-muted-foreground">সার্চ রেজাল্টের বিবরণ</p>
                     <p className={`text-xs ${form.meta_description.length > 160 ? "text-red-500" : "text-muted-foreground"}`}>{form.meta_description.length}/160</p>
                   </div>
                 </div>
@@ -552,19 +669,15 @@ const AdminProducts = () => {
                 <div className="border rounded-lg p-4 bg-background">
                   <h4 className="text-xs font-medium text-muted-foreground mb-3">গুগল প্রিভিউ</h4>
                   <div className="space-y-0.5">
-                    <p className="text-[#1a0dab] text-lg leading-tight hover:underline cursor-default">
-                      {form.meta_title || form.name || "পণ্যের নাম"} — Natural Shefa
-                    </p>
+                    <p className="text-[#1a0dab] text-lg leading-tight">{form.meta_title || form.name || "পণ্যের নাম"} — Natural Shefa</p>
                     <p className="text-[#006621] text-sm">naturalshefa.com/product/{form.slug || "product-slug"}</p>
-                    <p className="text-sm text-[#545454] line-clamp-2">
-                      {form.meta_description || form.short_description || "পণ্যের বিবরণ এখানে দেখাবে..."}
-                    </p>
+                    <p className="text-sm text-[#545454] line-clamp-2">{form.meta_description || form.short_description || "পণ্যের বিবরণ..."}</p>
                   </div>
                 </div>
               </TabsContent>
             </Tabs>
 
-            {/* Save Button - Always visible */}
+            {/* Save */}
             <div className="flex items-center justify-between mt-6 pt-4 border-t">
               <Button variant="outline" onClick={() => setOpen(false)}>বাতিল</Button>
               <Button onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending || !form.name || !form.price} className="min-w-[140px]">
