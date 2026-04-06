@@ -67,6 +67,8 @@ const App = () => (
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="chat" element={<AdminChat />} />
                 <Route path="code-snippets" element={<AdminCodeSnippets />} />
+                <Route path="hero-slides" element={<AdminHeroSlides />} />
+                <Route path="content" element={<AdminContentManager />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
