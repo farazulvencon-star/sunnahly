@@ -516,6 +516,31 @@ const AdminOrders = () => {
                       <p className="text-[10px] text-destructive">বাকি: ৳{Number(order.due_amount)}</p>
                     )}
                   </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const cidMatch = order.notes?.match(/\[Steadfast\] CID: (\w+)/);
+                      if (cidMatch) {
+                        return (
+                          <div className="text-xs">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">
+                              <Truck className="h-3 w-3 mr-1" /> {cidMatch[1]}
+                            </Badge>
+                          </div>
+                        );
+                      }
+                      return (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={sendingCourier === order.id}
+                          onClick={() => sendToSteadfast(order)}
+                        >
+                          {sendingCourier === order.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Truck className="h-3 w-3 mr-1" /> পাঠান</>}
+                        </Button>
+                      );
+                    })()}
+                  </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewOrder(order)}>
