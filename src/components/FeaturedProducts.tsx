@@ -10,7 +10,7 @@ const FeaturedProducts = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("*")
+        .select("*, categories(name)")
         .eq("is_active", true)
         .eq("is_featured", true)
         .limit(4);
@@ -18,16 +18,7 @@ const FeaturedProducts = () => {
     },
   });
 
-  // Fallback static data if no DB products
-  const displayProducts = products?.length ? products.map((p: any) => ({
-    id: p.id, name: p.name, price: Number(p.price), originalPrice: p.original_price ? Number(p.original_price) : undefined,
-    image: p.images?.[0] || "/placeholder.svg", badge: p.badge, slug: p.slug,
-  })) : [
-    { name: "অর্গানিক কালোজিরা তেল", price: 350, originalPrice: 450, image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=400&fit=crop", badge: "বেস্ট সেলার" },
-    { name: "প্রাকৃতিক মধু - সুন্দরবনের খাঁটি", price: 650, image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=400&fit=crop" },
-    { name: "অর্গানিক অ্যালোভেরা জেল", price: 280, originalPrice: 350, image: "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=400&h=400&fit=crop", badge: "নতুন" },
-    { name: "ভেষজ ফেসওয়াশ - নিম ও হলুদ", price: 320, image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop" },
-  ];
+  if (!products?.length) return null;
 
   return (
     <section className="py-10 md:py-16 bg-secondary/30">
@@ -42,10 +33,23 @@ const FeaturedProducts = () => {
           </Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {displayProducts.map((product: any, i: number) => (
-            <ProductCard key={product.id || i} {...product} />
+          {products.map((p: any) => (
+            <ProductCard
+              key={p.id}
+              id={p.id}
+              name={p.name}
+              price={Number(p.price)}
+              originalPrice={p.original_price ? Number(p.original_price) : undefined}
+              image={p.images?.[0] || "/placeholder.svg"}
+              badge={p.badge}
+              slug={p.slug}
+              categoryName={p.categories?.name}
+            />
           ))}
         </div>
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          প্রোডাক্ট ছবির রেকমেন্ডেড সাইজ: <strong>600×600px</strong> (1:1 স্কয়ার)
+        </p>
       </div>
     </section>
   );
