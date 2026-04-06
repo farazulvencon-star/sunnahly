@@ -99,6 +99,38 @@ const AdminSettings = () => {
       <h1 className="text-2xl font-bold text-foreground mb-6">সেটিংস</h1>
 
       <div className="space-y-6 max-w-lg">
+        {/* Site Logo */}
+        <div className="bg-card border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">সাইট লোগো</h3>
+          <div className="flex items-center gap-4">
+            {logoUrl ? (
+              <div className="relative group">
+                <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain border rounded-lg p-1" />
+                <button
+                  onClick={() => { setLogoUrl(""); updateMutation.mutate({ key: "site_logo", value: { url: "" } }); }}
+                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="h-16 w-16 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground">
+                <Upload className="h-5 w-5" />
+              </div>
+            )}
+            <div className="flex-1">
+              <label className="cursor-pointer">
+                <Button variant="outline" size="sm" asChild disabled={logoUploading}>
+                  <span>
+                    {logoUploading ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> আপলোড হচ্ছে...</> : "লোগো আপলোড করুন"}
+                  </span>
+                </Button>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadLogo(e.target.files[0]); e.target.value = ""; }} />
+              </label>
+              <p className="text-xs text-muted-foreground mt-1">PNG বা SVG রিকমেন্ডেড। Cloudinary-তে আপলোড হবে।</p>
+            </div>
+          </div>
+        </div>
+
         {/* Payment Gateway */}
         <div className="bg-card border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
