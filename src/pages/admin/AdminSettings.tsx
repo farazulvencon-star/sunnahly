@@ -96,9 +96,9 @@ const AdminSettings = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">সেটিংস</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6 md:text-center">সেটিংস</h1>
 
-      <div className="space-y-6 max-w-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl md:mx-auto">
         {/* Site Logo */}
         <div className="bg-card border rounded-xl p-5">
           <h3 className="font-bold text-foreground mb-4">সাইট লোগো</h3>
