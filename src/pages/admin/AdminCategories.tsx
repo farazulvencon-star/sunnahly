@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderOpen, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const emptyCategory = { name: "", slug: "", image: "", sort_order: 0, is_active: true };
@@ -16,6 +16,17 @@ const AdminCategories = () => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState(emptyCategory);
+  const [uploading, setUploading] = useState(false);
+
+  const { data: settings } = useQuery({
+    queryKey: ["admin-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*");
+      const map: Record<string, any> = {};
+      data?.forEach((s: any) => { map[s.key] = { id: s.id, value: s.value }; });
+      return map;
+    },
+  });
 
   const { data: categories } = useQuery({
     queryKey: ["admin-categories"],
@@ -24,6 +35,24 @@ const AdminCategories = () => {
       return data || [];
     },
   });
+
+  const uploadImage = useCallback(async (file: File) => {
+    const cn = settings?.cloudinary?.value?.cloud_name;
+    const preset = settings?.cloudinary?.value?.upload_preset;
+    if (!cn || !preset) { toast.error("আগে Cloudinary সেটআপ করুন"); return; }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", preset);
+      fd.append("folder", "categories");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const result = await res.json();
+      setForm((f) => ({ ...f, image: result.secure_url }));
+      toast.success("ছবি আপলোড হয়েছে");
+    } catch { toast.error("আপলোড ব্যর্থ"); }
+    finally { setUploading(false); }
+  }, [settings]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -68,7 +97,10 @@ const AdminCategories = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">ক্যাটেগরি ({categories?.length || 0})</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">ক্যাটেগরি ({categories?.length || 0})</h1>
+          <p className="text-sm text-muted-foreground">ছবির রেকমেন্ডেড সাইজ: <strong>200×200px</strong> (1:1 স্কয়ার)</p>
+        </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditing(null); setForm(emptyCategory); } }}>
           <DialogTrigger asChild>
             <Button className="gap-1"><Plus className="h-4 w-4" /> ক্যাটেগরি যোগ করুন</Button>
@@ -87,8 +119,21 @@ const AdminCategories = () => {
                 <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="স্বয়ংক্রিয়" />
               </div>
               <div>
-                <Label>ছবি URL</Label>
-                <Input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." />
+                <Label>ছবি</Label>
+                {form.image ? (
+                  <div className="relative mt-2 w-24 h-24 rounded-lg overflow-hidden border">
+                    <img src={form.image} alt="Category" className="w-full h-full object-cover" />
+                    <button onClick={() => setForm((f) => ({ ...f, image: "" }))} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="mt-2 flex items-center gap-2 border-2 border-dashed rounded-lg p-3 cursor-pointer hover:bg-secondary/50">
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4 text-muted-foreground" />}
+                    <span className="text-sm text-muted-foreground">{uploading ? "আপলোড হচ্ছে..." : "ছবি আপলোড (200×200px)"}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadImage(e.target.files[0]); e.target.value = ""; }} />
+                  </label>
+                )}
               </div>
               <div>
                 <Label>সর্ট অর্ডার</Label>
