@@ -34,6 +34,9 @@ const AdminSettings = () => {
       setInsideDhaka(settings.delivery_charge?.value?.inside_dhaka || 60);
       setOutsideDhaka(settings.delivery_charge?.value?.outside_dhaka || 120);
       setPartialPercent(settings.partial_payment_percent?.value?.percent || 10);
+      setPixelEnabled(settings.facebook_pixel?.value?.enabled || false);
+      setPixelId(settings.facebook_pixel?.value?.pixel_id || "");
+      setPixelToken(settings.facebook_pixel?.value?.access_token || "");
     }
   }, [settings]);
 
