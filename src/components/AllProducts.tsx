@@ -1,5 +1,6 @@
 import ProductCard from "./ProductCard";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,7 +12,8 @@ const AllProducts = () => {
         .from("products")
         .select("*, categories(name)")
         .eq("is_active", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(8);
       return data || [];
     },
   });
@@ -39,6 +41,11 @@ const AllProducts = () => {
               categoryName={p.categories?.name}
             />
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link to="/products">
+            <Button variant="outline" size="lg">সকল পণ্য দেখুন →</Button>
+          </Link>
         </div>
       </div>
     </section>

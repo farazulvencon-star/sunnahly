@@ -1,14 +1,34 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+const defaultTexts = [
+  "সারাদেশে ডেলিভারি চার্জ মাত্র ৳৮০",
+  "১০০% খাঁটি ও প্রাকৃতিক পণ্য",
+  "৭ দিনের মানি-ব্যাক গ্যারান্টি",
+  "অর্ডার করতে কল করুন: ০১XXXXXXXXX",
+];
+
 const TopBar = () => {
+  const { data: texts } = useQuery({
+    queryKey: ["topbar-content"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "topbar_texts").single();
+      const val = data?.value as any;
+      return val?.texts?.length ? val.texts : defaultTexts;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const items = texts || defaultTexts;
+  // Duplicate for seamless loop
+  const allItems = [...items, ...items];
+
   return (
     <div className="bg-primary text-primary-foreground py-2 overflow-hidden">
       <div className="animate-slide-left whitespace-nowrap flex gap-16 text-sm font-medium">
-        <span>সারাদেশে ডেলিভারি চার্জ মাত্র ৳৮০</span>
-        <span>১০০% খাঁটি ও প্রাকৃতিক পণ্য</span>
-        <span>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
-        <span>অর্ডার করতে কল করুন: ০১XXXXXXXXX</span>
-        <span>সারাদেশে ডেলিভারি চার্জ মাত্র ৳৮০</span>
-        <span>১০০% খাঁটি ও প্রাকৃতিক পণ্য</span>
-        <span>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
+        {allItems.map((t: string, i: number) => (
+          <span key={i}>{t}</span>
+        ))}
       </div>
     </div>
   );

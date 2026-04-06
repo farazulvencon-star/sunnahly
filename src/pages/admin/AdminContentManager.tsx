@@ -20,7 +20,14 @@ const AdminContentManager = () => {
     },
   });
 
-  // Promo banners
+  // TopBar texts
+  const [topbarTexts, setTopbarTexts] = useState<string[]>([
+    "সারাদেশে ডেলিভারি চার্জ মাত্র ৳৮০",
+    "১০০% খাঁটি ও প্রাকৃতিক পণ্য",
+    "৭ দিনের মানি-ব্যাক গ্যারান্টি",
+    "অর্ডার করতে কল করুন: ০১XXXXXXXXX",
+  ]);
+
   const [b1Subtitle, setB1Subtitle] = useState("সীমিত সময়ের অফার");
   const [b1Title, setB1Title] = useState("৩০% ছাড়");
   const [b1Desc, setB1Desc] = useState("সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।");
@@ -43,6 +50,8 @@ const AdminContentManager = () => {
 
   useEffect(() => {
     if (settings) {
+      const tb = settings.topbar_texts?.value;
+      if (tb?.texts) setTopbarTexts(tb.texts);
       const pb = settings.promo_banners?.value;
       if (pb) {
         setB1Subtitle(pb.banner1?.subtitle || "সীমিত সময়ের অফার");
@@ -86,6 +95,7 @@ const AdminContentManager = () => {
       queryClient.invalidateQueries({ queryKey: ["promo-banners-content"] });
       queryClient.invalidateQueries({ queryKey: ["money-back-content"] });
       queryClient.invalidateQueries({ queryKey: ["footer-content"] });
+      queryClient.invalidateQueries({ queryKey: ["topbar-content"] });
       toast.success("কন্টেন্ট আপডেট হয়েছে");
     },
   });
@@ -94,6 +104,30 @@ const AdminContentManager = () => {
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-6 md:text-center">কন্টেন্ট ম্যানেজমেন্ট</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl md:mx-auto">
+
+        {/* TopBar Scrolling Text */}
+        <div className="bg-card border rounded-xl p-5 space-y-4">
+          <h3 className="font-bold text-foreground">টপবার স্ক্রলিং টেক্সট</h3>
+          {topbarTexts.map((t, i) => (
+            <div key={i} className="flex gap-2">
+              <Input value={t} onChange={(e) => {
+                const arr = [...topbarTexts];
+                arr[i] = e.target.value;
+                setTopbarTexts(arr);
+              }} className="flex-1" />
+              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
+                setTopbarTexts(topbarTexts.filter((_, idx) => idx !== i));
+              }}>✕</Button>
+            </div>
+          ))}
+          <Button variant="outline" size="sm" onClick={() => setTopbarTexts([...topbarTexts, ""])}>+ নতুন টেক্সট</Button>
+          <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
+            key: "topbar_texts",
+            value: { texts: topbarTexts.filter(t => t.trim()) },
+          })}>
+            টপবার সেভ করুন
+          </Button>
+        </div>
 
         {/* Promo Banners */}
         <div className="bg-card border rounded-xl p-5 space-y-4">
