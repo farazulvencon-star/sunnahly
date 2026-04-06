@@ -4,8 +4,9 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { Upload, Loader2, Trash2 } from "lucide-react";
 
 const AdminSettings = () => {
   const queryClient = useQueryClient();
