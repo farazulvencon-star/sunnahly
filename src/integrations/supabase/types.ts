@@ -295,10 +295,13 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          focus_keyword: string | null
           id: string
           images: string[] | null
           is_active: boolean | null
           is_featured: boolean | null
+          meta_description: string | null
+          meta_title: string | null
           name: string
           original_price: number | null
           price: number
@@ -313,10 +316,13 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
           name: string
           original_price?: number | null
           price: number
@@ -331,10 +337,13 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
           name?: string
           original_price?: number | null
           price?: number
