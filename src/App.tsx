@@ -64,8 +64,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
+          </TooltipProvider>
+        </CartProvider>
+      </FacebookPixelProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

@@ -97,6 +97,40 @@ const AdminSettings = () => {
             সেভ করুন
           </Button>
         </div>
+
+        {/* Facebook Pixel */}
+        <div className="bg-card border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-bold text-foreground">Facebook Pixel</h3>
+              <p className="text-sm text-muted-foreground">কাস্টমার ট্র্যাকিং চালু/বন্ধ করুন</p>
+            </div>
+            <Switch checked={pixelEnabled}
+              onCheckedChange={(v) => {
+                setPixelEnabled(v);
+                updateMutation.mutate({
+                  key: "facebook_pixel",
+                  value: { enabled: v, pixel_id: pixelId, access_token: pixelToken },
+                });
+              }} />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <Label>Pixel ID</Label>
+              <Input placeholder="যেমন: 123456789012345" value={pixelId} onChange={(e) => setPixelId(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Access Token (Conversions API)</Label>
+              <Input placeholder="আপনার Access Token দিন" value={pixelToken} onChange={(e) => setPixelToken(e.target.value)} className="mt-1" type="password" />
+            </div>
+            <Button variant="outline" onClick={() => updateMutation.mutate({
+              key: "facebook_pixel",
+              value: { enabled: pixelEnabled, pixel_id: pixelId, access_token: pixelToken },
+            })}>
+              সেভ করুন
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
