@@ -13,6 +13,7 @@ const navItems = [
   { path: "/admin/incomplete-orders", icon: AlertTriangle, label: "ইনকমপ্লিট" },
   { path: "/admin/customers", icon: Users, label: "কাস্টমার" },
   { path: "/admin/chat", icon: MessageCircle, label: "চ্যাট" },
+  { path: "/admin/code-snippets", icon: Code2, label: "কোড স্নিপেট" },
   { path: "/admin/settings", icon: Settings, label: "সেটিংস" },
 ];
 

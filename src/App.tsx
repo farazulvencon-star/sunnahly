@@ -64,6 +64,7 @@ const App = () => (
                 <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="chat" element={<AdminChat />} />
+                <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
