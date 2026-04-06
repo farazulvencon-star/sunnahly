@@ -12,6 +12,7 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import TrackOrder from "./pages/TrackOrder";
 import Auth from "./pages/Auth";
+import SetupAdmin from "./pages/SetupAdmin";
 import Dashboard from "./pages/Dashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/order-success/:orderId" element={<OrderSuccess />} />
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/setup-admin" element={<SetupAdmin />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
