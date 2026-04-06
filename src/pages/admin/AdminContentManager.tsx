@@ -105,6 +105,30 @@ const AdminContentManager = () => {
       <h1 className="text-2xl font-bold text-foreground mb-6 md:text-center">কন্টেন্ট ম্যানেজমেন্ট</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl md:mx-auto">
 
+        {/* TopBar Scrolling Text */}
+        <div className="bg-card border rounded-xl p-5 space-y-4">
+          <h3 className="font-bold text-foreground">টপবার স্ক্রলিং টেক্সট</h3>
+          {topbarTexts.map((t, i) => (
+            <div key={i} className="flex gap-2">
+              <Input value={t} onChange={(e) => {
+                const arr = [...topbarTexts];
+                arr[i] = e.target.value;
+                setTopbarTexts(arr);
+              }} className="flex-1" />
+              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
+                setTopbarTexts(topbarTexts.filter((_, idx) => idx !== i));
+              }}>✕</Button>
+            </div>
+          ))}
+          <Button variant="outline" size="sm" onClick={() => setTopbarTexts([...topbarTexts, ""])}>+ নতুন টেক্সট</Button>
+          <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
+            key: "topbar_texts",
+            value: { texts: topbarTexts.filter(t => t.trim()) },
+          })}>
+            টপবার সেভ করুন
+          </Button>
+        </div>
+
         {/* Promo Banners */}
         <div className="bg-card border rounded-xl p-5 space-y-4">
           <h3 className="font-bold text-foreground">প্রোমো ব্যানার ১ (সবুজ)</h3>
