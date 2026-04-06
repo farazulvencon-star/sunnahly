@@ -45,6 +45,7 @@ const AdminOrders = () => {
   const [viewOrder, setViewOrder] = useState<any>(null);
   const [newOrder, setNewOrder] = useState({ ...emptyOrder });
   const [sendingCourier, setSendingCourier] = useState<string | null>(null);
+  const [courierStatuses, setCourierStatuses] = useState<Record<string, any>>({});
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
