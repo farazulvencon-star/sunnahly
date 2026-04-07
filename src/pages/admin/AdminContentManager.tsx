@@ -154,6 +154,7 @@ const AdminContentManager = () => {
           <div><Label>টাইটেল</Label><Input value={b1Title} onChange={(e) => setB1Title(e.target.value)} className="mt-1" /></div>
           <div><Label>বিবরণ</Label><Textarea value={b1Desc} onChange={(e) => setB1Desc(e.target.value)} className="mt-1" rows={2} /></div>
           <div><Label>বাটন টেক্সট</Label><Input value={b1Btn} onChange={(e) => setB1Btn(e.target.value)} className="mt-1" /></div>
+          <div><Label>বাটন লিঙ্ক</Label><Input value={b1Link} onChange={(e) => setB1Link(e.target.value)} className="mt-1" placeholder="/products" /></div>
         </div>
 
         <div className="bg-card border rounded-xl p-5 space-y-4">
