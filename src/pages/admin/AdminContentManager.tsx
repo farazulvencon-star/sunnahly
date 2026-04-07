@@ -203,6 +203,21 @@ const AdminContentManager = () => {
             ফুটার সেভ করুন
           </Button>
         </div>
+
+        {/* Social Media */}
+        <div className="bg-card border rounded-xl p-5 space-y-4">
+          <h3 className="font-bold text-foreground">সোশ্যাল মিডিয়া লিঙ্ক</h3>
+          <div><Label>Facebook</Label><Input value={smFacebook} onChange={(e) => setSmFacebook(e.target.value)} className="mt-1" placeholder="https://facebook.com/..." /></div>
+          <div><Label>Instagram</Label><Input value={smInstagram} onChange={(e) => setSmInstagram(e.target.value)} className="mt-1" placeholder="https://instagram.com/..." /></div>
+          <div><Label>YouTube</Label><Input value={smYoutube} onChange={(e) => setSmYoutube(e.target.value)} className="mt-1" placeholder="https://youtube.com/..." /></div>
+          <div><Label>WhatsApp</Label><Input value={smWhatsapp} onChange={(e) => setSmWhatsapp(e.target.value)} className="mt-1" placeholder="https://wa.me/880..." /></div>
+          <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
+            key: "social_media",
+            value: { facebook: smFacebook, instagram: smInstagram, youtube: smYoutube, whatsapp: smWhatsapp },
+          })}>
+            সোশ্যাল মিডিয়া সেভ করুন
+          </Button>
+        </div>
       </div>
     </div>
   );
