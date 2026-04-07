@@ -50,6 +50,12 @@ const AdminContentManager = () => {
   const [fAddress, setFAddress] = useState("ঢাকা, বাংলাদেশ");
   const [fCopyright, setFCopyright] = useState("© ২০২৬ Natural Shefa। সর্বস্বত্ব সংরক্ষিত।");
 
+  // Social media
+  const [smFacebook, setSmFacebook] = useState("");
+  const [smInstagram, setSmInstagram] = useState("");
+  const [smYoutube, setSmYoutube] = useState("");
+  const [smWhatsapp, setSmWhatsapp] = useState("");
+
   useEffect(() => {
     if (settings) {
       const tb = settings.topbar_texts?.value;
