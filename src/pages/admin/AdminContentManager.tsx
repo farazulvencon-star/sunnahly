@@ -66,10 +66,12 @@ const AdminContentManager = () => {
         setB1Title(pb.banner1?.title || "৩০% ছাড়");
         setB1Desc(pb.banner1?.description || "");
         setB1Btn(pb.banner1?.button_text || "এখনই কিনুন");
+        setB1Link(pb.banner1?.button_link || "/products");
         setB2Subtitle(pb.banner2?.subtitle || "নতুন সংগ্রহ");
         setB2Title(pb.banner2?.title || "চুলের যত্ন");
         setB2Desc(pb.banner2?.description || "");
         setB2Btn(pb.banner2?.button_text || "দেখুন");
+        setB2Link(pb.banner2?.button_link || "/products");
       }
       const mb = settings.money_back_banner?.value;
       if (mb) {
