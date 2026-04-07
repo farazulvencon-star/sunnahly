@@ -86,6 +86,13 @@ const AdminContentManager = () => {
         setFAddress(fc.address || "");
         setFCopyright(fc.copyright || "");
       }
+      const sm = settings.social_media?.value;
+      if (sm) {
+        setSmFacebook(sm.facebook || "");
+        setSmInstagram(sm.instagram || "");
+        setSmYoutube(sm.youtube || "");
+        setSmWhatsapp(sm.whatsapp || "");
+      }
     }
   }, [settings]);
 
