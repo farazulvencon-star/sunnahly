@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const defaultBanners = {
-  banner1: { subtitle: "সীমিত সময়ের অফার", title: "৩০% ছাড়", description: "সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।", button_text: "এখনই কিনুন", button_link: "/" },
-  banner2: { subtitle: "নতুন সংগ্রহ", title: "চুলের যত্ন", description: "প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।", button_text: "দেখুন", button_link: "/" },
+  banner1: { subtitle: "সীমিত সময়ের অফার", title: "৩০% ছাড়", description: "সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।", button_text: "এখনই কিনুন", button_link: "/products" },
+  banner2: { subtitle: "নতুন সংগ্রহ", title: "চুলের যত্ন", description: "প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।", button_text: "দেখুন", button_link: "/products" },
 };
 
 const PromoBanners = () => {
