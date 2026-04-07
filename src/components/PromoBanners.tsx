@@ -28,7 +28,7 @@ const PromoBanners = () => {
             <span className="text-primary-foreground/70 text-sm font-medium mb-2">{b1.subtitle}</span>
             <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">{b1.title}</h3>
             <p className="text-primary-foreground/80 text-sm mb-4 max-w-xs">{b1.description}</p>
-            <Button variant="secondary" size="sm" className="w-fit">{b1.button_text}</Button>
+            <a href={b1.button_link || "/"}><Button variant="secondary" size="sm" className="w-fit">{b1.button_text}</Button></a>
             <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-primary-foreground/10 rounded-full" />
             <div className="absolute right-8 top-4 w-16 h-16 bg-primary-foreground/5 rounded-full" />
           </div>
