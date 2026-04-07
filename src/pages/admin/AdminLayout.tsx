@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle, Code2, Image, FileText } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, MessageCircle, Code2, Image, FileText, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ const navItems = [
   { path: "/admin/customers", icon: Users, label: "কাস্টমার" },
   { path: "/admin/chat", icon: MessageCircle, label: "চ্যাট" },
   { path: "/admin/content", icon: FileText, label: "কন্টেন্ট" },
+  { path: "/admin/pages", icon: BookOpen, label: "পেইজ" },
   { path: "/admin/code-snippets", icon: Code2, label: "কোড স্নিপেট" },
   { path: "/admin/settings", icon: Settings, label: "সেটিংস" },
 ];

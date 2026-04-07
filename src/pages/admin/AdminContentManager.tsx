@@ -32,10 +32,12 @@ const AdminContentManager = () => {
   const [b1Title, setB1Title] = useState("৩০% ছাড়");
   const [b1Desc, setB1Desc] = useState("সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।");
   const [b1Btn, setB1Btn] = useState("এখনই কিনুন");
+  const [b1Link, setB1Link] = useState("/products");
   const [b2Subtitle, setB2Subtitle] = useState("নতুন সংগ্রহ");
   const [b2Title, setB2Title] = useState("চুলের যত্ন");
   const [b2Desc, setB2Desc] = useState("প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।");
   const [b2Btn, setB2Btn] = useState("দেখুন");
+  const [b2Link, setB2Link] = useState("/products");
 
   // Money back
   const [mbTitle, setMbTitle] = useState("৭ দিনের মানি-ব্যাক গ্যারান্টি");
@@ -48,6 +50,12 @@ const AdminContentManager = () => {
   const [fAddress, setFAddress] = useState("ঢাকা, বাংলাদেশ");
   const [fCopyright, setFCopyright] = useState("© ২০২৬ Natural Shefa। সর্বস্বত্ব সংরক্ষিত।");
 
+  // Social media
+  const [smFacebook, setSmFacebook] = useState("");
+  const [smInstagram, setSmInstagram] = useState("");
+  const [smYoutube, setSmYoutube] = useState("");
+  const [smWhatsapp, setSmWhatsapp] = useState("");
+
   useEffect(() => {
     if (settings) {
       const tb = settings.topbar_texts?.value;
@@ -58,10 +66,12 @@ const AdminContentManager = () => {
         setB1Title(pb.banner1?.title || "৩০% ছাড়");
         setB1Desc(pb.banner1?.description || "");
         setB1Btn(pb.banner1?.button_text || "এখনই কিনুন");
+        setB1Link(pb.banner1?.button_link || "/products");
         setB2Subtitle(pb.banner2?.subtitle || "নতুন সংগ্রহ");
         setB2Title(pb.banner2?.title || "চুলের যত্ন");
         setB2Desc(pb.banner2?.description || "");
         setB2Btn(pb.banner2?.button_text || "দেখুন");
+        setB2Link(pb.banner2?.button_link || "/products");
       }
       const mb = settings.money_back_banner?.value;
       if (mb) {
@@ -75,6 +85,13 @@ const AdminContentManager = () => {
         setFEmail(fc.email || "");
         setFAddress(fc.address || "");
         setFCopyright(fc.copyright || "");
+      }
+      const sm = settings.social_media?.value;
+      if (sm) {
+        setSmFacebook(sm.facebook || "");
+        setSmInstagram(sm.instagram || "");
+        setSmYoutube(sm.youtube || "");
+        setSmWhatsapp(sm.whatsapp || "");
       }
     }
   }, [settings]);
@@ -96,6 +113,7 @@ const AdminContentManager = () => {
       queryClient.invalidateQueries({ queryKey: ["money-back-content"] });
       queryClient.invalidateQueries({ queryKey: ["footer-content"] });
       queryClient.invalidateQueries({ queryKey: ["topbar-content"] });
+      queryClient.invalidateQueries({ queryKey: ["social-media"] });
       toast.success("কন্টেন্ট আপডেট হয়েছে");
     },
   });
@@ -136,6 +154,7 @@ const AdminContentManager = () => {
           <div><Label>টাইটেল</Label><Input value={b1Title} onChange={(e) => setB1Title(e.target.value)} className="mt-1" /></div>
           <div><Label>বিবরণ</Label><Textarea value={b1Desc} onChange={(e) => setB1Desc(e.target.value)} className="mt-1" rows={2} /></div>
           <div><Label>বাটন টেক্সট</Label><Input value={b1Btn} onChange={(e) => setB1Btn(e.target.value)} className="mt-1" /></div>
+          <div><Label>বাটন লিঙ্ক</Label><Input value={b1Link} onChange={(e) => setB1Link(e.target.value)} className="mt-1" placeholder="/products" /></div>
         </div>
 
         <div className="bg-card border rounded-xl p-5 space-y-4">
@@ -144,11 +163,12 @@ const AdminContentManager = () => {
           <div><Label>টাইটেল</Label><Input value={b2Title} onChange={(e) => setB2Title(e.target.value)} className="mt-1" /></div>
           <div><Label>বিবরণ</Label><Textarea value={b2Desc} onChange={(e) => setB2Desc(e.target.value)} className="mt-1" rows={2} /></div>
           <div><Label>বাটন টেক্সট</Label><Input value={b2Btn} onChange={(e) => setB2Btn(e.target.value)} className="mt-1" /></div>
+          <div><Label>বাটন লিঙ্ক</Label><Input value={b2Link} onChange={(e) => setB2Link(e.target.value)} className="mt-1" placeholder="/products" /></div>
           <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
             key: "promo_banners",
             value: {
-              banner1: { subtitle: b1Subtitle, title: b1Title, description: b1Desc, button_text: b1Btn },
-              banner2: { subtitle: b2Subtitle, title: b2Title, description: b2Desc, button_text: b2Btn },
+              banner1: { subtitle: b1Subtitle, title: b1Title, description: b1Desc, button_text: b1Btn, button_link: b1Link },
+              banner2: { subtitle: b2Subtitle, title: b2Title, description: b2Desc, button_text: b2Btn, button_link: b2Link },
             },
           })}>
             প্রোমো ব্যানার সেভ করুন
@@ -181,6 +201,21 @@ const AdminContentManager = () => {
             value: { brand_description: fBrand, phone: fPhone, email: fEmail, address: fAddress, copyright: fCopyright },
           })}>
             ফুটার সেভ করুন
+          </Button>
+        </div>
+
+        {/* Social Media */}
+        <div className="bg-card border rounded-xl p-5 space-y-4">
+          <h3 className="font-bold text-foreground">সোশ্যাল মিডিয়া লিঙ্ক</h3>
+          <div><Label>Facebook</Label><Input value={smFacebook} onChange={(e) => setSmFacebook(e.target.value)} className="mt-1" placeholder="https://facebook.com/..." /></div>
+          <div><Label>Instagram</Label><Input value={smInstagram} onChange={(e) => setSmInstagram(e.target.value)} className="mt-1" placeholder="https://instagram.com/..." /></div>
+          <div><Label>YouTube</Label><Input value={smYoutube} onChange={(e) => setSmYoutube(e.target.value)} className="mt-1" placeholder="https://youtube.com/..." /></div>
+          <div><Label>WhatsApp</Label><Input value={smWhatsapp} onChange={(e) => setSmWhatsapp(e.target.value)} className="mt-1" placeholder="https://wa.me/880..." /></div>
+          <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
+            key: "social_media",
+            value: { facebook: smFacebook, instagram: smInstagram, youtube: smYoutube, whatsapp: smWhatsapp },
+          })}>
+            সোশ্যাল মিডিয়া সেভ করুন
           </Button>
         </div>
       </div>

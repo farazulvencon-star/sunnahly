@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const defaultBanners = {
-  banner1: { subtitle: "সীমিত সময়ের অফার", title: "৩০% ছাড়", description: "সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।", button_text: "এখনই কিনুন", button_link: "/" },
-  banner2: { subtitle: "নতুন সংগ্রহ", title: "চুলের যত্ন", description: "প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।", button_text: "দেখুন", button_link: "/" },
+  banner1: { subtitle: "সীমিত সময়ের অফার", title: "৩০% ছাড়", description: "সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।", button_text: "এখনই কিনুন", button_link: "/products" },
+  banner2: { subtitle: "নতুন সংগ্রহ", title: "চুলের যত্ন", description: "প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।", button_text: "দেখুন", button_link: "/products" },
 };
 
 const PromoBanners = () => {
@@ -28,7 +28,7 @@ const PromoBanners = () => {
             <span className="text-primary-foreground/70 text-sm font-medium mb-2">{b1.subtitle}</span>
             <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">{b1.title}</h3>
             <p className="text-primary-foreground/80 text-sm mb-4 max-w-xs">{b1.description}</p>
-            <Button variant="secondary" size="sm" className="w-fit">{b1.button_text}</Button>
+            <a href={b1.button_link || "/"}><Button variant="secondary" size="sm" className="w-fit">{b1.button_text}</Button></a>
             <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-primary-foreground/10 rounded-full" />
             <div className="absolute right-8 top-4 w-16 h-16 bg-primary-foreground/5 rounded-full" />
           </div>
@@ -36,7 +36,7 @@ const PromoBanners = () => {
             <span className="text-background/70 text-sm font-medium mb-2">{b2.subtitle}</span>
             <h3 className="text-2xl md:text-3xl font-bold text-background mb-2">{b2.title}</h3>
             <p className="text-background/80 text-sm mb-4 max-w-xs">{b2.description}</p>
-            <Button variant="secondary" size="sm" className="w-fit">{b2.button_text}</Button>
+            <a href={b2.button_link || "/"}><Button variant="secondary" size="sm" className="w-fit">{b2.button_text}</Button></a>
             <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-background/5 rounded-full" />
           </div>
         </div>

@@ -31,6 +31,8 @@ import AdminChat from "./pages/admin/AdminChat";
 import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
+import AdminPages from "./pages/admin/AdminPages";
+import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
 import FaviconManager from "./components/FaviconManager";
 import NotFound from "./pages/NotFound";
@@ -60,6 +62,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-admin" element={<SetupAdmin />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/page/:slug" element={<PolicyPage />} />
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
@@ -73,6 +76,7 @@ const App = () => (
                 <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="content" element={<AdminContentManager />} />
+                <Route path="pages" element={<AdminPages />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
