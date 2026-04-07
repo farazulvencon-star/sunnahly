@@ -76,6 +76,7 @@ const App = () => (
                 <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="content" element={<AdminContentManager />} />
+                <Route path="pages" element={<AdminPages />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
