@@ -32,10 +32,12 @@ const AdminContentManager = () => {
   const [b1Title, setB1Title] = useState("৩০% ছাড়");
   const [b1Desc, setB1Desc] = useState("সকল ত্বকের যত্ন পণ্যে বিশেষ ছাড়। অফার সীমিত সময়ের জন্য।");
   const [b1Btn, setB1Btn] = useState("এখনই কিনুন");
+  const [b1Link, setB1Link] = useState("/products");
   const [b2Subtitle, setB2Subtitle] = useState("নতুন সংগ্রহ");
   const [b2Title, setB2Title] = useState("চুলের যত্ন");
   const [b2Desc, setB2Desc] = useState("প্রাকৃতিক উপাদানে তৈরি চুলের যত্ন পণ্যের নতুন সংগ্রহ এসেছে।");
   const [b2Btn, setB2Btn] = useState("দেখুন");
+  const [b2Link, setB2Link] = useState("/products");
 
   // Money back
   const [mbTitle, setMbTitle] = useState("৭ দিনের মানি-ব্যাক গ্যারান্টি");
