@@ -163,11 +163,12 @@ const AdminContentManager = () => {
           <div><Label>টাইটেল</Label><Input value={b2Title} onChange={(e) => setB2Title(e.target.value)} className="mt-1" /></div>
           <div><Label>বিবরণ</Label><Textarea value={b2Desc} onChange={(e) => setB2Desc(e.target.value)} className="mt-1" rows={2} /></div>
           <div><Label>বাটন টেক্সট</Label><Input value={b2Btn} onChange={(e) => setB2Btn(e.target.value)} className="mt-1" /></div>
+          <div><Label>বাটন লিঙ্ক</Label><Input value={b2Link} onChange={(e) => setB2Link(e.target.value)} className="mt-1" placeholder="/products" /></div>
           <Button variant="outline" className="w-full" onClick={() => updateMutation.mutate({
             key: "promo_banners",
             value: {
-              banner1: { subtitle: b1Subtitle, title: b1Title, description: b1Desc, button_text: b1Btn },
-              banner2: { subtitle: b2Subtitle, title: b2Title, description: b2Desc, button_text: b2Btn },
+              banner1: { subtitle: b1Subtitle, title: b1Title, description: b1Desc, button_text: b1Btn, button_link: b1Link },
+              banner2: { subtitle: b2Subtitle, title: b2Title, description: b2Desc, button_text: b2Btn, button_link: b2Link },
             },
           })}>
             প্রোমো ব্যানার সেভ করুন
