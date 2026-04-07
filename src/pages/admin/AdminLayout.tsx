@@ -15,6 +15,7 @@ const navItems = [
   { path: "/admin/customers", icon: Users, label: "কাস্টমার" },
   { path: "/admin/chat", icon: MessageCircle, label: "চ্যাট" },
   { path: "/admin/content", icon: FileText, label: "কন্টেন্ট" },
+  { path: "/admin/pages", icon: BookOpen, label: "পেইজ" },
   { path: "/admin/code-snippets", icon: Code2, label: "কোড স্নিপেট" },
   { path: "/admin/settings", icon: Settings, label: "সেটিংস" },
 ];
