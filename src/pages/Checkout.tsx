@@ -91,6 +91,14 @@ const Checkout = () => {
     }
   }, [items, totalPrice, city]);
 
+  // Save immediately on first load
+  const initialSaveRef = useRef(false);
+  useEffect(() => {
+    if (items.length === 0 || initialSaveRef.current) return;
+    initialSaveRef.current = true;
+    saveIncompleteOrder(form);
+  }, [items.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Debounced save on form change
   useEffect(() => {
     if (items.length === 0) return;
