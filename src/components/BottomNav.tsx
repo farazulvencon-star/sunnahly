@@ -31,16 +31,24 @@ const BottomNav = () => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const { data: whatsappValue } = useQuery({
-    queryKey: ["social_media_whatsapp"],
+    queryKey: ["whatsapp_number"],
     queryFn: async () => {
-      const { data } = await supabase
+      // Try dedicated whatsapp_number key first, fallback to social_media
+      const { data: wpData } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "whatsapp_number")
+        .maybeSingle();
+      
+      const wpNumber = (wpData?.value as { number?: string } | null)?.number;
+      if (wpNumber?.trim()) return wpNumber;
+
+      const { data: smData } = await supabase
         .from("site_settings")
         .select("value")
         .eq("key", "social_media")
         .maybeSingle();
-
-      const value = data?.value as { whatsapp?: string } | null;
-      return value?.whatsapp || "";
+      return (smData?.value as { whatsapp?: string } | null)?.whatsapp || "";
     },
   });
 

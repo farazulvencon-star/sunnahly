@@ -91,6 +91,7 @@ const AdminSettings = () => {
   const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -106,6 +107,7 @@ const AdminSettings = () => {
       setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
       setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
       setLogoUrl(settings.site_logo?.value?.url || "");
+      setWhatsappNumber(settings.whatsapp_number?.value?.number || "");
     }
   }, [settings]);
 
@@ -315,8 +317,27 @@ const AdminSettings = () => {
               })}>
                 সেভ করুন
               </Button>
+          </div>
+
+          {/* WhatsApp Number */}
+          <div className="bg-card border rounded-xl p-5">
+            <h3 className="font-bold text-foreground mb-1">WhatsApp নম্বর</h3>
+            <p className="text-sm text-muted-foreground mb-4">Bottom Navigation বারে WhatsApp বাটনে এই নম্বর ব্যবহার হবে</p>
+            <div className="space-y-3">
+              <div>
+                <Label>WhatsApp নম্বর</Label>
+                <Input placeholder="যেমন: 8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className="mt-1" />
+                <p className="text-xs text-muted-foreground mt-1">দেশের কোডসহ দিন (যেমন: 8801712345678)</p>
+              </div>
+              <Button variant="outline" onClick={() => updateMutation.mutate({
+                key: "whatsapp_number",
+                value: { number: whatsappNumber },
+              })}>
+                সেভ করুন
+              </Button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
