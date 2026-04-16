@@ -32,6 +32,7 @@ import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
+import AdminReviews from "./pages/admin/AdminReviews";
 import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
 import BottomNav from "./components/BottomNav";
@@ -78,6 +79,7 @@ const App = () => (
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="content" element={<AdminContentManager />} />
                 <Route path="pages" element={<AdminPages />} />
+                <Route path="reviews" element={<AdminReviews />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
