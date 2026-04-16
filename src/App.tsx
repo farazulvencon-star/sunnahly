@@ -82,6 +82,7 @@ const App = () => (
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <BottomNav />
           </BrowserRouter>
           </TooltipProvider>
         </CartProvider>
