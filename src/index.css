@@ -98,5 +98,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Hind Siliguri', sans-serif;
+    overflow-x: hidden;
   }
 }
