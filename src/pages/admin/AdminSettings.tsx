@@ -342,6 +342,39 @@ const AdminSettings = () => {
                 সেভ করুন
               </Button>
             </div>
+           </div>
+
+          {/* Order Webhook */}
+          <div className="bg-card border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-foreground">অর্ডার Webhook</h3>
+                <p className="text-sm text-muted-foreground">নতুন অর্ডার হলে আপনার সার্ভারে ডাটা পাঠাবে</p>
+              </div>
+              <Switch checked={webhookEnabled}
+                onCheckedChange={(v) => {
+                  setWebhookEnabled(v);
+                  updateMutation.mutate({ key: "order_webhook", value: { enabled: v, url: webhookUrl, secret_key: webhookSecret } });
+                }} />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Label>Webhook URL *</Label>
+                <Input placeholder="https://yourdomain.com/api/receive-order.php" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} className="mt-1" />
+                <p className="text-xs text-muted-foreground mt-1">আপনার PHP endpoint URL যেখানে অর্ডার ডাটা POST হবে</p>
+              </div>
+              <div>
+                <Label>Secret Key (ঐচ্ছিক)</Label>
+                <Input placeholder="আপনার সিক্রেট কী" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)} className="mt-1" type="password" />
+                <p className="text-xs text-muted-foreground mt-1">X-Webhook-Secret হেডারে পাঠানো হবে — আপনার সার্ভারে ভেরিফাই করুন</p>
+              </div>
+              <Button variant="outline" onClick={() => updateMutation.mutate({
+                key: "order_webhook",
+                value: { enabled: webhookEnabled, url: webhookUrl, secret_key: webhookSecret },
+              })}>
+                সেভ করুন
+              </Button>
+            </div>
           </div>
         </div>
         </div>
