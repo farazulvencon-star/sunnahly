@@ -32,12 +32,13 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        {/* Mobile Layout */}
+        <div className="flex md:hidden items-center justify-between h-16">
           {/* Left: Mobile menu */}
-          <div className="flex items-center md:w-auto w-10">
+          <div className="flex items-center w-10">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -60,37 +61,65 @@ const Header = () => {
           </div>
 
           {/* Center: Logo */}
-          <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
+          <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
             {logoUrl ? (
-              <img src={logoUrl} alt="Natural Shefa" className="h-8 md:h-10 w-auto object-contain" />
+              <img src={logoUrl} alt="Natural Shefa" className="h-8 w-auto object-contain" />
             ) : (
               <>
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm md:text-lg">N</span>
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">N</span>
                 </div>
                 <div className="leading-tight">
-                  <h1 className="text-lg md:text-xl font-bold text-primary">Natural Shefa</h1>
-                  <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
+                  <h1 className="text-lg font-bold text-primary">Natural Shefa</h1>
                 </div>
               </>
             )}
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Right: User icon */}
+          <div className="flex items-center">
+            <Link to={user ? "/dashboard" : "/auth"}>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Desktop Layout - Logo left, Nav center, Icons right */}
+        <div className="hidden md:flex items-center justify-between h-16">
+          {/* Left: Logo */}
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Natural Shefa" className="h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-lg">N</span>
+                </div>
+                <div className="leading-tight">
+                  <h1 className="text-xl font-bold text-primary">Natural Shefa</h1>
+                  <p className="text-xs text-muted-foreground">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
+                </div>
+              </>
+            )}
+          </Link>
+
+          {/* Center: Nav links */}
+          <nav className="flex items-center gap-1">
             {navItems.map((item) => (
-              <Link key={item.href} to={item.href} className="px-3 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-accent transition-colors">
+              <Link key={item.href} to={item.href} className="px-4 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-accent transition-colors">
                 {item.label}
               </Link>
             ))}
           </nav>
 
           {/* Right: Icons */}
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="hidden md:inline-flex" onClick={() => setSearchOpen(!searchOpen)}>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/cart" className="hidden md:inline-flex">
+            <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
