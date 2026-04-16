@@ -64,8 +64,6 @@ const Checkout = () => {
 
   // Save incomplete order data
   const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
-    const hasAnyData = currentForm.name || currentForm.phone || currentForm.email || currentForm.address || currentForm.area;
-    if (!hasAnyData && items.length === 0) return;
 
     const sessionId = getSessionId();
     const payload = {
@@ -92,6 +90,14 @@ const Checkout = () => {
       console.error("Failed to save incomplete order:", err);
     }
   }, [items, totalPrice, city]);
+
+  // Save immediately on first load
+  const initialSaveRef = useRef(false);
+  useEffect(() => {
+    if (items.length === 0 || initialSaveRef.current) return;
+    initialSaveRef.current = true;
+    saveIncompleteOrder(form);
+  }, [items.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced save on form change
   useEffect(() => {
