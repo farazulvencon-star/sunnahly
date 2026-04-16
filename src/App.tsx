@@ -34,6 +34,7 @@ import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
 import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
+import BottomNav from "./components/BottomNav";
 import FaviconManager from "./components/FaviconManager";
 import NotFound from "./pages/NotFound";
 
