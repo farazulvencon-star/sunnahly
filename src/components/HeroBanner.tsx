@@ -52,13 +52,11 @@ const HeroBanner = () => {
 
   const content = (
     <div className="relative w-full overflow-hidden">
-      <div className="relative">
-        {/* Desktop image */}
+      <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
         <img
           src={slide.image_url}
           alt={slide.title || "Banner"}
-          className="w-full h-auto object-cover"
-          style={{ maxHeight: "500px", minHeight: "200px" }}
+          className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
       </div>

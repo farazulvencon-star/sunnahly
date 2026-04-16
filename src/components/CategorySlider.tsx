@@ -25,30 +25,32 @@ const CategorySlider = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">ক্যাটাগরি সমূহ</h2>
           <p className="text-muted-foreground mt-2">আপনার প্রয়োজন অনুযায়ী পণ্য বেছে নিন</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-4 md:gap-6">
           {categories.map((cat: any) => (
             <Link
               key={cat.id}
               to={`/category/${cat.slug}`}
-              className="w-36 md:w-44 group"
+              className="w-[150px] md:w-[200px] group"
             >
-              <div className="bg-secondary rounded-2xl p-6 flex flex-col items-center gap-3 transition-all group-hover:bg-primary group-hover:shadow-lg">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary-foreground/20 transition-colors overflow-hidden">
+              <div className="bg-secondary rounded-2xl overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-[1.03]">
+                <div className="w-full aspect-[300/350] bg-primary/5 flex items-center justify-center overflow-hidden">
                   {cat.image ? (
-                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-full" />
+                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                   ) : (
-                    <Leaf className="h-7 w-7 text-primary group-hover:text-primary-foreground transition-colors" />
+                    <Leaf className="h-12 w-12 text-primary/40" />
                   )}
                 </div>
-                <h3 className="font-semibold text-sm text-foreground group-hover:text-primary-foreground transition-colors text-center">
-                  {cat.name}
-                </h3>
+                <div className="p-3 text-center">
+                  <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                    {cat.name}
+                  </h3>
+                </div>
               </div>
             </Link>
           ))}
         </div>
         <p className="text-center text-xs text-muted-foreground mt-4">
-          ক্যাটাগরি ছবির রেকমেন্ডেড সাইজ: <strong>200×200px</strong> (1:1 স্কয়ার)
+          ক্যাটাগরি ছবির রেকমেন্ডেড সাইজ: <strong>300×350px</strong>
         </p>
       </div>
     </section>
