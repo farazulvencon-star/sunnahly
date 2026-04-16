@@ -17,10 +17,7 @@ const getWhatsAppHref = (value?: string) => {
   if (!value?.trim()) return "";
 
   const trimmedValue = value.trim();
-  if (trimmedValue.startsWith("http://") || trimmedValue.startsWith("https://")) {
-    return trimmedValue;
-  }
-
+  // Extract digits from any format (raw number, wa.me link, api.whatsapp.com link, etc.)
   const digits = trimmedValue.replace(/\D/g, "");
   return digits ? `https://wa.me/${digits}` : "";
 };
