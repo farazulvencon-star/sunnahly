@@ -33,34 +33,34 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Mobile menu */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72">
-              <SheetTitle className="text-lg font-bold text-primary">মেনু</SheetTitle>
-              <nav className="mt-6 flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <Link key={item.href} to={item.href} className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">
-                    {item.label}
-                  </Link>
-                ))}
-                {user ? (
-                  <>
+          {/* Left: Mobile menu */}
+          <div className="flex items-center md:w-auto w-10">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetTitle className="text-lg font-bold text-primary">মেনু</SheetTitle>
+                <nav className="mt-6 flex flex-col gap-1">
+                  {navItems.map((item) => (
+                    <Link key={item.href} to={item.href} className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">
+                      {item.label}
+                    </Link>
+                  ))}
+                  {user ? (
                     <Link to="/dashboard" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">আমার একাউন্ট</Link>
-                  </>
-                ) : (
-                  <Link to="/auth" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">লগইন / সাইনআপ</Link>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
+                  ) : (
+                    <Link to="/auth" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">লগইন / সাইনআপ</Link>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          {/* Center: Logo */}
+          <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
             {logoUrl ? (
               <img src={logoUrl} alt="Natural Shefa" className="h-8 md:h-10 w-auto object-contain" />
             ) : (
@@ -85,12 +85,12 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Icons */}
+          {/* Right: Icons */}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
+            <Button variant="ghost" size="icon" className="hidden md:inline-flex" onClick={() => setSearchOpen(!searchOpen)}>
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/cart">
+            <Link to="/cart" className="hidden md:inline-flex">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
