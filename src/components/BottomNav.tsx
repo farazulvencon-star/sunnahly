@@ -1,7 +1,7 @@
 import { Home, LayoutGrid, Search, ShoppingCart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +20,26 @@ const getWhatsAppHref = (value?: string) => {
   // Extract digits from any format (raw number, wa.me link, api.whatsapp.com link, etc.)
   const digits = trimmedValue.replace(/\D/g, "");
   return digits ? `https://wa.me/${digits}` : "";
+};
+
+const openExternalLink = (event: MouseEvent<HTMLAnchorElement>, href?: string) => {
+  if (!href) {
+    event.preventDefault();
+    return;
+  }
+
+  event.preventDefault();
+
+  try {
+    if (window.self !== window.top && window.top) {
+      window.top.location.href = href;
+      return;
+    }
+  } catch {
+    // Ignore cross-origin access issues and fallback to a new tab.
+  }
+
+  window.open(href, "_blank", "noopener,noreferrer");
 };
 
 const BottomNav = () => {
@@ -104,7 +124,7 @@ const BottomNav = () => {
             rel={whatsappHref ? "noopener noreferrer" : undefined}
             aria-disabled={!whatsappHref}
             onClick={(event) => {
-              if (!whatsappHref) event.preventDefault();
+              openExternalLink(event, whatsappHref);
             }}
             className={`flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 flex-1 text-muted-foreground ${!whatsappHref ? "opacity-60" : ""}`}
           >
