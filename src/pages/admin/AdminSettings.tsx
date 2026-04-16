@@ -91,6 +91,7 @@ const AdminSettings = () => {
   const [steadfastSecretKey, setSteadfastSecretKey] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -106,6 +107,7 @@ const AdminSettings = () => {
       setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
       setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
       setLogoUrl(settings.site_logo?.value?.url || "");
+      setWhatsappNumber(settings.whatsapp_number?.value?.number || "");
     }
   }, [settings]);
 
