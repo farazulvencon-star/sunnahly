@@ -92,6 +92,9 @@ const AdminSettings = () => {
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState("");
+  const [webhookEnabled, setWebhookEnabled] = useState(false);
 
   useEffect(() => {
     if (settings) {
