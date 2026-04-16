@@ -101,7 +101,7 @@ const AdminOrders = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, field, value }: { id: string; field: string; value: any }) => {
-      const { error } = await supabase.from("orders").update({ [field]: value }).eq("id", id);
+      const { error } = await supabase.from("orders").update({ [field]: value } as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

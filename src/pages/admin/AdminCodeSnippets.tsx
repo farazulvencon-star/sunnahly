@@ -62,7 +62,7 @@ const AdminCodeSnippets = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
-      const { error } = await supabase.from("code_snippets").update(data).eq("id", id);
+      const { error } = await supabase.from("code_snippets").update(data as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
