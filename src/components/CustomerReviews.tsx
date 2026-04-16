@@ -1,12 +1,5 @@
-import { Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-const fallbackReviews = [
-  { customer_name: "ফাতেমা আক্তার", comment: "অসাধারণ পণ্য! ১০০% খাঁটি পণ্য।", rating: 5, image: null },
-  { customer_name: "রাহাত হোসেন", comment: "সুন্দরবনের মধু অনেক ভালো।", rating: 5, image: null },
-  { customer_name: "নুসরাত জাহান", comment: "ডেলিভারি অনেক দ্রুত পেয়েছি।", rating: 4, image: null },
-];
 
 const CustomerReviews = () => {
   const { data: reviews } = useQuery({
@@ -16,13 +9,14 @@ const CustomerReviews = () => {
         .from("reviews")
         .select("*")
         .eq("is_approved", true)
+        .not("image", "is", null)
         .order("created_at", { ascending: false })
         .limit(6);
       return data || [];
     },
   });
 
-  const displayReviews = reviews?.length ? reviews : fallbackReviews;
+  if (!reviews?.length) return null;
 
   return (
     <section className="py-10 md:py-16 bg-secondary/30">
@@ -32,34 +26,16 @@ const CustomerReviews = () => {
           <p className="text-muted-foreground mt-2">আমাদের সন্তুষ্ট ক্রেতাদের মতামত</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-          {displayReviews.map((review: any, i: number) => (
-            <div key={review.id || i} className="bg-card rounded-xl border p-4 md:p-6">
-              {review.image && (
-                <div className="mb-3 flex justify-center">
-                  <img
-                    src={review.image}
-                    alt={review.customer_name}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-primary/20"
-                  />
-                </div>
-              )}
-              <div className="flex gap-0.5 mb-2 justify-center">
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <Star
-                    key={j}
-                    className={`h-3 w-3 md:h-4 md:w-4 ${j < review.rating ? "fill-warning text-warning" : "text-border"}`}
-                  />
-                ))}
-              </div>
-              <p className="text-xs md:text-sm text-foreground mb-3 leading-relaxed text-center line-clamp-3">{review.comment}</p>
-              <div className="flex items-center gap-2 justify-center">
-                {!review.image && (
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-xs md:text-sm font-bold text-primary">{review.customer_name[0]}</span>
-                  </div>
-                )}
-                <p className="text-xs md:text-sm font-semibold text-foreground">{review.customer_name}</p>
-              </div>
+          {reviews.map((review: any) => (
+            <div
+              key={review.id}
+              className="rounded-xl border-2 border-primary overflow-hidden"
+            >
+              <img
+                src={review.image}
+                alt="কাস্টমার রিভিউ"
+                className="w-full aspect-[4/3] object-cover"
+              />
             </div>
           ))}
         </div>
