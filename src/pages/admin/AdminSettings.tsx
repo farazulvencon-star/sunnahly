@@ -111,6 +111,9 @@ const AdminSettings = () => {
       setSteadfastSecretKey(settings.steadfast?.value?.secret_key || "");
       setLogoUrl(settings.site_logo?.value?.url || "");
       setWhatsappNumber(settings.whatsapp_number?.value?.number || "");
+      setWebhookUrl(settings.order_webhook?.value?.url || "");
+      setWebhookSecret(settings.order_webhook?.value?.secret_key || "");
+      setWebhookEnabled(settings.order_webhook?.value?.enabled || false);
     }
   }, [settings]);
 
