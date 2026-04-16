@@ -172,6 +172,13 @@ const Checkout = () => {
         await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
       }
 
+      // Send webhook (fire and forget)
+      if (settings?.order_webhook?.enabled && settings?.order_webhook?.url) {
+        supabase.functions.invoke("order-webhook", {
+          body: { order_id: order.id },
+        }).catch((err) => console.error("Webhook failed:", err));
+      }
+
       clearCart();
       sessionStorage.removeItem("checkout_session_id");
       // Facebook Pixel - Purchase
