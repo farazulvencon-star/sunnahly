@@ -64,8 +64,6 @@ const Checkout = () => {
 
   // Save incomplete order data
   const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
-    const hasAnyData = currentForm.name || currentForm.phone || currentForm.email || currentForm.address || currentForm.area;
-    if (!hasAnyData && items.length === 0) return;
 
     const sessionId = getSessionId();
     const payload = {
