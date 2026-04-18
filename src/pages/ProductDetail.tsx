@@ -32,11 +32,11 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <TopBar />
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '32px', height: '32px', border: '2px solid #16a34a', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
         </div>
         <Footer />
       </div>
@@ -45,12 +45,14 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <TopBar />
         <Header />
-        <div className="flex-1 flex items-center justify-center flex-col gap-4 px-4">
-          <h1 className="text-xl font-bold text-foreground">পণ্যটি পাওয়া যায়নি</h1>
-          <Link to="/"><Button>হোমপেজে ফিরে যান</Button></Link>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '0 16px' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937' }}>পণ্যটি পাওয়া যায়নি</h1>
+          <Link to="/">
+            <Button>হোমপেজে ফিরে যান</Button>
+          </Link>
         </div>
         <Footer />
       </div>
@@ -73,19 +75,20 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopBar />
       <Header />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-6">
-          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-4">
-            <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
+      <main style={{ flex: 1 }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px' }}>
+          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280', marginBottom: '16px', textDecoration: 'none' }}>
+            <ArrowLeft style={{ width: '16px', height: '16px' }} /> হোমপেজে ফিরে যান
           </Link>
 
-          <div className="grid md:grid-cols-2 gap-6 md:gap-10">
+          <div style={{ display: 'grid', gap: '24px' }} className="md:grid-cols-2">
             {/* Images */}
-            <div className="w-full min-w-0">
-              <div className="w-full bg-white rounded-xl mb-3 p-3 border border-gray-100">
+            <div style={{ width: '100%', minWidth: 0 }}>
+              {/* Main image - fixed with inline styles to avoid Tailwind conflicts */}
+              <div style={{ width: '100%', backgroundColor: 'white', borderRadius: '12px', marginBottom: '12px', padding: '12px', border: '1px solid #f3f4f6', boxSizing: 'border-box' }}>
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
@@ -93,12 +96,27 @@ const ProductDetail = () => {
                   style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain', maxHeight: '350px' }}
                 />
               </div>
+
+              {/* Thumbnail images */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {images.map((img: string, i: number) => (
-                    <button key={i} onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}>
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        border: selectedImage === i ? '2px solid #16a34a' : '2px solid transparent',
+                        flexShrink: 0,
+                        padding: 0,
+                        cursor: 'pointer',
+                        backgroundColor: '#f3f4f6',
+                      }}
+                    >
+                      <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </button>
                   ))}
                 </div>
@@ -108,61 +126,72 @@ const ProductDetail = () => {
             {/* Details */}
             <div>
               {product.categories?.name && (
-                <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500, backgroundColor: 'rgba(22, 163, 74, 0.1)', padding: '4px 8px', borderRadius: '9999px' }}>
                   {product.categories.name}
                 </span>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginTop: '12px', marginBottom: '12px' }}>{product.name}</h1>
 
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl font-bold text-primary">৳{Number(product.price)}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>৳{Number(product.price)}</span>
                 {product.original_price && (
-                  <span className="text-lg text-muted-foreground line-through">৳{Number(product.original_price)}</span>
+                  <span style={{ fontSize: '18px', color: '#6b7280', textDecoration: 'line-through' }}>৳{Number(product.original_price)}</span>
                 )}
                 {product.original_price && (
-                  <span className="text-sm bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">
+                  <span style={{ fontSize: '14px', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 8px', borderRadius: '9999px', fontWeight: 500 }}>
                     {Math.round((1 - Number(product.price) / Number(product.original_price)) * 100)}% ছাড়
                   </span>
                 )}
               </div>
 
               {product.short_description && (
-                <p className="text-muted-foreground mb-4">{product.short_description}</p>
+                <p style={{ color: '#6b7280', marginBottom: '16px' }}>
+                  {product.short_description}
+                </p>
               )}
 
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-sm font-medium">পরিমাণ:</span>
-                <div className="flex items-center border rounded-lg">
-                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                    <Minus className="h-4 w-4" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500 }}>পরিমাণ:</span>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                  <Button variant="ghost" size="icon" style={{ height: '36px', width: '36px' }} onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                    <Minus style={{ width: '16px', height: '16px' }} />
                   </Button>
-                  <span className="w-10 text-center font-medium">{quantity}</span>
-                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQuantity(quantity + 1)}>
-                    <Plus className="h-4 w-4" />
+                  <span style={{ width: '40px', textAlign: 'center', fontWeight: 500 }}>{quantity}</span>
+                  <Button variant="ghost" size="icon" style={{ height: '36px', width: '36px' }} onClick={() => setQuantity(quantity + 1)}>
+                    <Plus style={{ width: '16px', height: '16px' }} />
                   </Button>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
-                  <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
+              {/* Buttons - fully responsive */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} className="sm:flex-row">
+                <Button size="lg" style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }} onClick={handleAddToCart}>
+                  <ShoppingCart style={{ width: '16px', height: '16px' }} /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="flex-1">
-                  <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
+                <Link to="/checkout" style={{ flex: 1 }}>
+                  <Button size="lg" variant="outline" style={{ width: '100%' }} onClick={handleAddToCart}>
                     এখনই কিনুন
                   </Button>
                 </Link>
               </div>
 
-              <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-                <p>SKU: {product.sku || "N/A"}</p>
-                <p>স্টক: {product.stock > 0 ? <span className="text-success font-medium">ইন স্টক ({product.stock})</span> : <span className="text-destructive">স্টক আউট</span>}</p>
+              <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', color: '#6b7280' }}>
+                <p>
+                  <span style={{ fontWeight: 500 }}>SKU:</span> {product.sku || "N/A"}
+                </p>
+                <p>
+                  <span style={{ fontWeight: 500 }}>স্টক:</span> {product.stock > 0 ? <span style={{ color: '#16a34a', fontWeight: 500 }}>ইন স্টক ({product.stock})</span> : <span style={{ color: '#ef4444' }}>স্টক আউট</span>}
+                </p>
               </div>
 
               {product.description && (
-                <div className="mt-8">
-                  <h3 className="font-bold text-foreground mb-2">বিস্তারিত বিবরণ</h3>
-                  <p className="text-muted-foreground whitespace-pre-line">{product.description}</p>
+                <div style={{ marginTop: '32px' }}>
+                  <h3 style={{ fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+                    বিস্তারিত বিবরণ
+                  </h3>
+                  <p style={{ color: '#6b7280', whiteSpace: 'pre-line' }}>
+                    {product.description}
+                  </p>
                 </div>
               )}
             </div>
