@@ -51,6 +51,8 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPayment, setFilterPayment] = useState("all");
+  const [filterPaymentMethod, setFilterPaymentMethod] = useState("all");
+  const [filterCity, setFilterCity] = useState("all");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
 
