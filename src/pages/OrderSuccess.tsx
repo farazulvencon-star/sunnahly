@@ -87,9 +87,9 @@ const OrderSuccess = () => {
             <Button variant="outline" className="gap-2" onClick={handleDownloadInvoice}>
               <Download className="h-4 w-4" /> ইনভয়েস ডাউনলোড
             </Button>
-            <Link to="/track-order">
+            <Link to="/shefa-tube">
               <Button variant="outline" className="gap-2 w-full">
-                <Package className="h-4 w-4" /> অর্ডার ট্র্যাক করুন
+                <Package className="h-4 w-4" /> শেফা টিউব দেখুন
               </Button>
             </Link>
             <Link to="/"><Button className="w-full">হোমপেজে ফিরে যান</Button></Link>

@@ -174,9 +174,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex justify-between items-center mt-3 pt-2 border-t">
                           <span className="font-bold">৳{Number(order.total)}</span>
-                          <Link to={`/track-order?order=${order.order_number}`}>
-                            <Button variant="outline" size="sm">ট্র্যাক করুন</Button>
-                          </Link>
+                          <span className="text-xs text-muted-foreground">{order.order_status}</span>
                         </div>
                       </div>
                     );
