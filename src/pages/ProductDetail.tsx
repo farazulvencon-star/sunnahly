@@ -111,8 +111,8 @@ const ProductDetail = () => {
 
           <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-10">
             {/* Images */}
-            <div className="w-full min-w-0 mx-auto max-w-[360px] sm:max-w-[420px] md:max-w-[380px] lg:max-w-none lg:mx-0">
-              <div className="mb-3 aspect-square w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:bg-secondary">
+            <div className="w-full min-w-0 mx-auto max-w-full sm:max-w-[420px] md:max-w-[380px] lg:max-w-none lg:mx-0">
+              <div className="mb-3 aspect-square w-full max-w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:bg-secondary">
                 <img
                   key={currentImage}
                   src={currentImage}
@@ -140,7 +140,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Details */}
-            <div className="w-full max-w-xl mx-auto lg:max-w-none lg:mx-0">
+            <div className="w-full min-w-0 max-w-full mx-auto md:max-w-xl lg:max-w-none lg:mx-0">
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
