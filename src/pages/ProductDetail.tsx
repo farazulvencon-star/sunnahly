@@ -59,16 +59,16 @@ const ProductDetail = () => {
     );
   }
 
-  const rawImages = product.images;
+  const rawImages: unknown = product.images;
   let images: string[] = [];
   if (Array.isArray(rawImages) && rawImages.length > 0) {
     images = rawImages.map(String);
-  } else if (typeof rawImages === "string" && rawImages.trim() !== "") {
+  } else if (typeof rawImages === "string" && (rawImages as string).trim() !== "") {
     try {
-      const parsed = JSON.parse(rawImages);
+      const parsed = JSON.parse(rawImages as string);
       if (Array.isArray(parsed)) images = parsed.map(String);
     } catch {
-      images = [rawImages];
+      images = [rawImages as string];
     }
   }
   if (images.length === 0) images = ["/placeholder.svg"];
