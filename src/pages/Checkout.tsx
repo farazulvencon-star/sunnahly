@@ -37,10 +37,7 @@ const Checkout = () => {
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    email: "",
     address: "",
-    area: "",
-    notes: "",
   });
 
   const { data: settings } = useQuery({
@@ -70,10 +67,8 @@ const Checkout = () => {
       session_id: sessionId,
       customer_name: currentForm.name || null,
       customer_phone: currentForm.phone || null,
-      customer_email: currentForm.email || null,
       shipping_address: currentForm.address || null,
       city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
-      area: currentForm.area || null,
       cart_items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
       cart_total: totalPrice,
       last_activity: new Date().toISOString(),
@@ -141,17 +136,14 @@ const Checkout = () => {
         user_id: user?.id || null,
         customer_name: form.name,
         customer_phone: form.phone,
-        customer_email: form.email || null,
         shipping_address: form.address,
         city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
-        area: form.area || null,
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
         total: grandTotal,
         partial_payment: partialAmount,
         due_amount: grandTotal - partialAmount,
         payment_method: paymentMethod,
-        notes: form.notes || null,
       }).select().single();
 
       if (error) throw error;
@@ -220,14 +212,6 @@ const Checkout = () => {
                       <Label htmlFor="phone">মোবাইল নম্বর *</Label>
                       <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
                     </div>
-                    <div>
-                      <Label htmlFor="email">ইমেইল</Label>
-                      <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
-                    </div>
-                    <div>
-                      <Label htmlFor="area">এলাকা</Label>
-                      <Input id="area" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} placeholder="এলাকার নাম" />
-                    </div>
                   </div>
                   <div className="mt-4">
                     <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
@@ -245,10 +229,6 @@ const Checkout = () => {
                         <Label htmlFor="outside" className="cursor-pointer">ঢাকার বাইরে (৳{settings?.delivery_charge?.outside_dhaka || 120})</Label>
                       </div>
                     </RadioGroup>
-                  </div>
-                  <div className="mt-4">
-                    <Label htmlFor="notes">বিশেষ নোট</Label>
-                    <Textarea id="notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="বিশেষ কোনো নির্দেশনা..." />
                   </div>
                 </div>
 
