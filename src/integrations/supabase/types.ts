@@ -521,6 +521,39 @@ export type Database = {
           },
         ]
       }
+      shefa_videos: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number | null
+          title: string | null
+          updated_at: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+          youtube_id?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           id: string

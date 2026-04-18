@@ -13,7 +13,7 @@ import CategoryProducts from "./pages/CategoryProducts";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
-import TrackOrder from "./pages/TrackOrder";
+import ShefaTubePage from "./pages/ShefaTube";
 import Auth from "./pages/Auth";
 import SetupAdmin from "./pages/SetupAdmin";
 import Dashboard from "./pages/Dashboard";
@@ -32,6 +32,7 @@ import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminShefaTube from "./pages/admin/AdminShefaTube";
 import InvoicePrint from "./pages/admin/InvoicePrint";
 import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
@@ -60,7 +61,7 @@ const App = () => (
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success/:orderId" element={<OrderSuccess />} />
-              <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/shefa-tube" element={<ShefaTubePage />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-admin" element={<SetupAdmin />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -80,6 +81,7 @@ const App = () => (
                 <Route path="content" element={<AdminContentManager />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="reviews" element={<AdminReviews />} />
+                <Route path="shefa-tube" element={<AdminShefaTube />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
