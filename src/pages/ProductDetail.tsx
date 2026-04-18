@@ -85,12 +85,12 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full rounded-xl bg-white overflow-hidden mb-3 md:aspect-square md:bg-secondary md:block">
+              <div className="w-full bg-white rounded-xl mb-3 p-3 border border-gray-100">
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="w-full h-auto object-contain"
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain', maxHeight: '350px' }}
                 />
               </div>
               {images.length > 1 && (
