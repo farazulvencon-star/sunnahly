@@ -47,9 +47,6 @@ const FeaturedProducts = () => {
             />
           ))}
         </div>
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          প্রোডাক্ট ছবির রেকমেন্ডেড সাইজ: <strong>600×600px</strong> (1:1 স্কয়ার)
-        </p>
       </div>
     </section>
   );
