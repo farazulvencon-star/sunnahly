@@ -31,7 +31,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-2 md:px-4 md:max-w-none">
         {/* Mobile Layout */}
         <div className="flex md:hidden items-center justify-between h-16">
           {/* Left: Mobile menu */}
@@ -87,41 +87,41 @@ const Header = () => {
         </div>
 
         {/* Desktop Layout - Logo left, Nav center, Icons right */}
-        <div className="hidden md:flex items-center justify-between h-16">
+        <div className="hidden md:flex items-center justify-between h-20 pl-0 pr-2 lg:pr-4">
           {/* Left: Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Link to="/" className="flex items-center gap-2 shrink-0 -ml-2 lg:-ml-4">
             {logoUrl ? (
-              <img src={logoUrl} alt="Natural Shefa" className="h-10 w-auto object-contain" />
+              <img src={logoUrl} alt="Natural Shefa" className="h-14 w-auto object-contain" />
             ) : (
               <>
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">N</span>
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-xl">N</span>
                 </div>
                 <div className="leading-tight">
-                  <h1 className="text-xl font-bold text-primary">Natural Shefa</h1>
-                  <p className="text-xs text-muted-foreground">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
+                  <h1 className="text-2xl font-bold text-primary">Natural Shefa</h1>
+                  <p className="text-sm text-muted-foreground">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
                 </div>
               </>
             )}
           </Link>
 
           {/* Center: Nav links */}
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-2">
             {navItems.map((item) => (
-              <Link key={item.href} to={item.href} className="px-4 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-accent transition-colors">
+              <Link key={item.href} to={item.href} className="px-5 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-accent transition-colors">
                 {item.label}
               </Link>
             ))}
           </nav>
 
           {/* Right: Icons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
-              <Search className="h-5 w-5" />
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => setSearchOpen(!searchOpen)}>
+              <Search className="h-6 w-6" />
             </Button>
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="relative h-11 w-11">
+                <ShoppingCart className="h-6 w-6" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
                     {totalItems}
@@ -130,8 +130,8 @@ const Header = () => {
               </Button>
             </Link>
             <Link to={user ? "/dashboard" : "/auth"}>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-11 w-11">
+                <User className="h-6 w-6" />
               </Button>
             </Link>
           </div>
