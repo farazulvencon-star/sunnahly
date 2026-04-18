@@ -399,13 +399,36 @@ const AdminOrders = () => {
                 />
               </div>
             </div>
-            <div className="min-w-[130px]">
-              <Label className="text-xs text-muted-foreground">পেমেন্ট</Label>
+            <div className="min-w-[120px]">
+              <Label className="text-xs text-muted-foreground">পেমেন্ট স্ট্যাটাস</Label>
               <Select value={filterPayment} onValueChange={setFilterPayment}>
                 <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">সব</SelectItem>
                   {paymentStatusOptions.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-[120px]">
+              <Label className="text-xs text-muted-foreground">পেমেন্ট মেথড</Label>
+              <Select value={filterPaymentMethod} onValueChange={setFilterPaymentMethod}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব</SelectItem>
+                  <SelectItem value="cod">COD</SelectItem>
+                  <SelectItem value="partial">আংশিক</SelectItem>
+                  <SelectItem value="online">অনলাইন</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-[120px]">
+              <Label className="text-xs text-muted-foreground">শহর</Label>
+              <Select value={filterCity} onValueChange={setFilterCity}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব</SelectItem>
+                  <SelectItem value="dhaka">ঢাকা</SelectItem>
+                  <SelectItem value="outside">ঢাকার বাইরে</SelectItem>
                 </SelectContent>
               </Select>
             </div>
