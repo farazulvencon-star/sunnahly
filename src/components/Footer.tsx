@@ -26,8 +26,8 @@ const Footer = () => {
   const { data: footerData } = useQuery({
     queryKey: ["footer-content"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "footer_content").single();
-      return (data?.value as any) || defaultFooter;
+      const { data } = await supabase.rpc("get_public_setting", { _key: "footer_content" });
+      return (data as any) || defaultFooter;
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -35,8 +35,8 @@ const Footer = () => {
   const { data: logoUrl } = useQuery({
     queryKey: ["site-logo"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
-      return (data?.value as any)?.url || "";
+      const { data } = await supabase.rpc("get_public_setting", { _key: "site_logo" });
+      return (data as any)?.url || "";
     },
     staleTime: 1000 * 60 * 10,
   });
@@ -44,8 +44,8 @@ const Footer = () => {
   const { data: socialMedia } = useQuery({
     queryKey: ["social-media"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "social_media").single();
-      return (data?.value as any) || {};
+      const { data } = await supabase.rpc("get_public_setting", { _key: "social_media" });
+      return (data as any) || {};
     },
     staleTime: 1000 * 60 * 5,
   });

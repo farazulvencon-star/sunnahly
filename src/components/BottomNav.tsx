@@ -51,21 +51,12 @@ const BottomNav = () => {
     queryKey: ["whatsapp_number"],
     queryFn: async () => {
       // Try dedicated whatsapp_number key first, fallback to social_media
-      const { data: wpData } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "whatsapp_number")
-        .maybeSingle();
-      
-      const wpNumber = (wpData?.value as { number?: string } | null)?.number;
+      const { data: wpData } = await supabase.rpc("get_public_setting", { _key: "whatsapp_number" });
+      const wpNumber = (wpData as { number?: string } | null)?.number;
       if (wpNumber?.trim()) return wpNumber;
 
-      const { data: smData } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "social_media")
-        .maybeSingle();
-      return (smData?.value as { whatsapp?: string } | null)?.whatsapp || "";
+      const { data: smData } = await supabase.rpc("get_public_setting", { _key: "social_media" });
+      return (smData as { whatsapp?: string } | null)?.whatsapp || "";
     },
   });
 

@@ -20,8 +20,8 @@ const PolicyPage = () => {
   const { data } = useQuery({
     queryKey: ["policy-page", slug],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", key).single();
-      return (data?.value as any) || null;
+      const { data } = await supabase.rpc("get_public_setting", { _key: key });
+      return (data as any) || null;
     },
     staleTime: 1000 * 60 * 5,
   });
