@@ -33,6 +33,7 @@ import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminReviews from "./pages/admin/AdminReviews";
+import InvoicePrint from "./pages/admin/InvoicePrint";
 import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
 import BottomNav from "./components/BottomNav";
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/page/:slug" element={<PolicyPage />} />
               <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/admin/invoice-print" element={<InvoicePrint />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="categories" element={<AdminCategories />} />
