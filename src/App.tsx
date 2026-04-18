@@ -33,6 +33,7 @@ import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminReviews from "./pages/admin/AdminReviews";
+import InvoicePrint from "./pages/admin/InvoicePrint";
 import PolicyPage from "./pages/PolicyPage";
 import CodeSnippetInjector from "./components/CodeSnippetInjector";
 import BottomNav from "./components/BottomNav";
