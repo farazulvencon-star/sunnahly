@@ -25,12 +25,12 @@ const CategorySlider = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">ক্যাটাগরি সমূহ</h2>
           <p className="text-muted-foreground mt-2">আপনার প্রয়োজন অনুযায়ী পণ্য বেছে নিন</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+        <div className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((cat: any) => (
             <Link
               key={cat.id}
               to={`/category/${cat.slug}`}
-              className="w-[150px] md:w-[200px] group"
+              className="shrink-0 w-[150px] md:w-[200px] snap-start group"
             >
               <div className="bg-secondary rounded-2xl overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-[1.03]">
                 <div className="w-full aspect-[300/350] bg-primary/5 flex items-center justify-center overflow-hidden">
@@ -49,9 +49,6 @@ const CategorySlider = () => {
             </Link>
           ))}
         </div>
-        <p className="text-center text-xs text-muted-foreground mt-4">
-          ক্যাটাগরি ছবির রেকমেন্ডেড সাইজ: <strong>300×350px</strong>
-        </p>
       </div>
     </section>
   );
