@@ -468,6 +468,11 @@ const AdminOrders = () => {
             <Button size="sm" variant="outline" onClick={() => trashMutation.mutate(selectedIds)}>
               {showTrash ? <><ArchiveRestore className="h-3.5 w-3.5 mr-1" /> রিস্টোর</> : <><Archive className="h-3.5 w-3.5 mr-1" /> ট্র্যাশে সরান</>}
             </Button>
+            {!showTrash && (
+              <Button size="sm" variant="outline" onClick={() => window.open(`/admin/invoice-print?ids=${selectedIds.join(",")}`, "_blank")}>
+                <Printer className="h-3.5 w-3.5 mr-1" /> ইনভয়েস প্রিন্ট ({selectedIds.length})
+              </Button>
+            )}
             {showTrash && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
