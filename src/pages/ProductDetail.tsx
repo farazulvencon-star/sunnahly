@@ -87,13 +87,12 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full rounded-xl bg-gray-100 mb-3 md:aspect-square md:bg-secondary md:overflow-hidden">
+              <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="w-full object-contain md:w-full md:h-full md:object-cover"
-                  style={{ height: "300px" }}
+                  className="block w-full h-full object-contain md:object-cover"
                 />
               </div>
               {images.length > 1 && (
@@ -152,7 +151,7 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
