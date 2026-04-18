@@ -28,7 +28,6 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminIncompleteOrders from "./pages/admin/AdminIncompleteOrders";
 import RecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
 import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
-import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
 import AdminPages from "./pages/admin/AdminPages";
@@ -76,7 +75,6 @@ const App = () => (
                 <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
                 <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
                 <Route path="customers" element={<AdminCustomers />} />
-                <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="content" element={<AdminContentManager />} />
