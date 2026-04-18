@@ -84,12 +84,13 @@ const ProductDetail = () => {
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
-            <div className="w-full overflow-hidden">
-              <div className="w-full rounded-xl bg-secondary overflow-hidden mb-3 flex items-center justify-center">
+            <div className="w-full min-w-0">
+              <div className="w-full aspect-square rounded-xl bg-secondary overflow-hidden mb-3">
                 <img
                   src={images[selectedImage]}
                   alt={product.name}
-                  className="block w-full h-auto max-h-[70vh] object-contain sm:max-h-[32rem] md:max-h-none md:aspect-square md:object-cover"
+                  loading="eager"
+                  className="w-full h-full object-cover"
                 />
               </div>
               {images.length > 1 && (
@@ -97,7 +98,7 @@ const ProductDetail = () => {
                   {images.map((img: string, i: number) => (
                     <button key={i} onClick={() => setSelectedImage(i)}
                       className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}>
-                      <img src={img} alt="" className="block w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
