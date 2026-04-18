@@ -31,6 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let initialized = false;
+
     // Set up listener FIRST so we don't miss any auth events during init
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -41,18 +43,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setIsAdmin(false);
       }
-      setLoading(false);
+      // Don't flip loading here during initial load — let getSession() control it
+      // to avoid showing logged-out UI before checkAdmin() resolves
+      if (initialized) setLoading(false);
     });
 
     // THEN restore existing session from localStorage
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdmin(session.user.id).finally(() => setLoading(false));
+        // Await admin check BEFORE flipping loading to false
+        await checkAdmin(session.user.id);
       } else {
-        setLoading(false);
+        setIsAdmin(false);
       }
+      initialized = true;
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
