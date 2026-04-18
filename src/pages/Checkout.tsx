@@ -41,11 +41,16 @@ const Checkout = () => {
   });
 
   const { data: settings } = useQuery({
-    queryKey: ["site-settings"],
+    queryKey: ["site-settings-public"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("*");
+      const keys = ["delivery_charge", "payment_gateway", "partial_payment_percent"];
       const map: Record<string, any> = {};
-      data?.forEach((s: any) => { map[s.key] = s.value; });
+      await Promise.all(
+        keys.map(async (k) => {
+          const { data } = await supabase.rpc("get_public_setting", { _key: k });
+          map[k] = data;
+        })
+      );
       return map;
     },
   });

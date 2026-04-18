@@ -11,8 +11,8 @@ const MoneyBackBanner = () => {
   const { data } = useQuery({
     queryKey: ["money-back-content"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "money_back_banner").single();
-      return (data?.value as any) || defaults;
+      const { data } = await supabase.rpc("get_public_setting", { _key: "money_back_banner" });
+      return (data as any) || defaults;
     },
     staleTime: 1000 * 60 * 5,
   });

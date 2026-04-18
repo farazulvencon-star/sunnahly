@@ -598,6 +598,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_setting: { Args: { _key: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

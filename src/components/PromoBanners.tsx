@@ -11,8 +11,8 @@ const PromoBanners = () => {
   const { data: promoData } = useQuery({
     queryKey: ["promo-banners-content"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "promo_banners").single();
-      return (data?.value as any) || defaultBanners;
+      const { data } = await supabase.rpc("get_public_setting", { _key: "promo_banners" });
+      return (data as any) || defaultBanners;
     },
     staleTime: 1000 * 60 * 5,
   });
