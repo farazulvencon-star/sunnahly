@@ -59,16 +59,7 @@ const ProductDetail = () => {
     );
   }
 
-  // DEBUG: raw data দেখা
   const rawImages = product.images;
-  const debugInfo = {
-    type: typeof rawImages,
-    isArray: Array.isArray(rawImages),
-    value: JSON.stringify(rawImages),
-    firstItem: Array.isArray(rawImages) ? rawImages[0] : null,
-    firstItemType: Array.isArray(rawImages) ? typeof rawImages[0] : null,
-  };
-
   let images: string[] = [];
   if (Array.isArray(rawImages) && rawImages.length > 0) {
     images = rawImages.map(String);
@@ -107,75 +98,52 @@ const ProductDetail = () => {
             <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
           </Link>
 
-          {/* ===== DEBUG BOX — সমস্যা বোঝার পর এটা সরিয়ে দিন ===== */}
-          <div
-            style={{
-              background: "#fff3cd",
-              border: "2px solid #ff9800",
-              borderRadius: "8px",
-              padding: "12px",
-              marginBottom: "16px",
-              fontSize: "12px",
-              wordBreak: "break-all",
-            }}
-          >
-            <strong>DEBUG INFO:</strong>
-            <br />
-            type: {debugInfo.type}
-            <br />
-            isArray: {String(debugInfo.isArray)}
-            <br />
-            raw value: {debugInfo.value}
-            <br />
-            firstItem: {String(debugInfo.firstItem)}
-            <br />
-            firstItemType: {String(debugInfo.firstItemType)}
-            <br />
-            parsed images[0]: {images[0]}
-            <br />
-            currentImage: {currentImage}
-          </div>
-          {/* ===== DEBUG BOX END ===== */}
-
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-            <div className="w-full">
+            {/* IMAGE SECTION */}
+            <div style={{ width: "100%" }}>
+              {/*
+               * মূল সমস্যা ছিল: container-এ explicit height ছিল না
+               * তাই মোবাইলে img collapse করছিল
+               * Solution: position: relative + paddingBottom: "100%" = perfect square
+               * এটা সব ডিভাইসে কাজ করে, কোনো CSS class দরকার নেই
+               */}
               <div
                 style={{
+                  position: "relative",
                   width: "100%",
-                  height: "320px",
+                  paddingBottom: "75%", // 4:3 ratio — চাইলে "100%" করলে square হবে
                   borderRadius: "12px",
                   overflow: "hidden",
                   marginBottom: "12px",
-                  backgroundColor: "#f5f5f0",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  backgroundColor: "#f0f0eb",
                 }}
               >
                 <img
+                  key={currentImage}
                   src={currentImage}
                   alt={product.name}
                   style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
                     objectFit: "contain",
                     display: "block",
-                  }}
-                  onError={(e) => {
-                    const t = e.target as HTMLImageElement;
-                    t.style.display = "none";
-                    const parent = t.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<div style="color:red;padding:8px;font-size:12px;text-align:center">
-                        IMAGE LOAD FAILED<br/>URL: ${currentImage}
-                      </div>`;
-                    }
                   }}
                 />
               </div>
 
+              {/* Thumbnails */}
               {images.length > 1 && (
-                <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    overflowX: "auto",
+                    paddingBottom: "4px",
+                  }}
+                >
                   {images.map((img, i) => (
                     <button
                       key={i}
@@ -189,13 +157,18 @@ const ProductDetail = () => {
                         border: selectedImage === i ? "2px solid #16a34a" : "2px solid #e5e7eb",
                         padding: 0,
                         cursor: "pointer",
-                        backgroundColor: "#f5f5f0",
+                        backgroundColor: "#f0f0eb",
                       }}
                     >
                       <img
                         src={img}
                         alt=""
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
                       />
                     </button>
                   ))}
@@ -203,12 +176,14 @@ const ProductDetail = () => {
               )}
             </div>
 
+            {/* DETAILS SECTION */}
             <div>
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
                 </span>
               )}
+
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
 
               <div className="flex items-center flex-wrap gap-3 mb-4">
