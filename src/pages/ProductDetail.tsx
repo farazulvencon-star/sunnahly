@@ -87,12 +87,12 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
+              <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-secondary">
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="block w-full h-full object-contain md:object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
               {images.length > 1 && (
@@ -101,7 +101,9 @@ const ProductDetail = () => {
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${
+                        selectedImage === i ? "border-primary" : "border-transparent"
+                      }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -151,11 +153,11 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
+              <div className="flex flex-col gap-3 w-full">
+                <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="flex-1">
+                <Link to="/checkout" className="w-full">
                   <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
                     এখনই কিনুন
                   </Button>
