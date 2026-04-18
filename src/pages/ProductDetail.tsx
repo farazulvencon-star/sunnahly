@@ -90,7 +90,7 @@ const ProductDetail = () => {
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="w-full h-auto object-contain md:w-full md:h-full md:object-cover"
+                  className="w-full h-auto object-contain"
                 />
               </div>
               {images.length > 1 && (
