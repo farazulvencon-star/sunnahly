@@ -111,20 +111,18 @@ const ProductDetail = () => {
 
           <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-10">
             {/* Images */}
-            <div className="w-full min-w-0 max-w-xl mx-auto lg:max-w-none lg:mx-0">
-              <div className="mb-3 w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:aspect-square lg:bg-secondary">
-                <div className="flex aspect-[4/5] w-full items-center justify-center p-3 sm:aspect-square lg:h-full lg:aspect-auto lg:p-0">
-                  <img
-                    key={currentImage}
-                    src={currentImage}
-                    alt={product.name}
-                    loading="eager"
-                    onError={(event) => {
-                      event.currentTarget.src = "/placeholder.svg";
-                    }}
-                    className="block max-h-full w-full object-contain lg:h-full lg:w-full lg:object-cover"
-                  />
-                </div>
+            <div className="w-full min-w-0 mx-auto max-w-[360px] sm:max-w-[420px] md:max-w-[380px] lg:max-w-none lg:mx-0">
+              <div className="mb-3 aspect-square w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:bg-secondary">
+                <img
+                  key={currentImage}
+                  src={currentImage}
+                  alt={product.name}
+                  loading="eager"
+                  onError={(event) => {
+                    event.currentTarget.src = "/placeholder.svg";
+                  }}
+                  className="block h-full w-full object-contain p-3 lg:object-cover lg:p-0"
+                />
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2.5 overflow-x-auto pb-1">
