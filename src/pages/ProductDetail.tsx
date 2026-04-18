@@ -59,24 +59,24 @@ const ProductDetail = () => {
     );
   }
 
-  // ✅ images সঠিকভাবে parse করা হচ্ছে
-  let images: string[] = ["/placeholder.svg"];
-  try {
-    if (product.images) {
-      if (Array.isArray(product.images) && product.images.length > 0) {
-        images = product.images.map((img: any) => String(img));
-      } else if (typeof product.images === "string") {
-        const parsed = JSON.parse(product.images);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          images = parsed.map((img: any) => String(img));
-        }
-      }
+  // images array নিরাপদে বের করা
+  const rawImages = product.images;
+  let images: string[] = [];
+
+  if (Array.isArray(rawImages) && rawImages.length > 0) {
+    images = rawImages.map(String);
+  } else if (typeof rawImages === "string" && rawImages.trim() !== "") {
+    try {
+      const parsed = JSON.parse(rawImages);
+      if (Array.isArray(parsed)) images = parsed.map(String);
+    } catch {
+      images = [rawImages];
     }
-  } catch {
-    images = ["/placeholder.svg"];
   }
 
-  const currentImage = images[selectedImage] || images[0] || "/placeholder.svg";
+  if (images.length === 0) images = ["/placeholder.svg"];
+
+  const currentImage = images[selectedImage] ?? images[0];
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -102,60 +102,57 @@ const ProductDetail = () => {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-            {/* ✅ Image Section */}
+            {/* ===== IMAGE SECTION ===== */}
             <div className="w-full">
-              {/* Main image — inline style দিয়ে নিশ্চিত করা হচ্ছে যেন কোনো CSS override না করে */}
-              <div className="w-full rounded-xl overflow-hidden mb-3 bg-muted" style={{ height: "300px" }}>
-                <img
-                  key={currentImage}
-                  src={currentImage}
-                  alt={product.name}
-                  loading="eager"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    display: "block",
-                  }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/placeholder.svg";
-                  }}
-                />
-              </div>
+              {/* Main image — background-image ব্যবহার করা হচ্ছে যা সব ডিভাইসে কাজ করে */}
+              <div
+                style={{
+                  width: "100%",
+                  height: "320px",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  marginBottom: "12px",
+                  backgroundImage: `url("${currentImage}")`,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                  backgroundColor: "#f5f5f0",
+                }}
+              />
 
-              {/* Thumbnail images */}
+              {/* Thumbnails */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {images.map((img: string, i: number) => (
+                <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+                  {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      style={{ flexShrink: 0, width: "64px", height: "64px" }}
-                      className={`rounded-lg overflow-hidden border-2 ${
-                        selectedImage === i ? "border-primary" : "border-muted"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt=""
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
-                    </button>
+                      style={{
+                        flexShrink: 0,
+                        width: "64px",
+                        height: "64px",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        border: selectedImage === i ? "2px solid var(--primary, #16a34a)" : "2px solid transparent",
+                        backgroundImage: `url("${img}")`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        cursor: "pointer",
+                      }}
+                    />
                   ))}
                 </div>
               )}
             </div>
 
-            {/* ✅ Details Section */}
+            {/* ===== DETAILS SECTION ===== */}
             <div>
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
                 </span>
               )}
+
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
 
               <div className="flex items-center flex-wrap gap-3 mb-4">
@@ -172,7 +169,7 @@ const ProductDetail = () => {
 
               {product.short_description && <p className="text-muted-foreground mb-4">{product.short_description}</p>}
 
-              {/* Quantity */}
+              {/* Quantity selector */}
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-sm font-medium">পরিমাণ:</span>
                 <div className="flex items-center border rounded-lg">
@@ -191,20 +188,13 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* ✅ Buttons — মোবাইলে একটার নিচে একটা, ডেস্কটপে পাশাপাশি */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                  width: "100%",
-                }}
-              >
+              {/* Action buttons */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
                 <Link to="/checkout" style={{ width: "100%" }} onClick={handleAddToCart}>
-                  <Button size="lg" variant="outline" className="w-full">
+                  <Button size="lg" variant="outline" style={{ width: "100%" }}>
                     এখনই কিনুন
                   </Button>
                 </Link>
