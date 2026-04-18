@@ -136,17 +136,14 @@ const Checkout = () => {
         user_id: user?.id || null,
         customer_name: form.name,
         customer_phone: form.phone,
-        customer_email: form.email || null,
         shipping_address: form.address,
         city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
-        area: form.area || null,
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
         total: grandTotal,
         partial_payment: partialAmount,
         due_amount: grandTotal - partialAmount,
         payment_method: paymentMethod,
-        notes: form.notes || null,
       }).select().single();
 
       if (error) throw error;
