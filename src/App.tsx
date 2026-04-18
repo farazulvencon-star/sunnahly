@@ -15,7 +15,6 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import ShefaTubePage from "./pages/ShefaTube";
 import Auth from "./pages/Auth";
-import SetupAdmin from "./pages/SetupAdmin";
 import Dashboard from "./pages/Dashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -63,7 +62,6 @@ const App = () => (
               <Route path="/order-success/:orderId" element={<OrderSuccess />} />
               <Route path="/shefa-tube" element={<ShefaTubePage />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/setup-admin" element={<SetupAdmin />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/page/:slug" element={<PolicyPage />} />
               <Route path="/admin-login" element={<AdminLogin />} />

@@ -6,8 +6,8 @@ const FaviconManager = () => {
   const { data: faviconUrl } = useQuery({
     queryKey: ["site-favicon"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_favicon").single();
-      return (data?.value as any)?.url || "";
+      const { data } = await supabase.rpc("get_public_setting", { _key: "site_favicon" });
+      return (data as any)?.url || "";
     },
     staleTime: 1000 * 60 * 10,
   });

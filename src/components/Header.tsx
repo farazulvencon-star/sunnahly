@@ -23,8 +23,8 @@ const Header = () => {
   const { data: logoUrl } = useQuery({
     queryKey: ["site-logo"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
-      return (data?.value as any)?.url || "";
+      const { data } = await supabase.rpc("get_public_setting", { _key: "site_logo" });
+      return (data as any)?.url || "";
     },
     staleTime: 1000 * 60 * 10,
   });

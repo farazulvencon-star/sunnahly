@@ -23,12 +23,8 @@ export const FacebookPixelProvider = ({ children }: { children: ReactNode }) => 
   const { data: pixelSettings } = useQuery({
     queryKey: ["pixel-settings"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("site_settings")
-        .select("*")
-        .eq("key", "facebook_pixel")
-        .maybeSingle();
-      return data?.value as { enabled?: boolean; pixel_id?: string; access_token?: string } | null;
+      const { data } = await supabase.rpc("get_public_setting", { _key: "facebook_pixel" });
+      return data as { enabled?: boolean; pixel_id?: string } | null;
     },
     staleTime: 5 * 60 * 1000,
   });

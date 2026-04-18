@@ -12,8 +12,8 @@ const TopBar = () => {
   const { data: texts } = useQuery({
     queryKey: ["topbar-content"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "topbar_texts").single();
-      const val = data?.value as any;
+      const { data } = await supabase.rpc("get_public_setting", { _key: "topbar_texts" });
+      const val = data as any;
       return val?.texts?.length ? val.texts : defaultTexts;
     },
     staleTime: 1000 * 60 * 10,
