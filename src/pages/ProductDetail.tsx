@@ -104,16 +104,16 @@ const ProductDetail = () => {
       <TopBar />
       <Header />
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-4 lg:py-6">
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-4">
             <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
           </Link>
 
-          <div className="grid md:grid-cols-2 gap-6 md:gap-10">
+          <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-10">
             {/* Images */}
-            <div className="w-full min-w-0">
-              <div className="w-full overflow-hidden rounded-xl bg-card mb-3 md:aspect-square md:bg-secondary">
-                <div className="relative aspect-square w-full md:h-full md:aspect-auto">
+            <div className="w-full min-w-0 max-w-xl mx-auto lg:max-w-none lg:mx-0">
+              <div className="mb-3 w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:aspect-square lg:bg-secondary">
+                <div className="flex aspect-[4/5] w-full items-center justify-center p-3 sm:aspect-square lg:h-full lg:aspect-auto lg:p-0">
                   <img
                     key={currentImage}
                     src={currentImage}
@@ -122,17 +122,17 @@ const ProductDetail = () => {
                     onError={(event) => {
                       event.currentTarget.src = "/placeholder.svg";
                     }}
-                    className="absolute inset-0 block h-full w-full object-contain p-2 md:static md:h-full md:w-full md:object-cover md:p-0"
+                    className="block max-h-full w-full object-contain lg:h-full lg:w-full lg:object-cover"
                   />
                 </div>
               </div>
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
+                <div className="flex gap-2.5 overflow-x-auto pb-1">
                   {images.map((img: string, i: number) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${safeSelectedImage === i ? "border-primary" : "border-transparent"}`}
+                      className={`h-16 w-16 overflow-hidden rounded-lg border-2 bg-card flex-shrink-0 sm:h-20 sm:w-20 ${safeSelectedImage === i ? "border-primary" : "border-transparent"}`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -142,7 +142,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Details */}
-            <div>
+            <div className="w-full max-w-xl mx-auto lg:max-w-none lg:mx-0">
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
