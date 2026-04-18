@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FeaturedProducts from "@/components/FeaturedProducts";
+import AllProducts from "@/components/AllProducts";
 import { toast } from "sonner";
 
 const ProductDetail = () => {
