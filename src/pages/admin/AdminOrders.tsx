@@ -83,6 +83,12 @@ const AdminOrders = () => {
     return orders.filter((o: any) => {
       if (filterStatus !== "all" && o.order_status !== filterStatus) return false;
       if (filterPayment !== "all" && o.payment_status !== filterPayment) return false;
+      if (filterPaymentMethod !== "all" && o.payment_method !== filterPaymentMethod) return false;
+      if (filterCity !== "all") {
+        const isDhaka = o.city === "ঢাকা";
+        if (filterCity === "dhaka" && !isDhaka) return false;
+        if (filterCity === "outside" && isDhaka) return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const match = o.order_number?.toLowerCase().includes(q) ||
@@ -99,7 +105,7 @@ const AdminOrders = () => {
       }
       return true;
     });
-  }, [orders, searchQuery, filterStatus, filterPayment, filterDateFrom, filterDateTo]);
+  }, [orders, searchQuery, filterStatus, filterPayment, filterPaymentMethod, filterCity, filterDateFrom, filterDateTo]);
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, field, value }: { id: string; field: string; value: any }) => {
