@@ -59,7 +59,24 @@ const ProductDetail = () => {
     );
   }
 
-  const images = product.images?.length > 0 ? product.images : ["/placeholder.svg"];
+  // ✅ images সঠিকভাবে parse করা হচ্ছে
+  let images: string[] = ["/placeholder.svg"];
+  try {
+    if (product.images) {
+      if (Array.isArray(product.images) && product.images.length > 0) {
+        images = product.images.map((img: any) => String(img));
+      } else if (typeof product.images === "string") {
+        const parsed = JSON.parse(product.images);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          images = parsed.map((img: any) => String(img));
+        }
+      }
+    }
+  } catch {
+    images = ["/placeholder.svg"];
+  }
+
+  const currentImage = images[selectedImage] || images[0] || "/placeholder.svg";
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -85,35 +102,54 @@ const ProductDetail = () => {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-            {/* Images */}
-            <div className="w-full min-w-0">
-              {/* মোবাইলে h-64, ট্যাবে h-80, ডেস্কটপে aspect-square */}
-              <div className="w-full rounded-xl overflow-hidden mb-3 bg-secondary h-64 sm:h-80 md:h-auto md:aspect-square">
+            {/* ✅ Image Section */}
+            <div className="w-full">
+              {/* Main image — inline style দিয়ে নিশ্চিত করা হচ্ছে যেন কোনো CSS override না করে */}
+              <div className="w-full rounded-xl overflow-hidden mb-3 bg-muted" style={{ height: "300px" }}>
                 <img
-                  src={images[selectedImage] || images[0] || "/placeholder.svg"}
+                  key={currentImage}
+                  src={currentImage}
                   alt={product.name}
                   loading="eager"
-                  className="w-full h-full object-contain md:object-cover"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
                 />
               </div>
+
+              {/* Thumbnail images */}
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {images.map((img: string, i: number) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${
-                        selectedImage === i ? "border-primary" : "border-transparent"
+                      style={{ flexShrink: 0, width: "64px", height: "64px" }}
+                      className={`rounded-lg overflow-hidden border-2 ${
+                        selectedImage === i ? "border-primary" : "border-muted"
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={img}
+                        alt=""
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Details */}
+            {/* ✅ Details Section */}
             <div>
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
@@ -122,7 +158,7 @@ const ProductDetail = () => {
               )}
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
 
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center flex-wrap gap-3 mb-4">
                 <span className="text-2xl font-bold text-primary">৳{Number(product.price)}</span>
                 {product.original_price && (
                   <span className="text-lg text-muted-foreground line-through">৳{Number(product.original_price)}</span>
@@ -136,6 +172,7 @@ const ProductDetail = () => {
 
               {product.short_description && <p className="text-muted-foreground mb-4">{product.short_description}</p>}
 
+              {/* Quantity */}
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-sm font-medium">পরিমাণ:</span>
                 <div className="flex items-center border rounded-lg">
@@ -154,12 +191,19 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Buttons - মোবাইলে full width column, sm+ এ দুটো পাশাপাশি */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* ✅ Buttons — মোবাইলে একটার নিচে একটা, ডেস্কটপে পাশাপাশি */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  width: "100%",
+                }}
+              >
                 <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="w-full" onClick={handleAddToCart}>
+                <Link to="/checkout" style={{ width: "100%" }} onClick={handleAddToCart}>
                   <Button size="lg" variant="outline" className="w-full">
                     এখনই কিনুন
                   </Button>
