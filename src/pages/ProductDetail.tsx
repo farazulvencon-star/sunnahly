@@ -100,76 +100,27 @@ const ProductDetail = () => {
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* IMAGE SECTION */}
-            <div style={{ width: "100%" }}>
-              {/*
-               * মূল সমস্যা ছিল: container-এ explicit height ছিল না
-               * তাই মোবাইলে img collapse করছিল
-               * Solution: position: relative + paddingBottom: "100%" = perfect square
-               * এটা সব ডিভাইসে কাজ করে, কোনো CSS class দরকার নেই
-               */}
-              <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  paddingBottom: "75%", // 4:3 ratio — চাইলে "100%" করলে square হবে
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  marginBottom: "12px",
-                  backgroundColor: "#f0f0eb",
-                }}
-              >
-                <img
-                  key={currentImage}
-                  src={currentImage}
-                  alt={product.name}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    display: "block",
-                  }}
-                />
-              </div>
+            <div className="w-full">
+              {/* মোবাইলে 280px, ডেস্কটপে 420px — overflow hidden দিয়ে crop */}
+              <img
+                key={currentImage}
+                src={currentImage}
+                alt={product.name}
+                className="w-full rounded-xl mb-3 object-cover"
+                style={{ height: "280px", display: "block" }}
+              />
 
-              {/* Thumbnails */}
               {images.length > 1 && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "8px",
-                    overflowX: "auto",
-                    paddingBottom: "4px",
-                  }}
-                >
+                <div className="flex gap-2 overflow-x-auto pb-1">
                   {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      style={{
-                        flexShrink: 0,
-                        width: "64px",
-                        height: "64px",
-                        borderRadius: "8px",
-                        overflow: "hidden",
-                        border: selectedImage === i ? "2px solid #16a34a" : "2px solid #e5e7eb",
-                        padding: 0,
-                        cursor: "pointer",
-                        backgroundColor: "#f0f0eb",
-                      }}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                        selectedImage === i ? "border-primary" : "border-muted"
+                      }`}
                     >
-                      <img
-                        src={img}
-                        alt=""
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -218,12 +169,12 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div className="flex flex-col gap-3">
                 <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" style={{ width: "100%" }} onClick={handleAddToCart}>
-                  <Button size="lg" variant="outline" style={{ width: "100%" }}>
+                <Link to="/checkout" className="w-full" onClick={handleAddToCart}>
+                  <Button size="lg" variant="outline" className="w-full">
                     এখনই কিনুন
                   </Button>
                 </Link>
