@@ -84,12 +84,12 @@ const ProductDetail = () => {
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
-            <div>
-              <div className="aspect-square bg-secondary rounded-xl overflow-hidden mb-3">
+            <div className="w-full min-w-0">
+              <div className="w-full max-w-md mx-auto md:max-w-none aspect-square bg-secondary rounded-xl overflow-hidden mb-3">
                 <img src={images[selectedImage]} alt={product.name} className="w-full h-full object-cover" />
               </div>
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto">
+                <div className="flex gap-2 overflow-x-auto max-w-md mx-auto md:max-w-none">
                   {images.map((img: string, i: number) => (
                     <button key={i} onClick={() => setSelectedImage(i)}
                       className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}>
