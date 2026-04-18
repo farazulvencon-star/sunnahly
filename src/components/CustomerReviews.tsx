@@ -44,7 +44,7 @@ const CustomerReviews = () => {
           <CarouselContent className="-ml-3">
             {reviews.map((review: any) => (
               <CarouselItem key={review.id} className="pl-3 basis-1/2 md:basis-1/4">
-                <div className="rounded-xl border-2 border-primary overflow-hidden">
+                <div className="rounded-xl border-[0.5px] border-primary overflow-hidden">
                   <img
                     src={review.image}
                     alt="কাস্টমার রিভিউ"

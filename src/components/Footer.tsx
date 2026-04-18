@@ -8,7 +8,7 @@ const defaultFooter = {
     { label: "আমাদের সম্পর্কে", href: "/page/about" },
     { label: "সকল পণ্য", href: "/products" },
     { label: "যোগাযোগ", href: "/page/contact" },
-    { label: "অর্ডার ট্র্যাক করুন", href: "/track-order" },
+    { label: "শেফা টিউব", href: "/shefa-tube" },
   ],
   policy_links: [
     { label: "প্রাইভেসি পলিসি", href: "/page/privacy" },
