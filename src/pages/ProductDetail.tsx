@@ -203,14 +203,17 @@ const ProductDetail = () => {
                 </p>
               </div>
 
-              {product.description && (
-                <div className="mt-8">
-                  <h3 className="font-bold text-foreground mb-2">বিস্তারিত বিবরণ</h3>
-                  <p className="text-muted-foreground whitespace-pre-line">{product.description}</p>
-                </div>
-              )}
             </div>
           </div>
+
+          {product.description && (
+            <div className="mt-8 lg:mt-12 w-full max-w-full">
+              <h3 className="font-bold text-foreground mb-3 text-lg">বিস্তারিত বিবরণ</h3>
+              <p className="text-muted-foreground whitespace-pre-line break-words leading-relaxed">
+                {product.description}
+              </p>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
