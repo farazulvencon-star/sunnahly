@@ -83,13 +83,8 @@ const ProductDetail = () => {
     return ["/placeholder.svg"];
   })();
 
-  const currentImage = images[selectedImage] ?? images[0] ?? "/placeholder.svg";
-
-  useEffect(() => {
-    if (selectedImage >= images.length) {
-      setSelectedImage(0);
-    }
-  }, [images.length, selectedImage]);
+  const safeSelectedImage = selectedImage < images.length ? selectedImage : 0;
+  const currentImage = images[safeSelectedImage] ?? images[0] ?? "/placeholder.svg";
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -137,7 +132,7 @@ const ProductDetail = () => {
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${safeSelectedImage === i ? "border-primary" : "border-transparent"}`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
