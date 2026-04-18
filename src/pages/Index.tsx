@@ -10,7 +10,6 @@ import WhyUs from "@/components/WhyUs";
 import KeyPoints from "@/components/KeyPoints";
 import MoneyBackBanner from "@/components/MoneyBackBanner";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
 
 const Index = () => {
   return (
@@ -29,7 +28,6 @@ const Index = () => {
         <MoneyBackBanner />
       </main>
       <Footer />
-      <ChatWidget />
     </div>
   );
 };

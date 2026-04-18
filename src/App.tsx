@@ -27,7 +27,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminIncompleteOrders from "./pages/admin/AdminIncompleteOrders";
 import RecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
-import AdminChat from "./pages/admin/AdminChat";
+import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
 import AdminCodeSnippets from "./pages/admin/AdminCodeSnippets";
 import AdminHeroSlides from "./pages/admin/AdminHeroSlides";
 import AdminContentManager from "./pages/admin/AdminContentManager";
@@ -76,7 +76,7 @@ const App = () => (
                 <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
                 <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
                 <Route path="customers" element={<AdminCustomers />} />
-                <Route path="chat" element={<AdminChat />} />
+                <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="code-snippets" element={<AdminCodeSnippets />} />
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="content" element={<AdminContentManager />} />
