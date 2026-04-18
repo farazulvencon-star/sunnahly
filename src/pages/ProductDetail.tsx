@@ -59,7 +59,30 @@ const ProductDetail = () => {
     );
   }
 
-  const images = product.images?.length > 0 ? product.images : ["/placeholder.svg"];
+  // DEBUG: raw data দেখা
+  const rawImages = product.images;
+  const debugInfo = {
+    type: typeof rawImages,
+    isArray: Array.isArray(rawImages),
+    value: JSON.stringify(rawImages),
+    firstItem: Array.isArray(rawImages) ? rawImages[0] : null,
+    firstItemType: Array.isArray(rawImages) ? typeof rawImages[0] : null,
+  };
+
+  let images: string[] = [];
+  if (Array.isArray(rawImages) && rawImages.length > 0) {
+    images = rawImages.map(String);
+  } else if (typeof rawImages === "string" && rawImages.trim() !== "") {
+    try {
+      const parsed = JSON.parse(rawImages);
+      if (Array.isArray(parsed)) images = parsed.map(String);
+    } catch {
+      images = [rawImages];
+    }
+  }
+  if (images.length === 0) images = ["/placeholder.svg"];
+
+  const currentImage = images[selectedImage] ?? images[0];
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -84,33 +107,102 @@ const ProductDetail = () => {
             <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
           </Link>
 
+          {/* ===== DEBUG BOX — সমস্যা বোঝার পর এটা সরিয়ে দিন ===== */}
+          <div
+            style={{
+              background: "#fff3cd",
+              border: "2px solid #ff9800",
+              borderRadius: "8px",
+              padding: "12px",
+              marginBottom: "16px",
+              fontSize: "12px",
+              wordBreak: "break-all",
+            }}
+          >
+            <strong>DEBUG INFO:</strong>
+            <br />
+            type: {debugInfo.type}
+            <br />
+            isArray: {String(debugInfo.isArray)}
+            <br />
+            raw value: {debugInfo.value}
+            <br />
+            firstItem: {String(debugInfo.firstItem)}
+            <br />
+            firstItemType: {String(debugInfo.firstItemType)}
+            <br />
+            parsed images[0]: {images[0]}
+            <br />
+            currentImage: {currentImage}
+          </div>
+          {/* ===== DEBUG BOX END ===== */}
+
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-            {/* Images */}
-            <div className="w-full min-w-0">
-              <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
+            <div className="w-full">
+              <div
+                style={{
+                  width: "100%",
+                  height: "320px",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  marginBottom: "12px",
+                  backgroundColor: "#f5f5f0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <img
-                  src={images[selectedImage] || images[0] || "/placeholder.svg"}
+                  src={currentImage}
                   alt={product.name}
-                  loading="eager"
-                  className="block w-full h-full object-contain md:object-cover"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement;
+                    t.style.display = "none";
+                    const parent = t.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<div style="color:red;padding:8px;font-size:12px;text-align:center">
+                        IMAGE LOAD FAILED<br/>URL: ${currentImage}
+                      </div>`;
+                    }
+                  }}
                 />
               </div>
+
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {images.map((img: string, i: number) => (
+                <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+                  {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
+                      style={{
+                        flexShrink: 0,
+                        width: "64px",
+                        height: "64px",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        border: selectedImage === i ? "2px solid #16a34a" : "2px solid #e5e7eb",
+                        padding: 0,
+                        cursor: "pointer",
+                        backgroundColor: "#f5f5f0",
+                      }}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={img}
+                        alt=""
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Details */}
             <div>
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
@@ -119,7 +211,7 @@ const ProductDetail = () => {
               )}
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
 
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center flex-wrap gap-3 mb-4">
                 <span className="text-2xl font-bold text-primary">৳{Number(product.price)}</span>
                 {product.original_price && (
                   <span className="text-lg text-muted-foreground line-through">৳{Number(product.original_price)}</span>
@@ -151,12 +243,12 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="flex-1">
-                  <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
+                <Link to="/checkout" style={{ width: "100%" }} onClick={handleAddToCart}>
+                  <Button size="lg" variant="outline" style={{ width: "100%" }}>
                     এখনই কিনুন
                   </Button>
                 </Link>
