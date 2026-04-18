@@ -87,12 +87,13 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-secondary">
+              {/* মোবাইলে h-64, ট্যাবে h-80, ডেস্কটপে aspect-square */}
+              <div className="w-full rounded-xl overflow-hidden mb-3 bg-secondary h-64 sm:h-80 md:h-auto md:aspect-square">
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain md:object-cover"
                 />
               </div>
               {images.length > 1 && (
@@ -153,12 +154,13 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 w-full">
+              {/* Buttons - মোবাইলে full width column, sm+ এ দুটো পাশাপাশি */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="w-full">
-                  <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
+                <Link to="/checkout" className="w-full" onClick={handleAddToCart}>
+                  <Button size="lg" variant="outline" className="w-full">
                     এখনই কিনুন
                   </Button>
                 </Link>
