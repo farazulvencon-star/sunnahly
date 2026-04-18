@@ -206,11 +206,13 @@ const AdminOrders = () => {
     setSearchQuery("");
     setFilterStatus("all");
     setFilterPayment("all");
+    setFilterPaymentMethod("all");
+    setFilterCity("all");
     setFilterDateFrom("");
     setFilterDateTo("");
   };
 
-  const hasFilters = searchQuery || filterStatus !== "all" || filterPayment !== "all" || filterDateFrom || filterDateTo;
+  const hasFilters = searchQuery || filterStatus !== "all" || filterPayment !== "all" || filterPaymentMethod !== "all" || filterCity !== "all" || filterDateFrom || filterDateTo;
 
   // Send to Steadfast
   const sendToSteadfast = async (order: any) => {
