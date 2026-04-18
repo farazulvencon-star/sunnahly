@@ -76,10 +76,28 @@ const InvoicePrint = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-6 text-center">
+        <p className="text-destructive font-semibold">ইনভয়েস লোড করা যায়নি</p>
+        <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
+        <Button onClick={() => window.location.href = "/admin-login"} size="sm">
+          এডমিন লগইন
+        </Button>
+      </div>
+    );
+  }
+
   if (!orders || orders.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
-        কোনো অর্ডার পাওয়া যায়নি
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3 p-6 text-center">
+        <p className="text-muted-foreground">কোনো অর্ডার পাওয়া যায়নি</p>
+        <p className="text-xs text-muted-foreground">
+          নিশ্চিত করুন আপনি এডমিন হিসাবে লগইন আছেন এবং সঠিক অর্ডার সিলেক্ট করেছেন।
+        </p>
+        <Button onClick={() => window.location.href = "/admin/orders"} size="sm" variant="outline">
+          অর্ডার পেজে ফিরে যান
+        </Button>
       </div>
     );
   }
