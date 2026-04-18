@@ -59,21 +59,7 @@ const ProductDetail = () => {
     );
   }
 
-  const rawImages: unknown = product.images;
-  let images: string[] = [];
-  if (Array.isArray(rawImages) && rawImages.length > 0) {
-    images = rawImages.map(String);
-  } else if (typeof rawImages === "string" && (rawImages as string).trim() !== "") {
-    try {
-      const parsed = JSON.parse(rawImages as string);
-      if (Array.isArray(parsed)) images = parsed.map(String);
-    } catch {
-      images = [rawImages as string];
-    }
-  }
-  if (images.length === 0) images = ["/placeholder.svg"];
-
-  const currentImage = images[selectedImage] ?? images[0];
+  const images = product.images?.length > 0 ? product.images : ["/placeholder.svg"];
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -99,32 +85,23 @@ const ProductDetail = () => {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-            {/* IMAGE SECTION */}
-            <div className="w-full">
-              {/* 
-                Parent div-এ explicit stable height দেওয়া হয়েছে।
-                Mobile/tablet: h-[300px]
-                Desktop: md:h-[420px]
-                img: w-full h-full object-contain — parent-এর পুরো জায়গা নেয়
-              */}
-              <div className="w-full h-[300px] md:h-[420px] rounded-xl bg-[#f8f8f3] mb-3 overflow-hidden">
+            {/* Images */}
+            <div className="w-full min-w-0">
+              <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
                 <img
-                  key={currentImage}
-                  src={currentImage}
+                  src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
-                  className="w-full h-full object-contain"
+                  loading="eager"
+                  className="block w-full h-full object-contain md:object-cover"
                 />
               </div>
-
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {images.map((img, i) => (
+                  {images.map((img: string, i: number) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 bg-[#f8f8f3] ${
-                        selectedImage === i ? "border-primary" : "border-muted"
-                      }`}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -133,17 +110,16 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* DETAILS SECTION */}
+            {/* Details */}
             <div>
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
                 </span>
               )}
-
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
 
-              <div className="flex items-center flex-wrap gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-4">
                 <span className="text-2xl font-bold text-primary">৳{Number(product.price)}</span>
                 {product.original_price && (
                   <span className="text-lg text-muted-foreground line-through">৳{Number(product.original_price)}</span>
@@ -175,12 +151,12 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="w-full" onClick={handleAddToCart}>
-                  <Button size="lg" variant="outline" className="w-full">
+                <Link to="/checkout" className="flex-1">
+                  <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
                     এখনই কিনুন
                   </Button>
                 </Link>
