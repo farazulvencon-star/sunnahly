@@ -23,18 +23,28 @@ const InvoicePrint = () => {
     },
   });
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, error } = useQuery({
     queryKey: ["invoice-orders", ids],
     queryFn: async () => {
       if (ids.length === 0) return [];
-      const { data } = await supabase
+      // Verify admin session first
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        throw new Error("লগইন প্রয়োজন। দয়া করে এডমিন প্যানেলে লগইন করুন।");
+      }
+      const { data, error: qErr } = await supabase
         .from("orders")
         .select("*, order_items(*)")
         .in("id", ids)
         .order("created_at", { ascending: false });
+      if (qErr) {
+        console.error("Invoice query error:", qErr);
+        throw qErr;
+      }
       return data || [];
     },
     enabled: ids.length > 0,
+    retry: 1,
   });
 
   const logoUrl = settings?.site_logo?.url;
