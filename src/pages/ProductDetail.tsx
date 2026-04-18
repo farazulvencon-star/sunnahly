@@ -50,7 +50,9 @@ const ProductDetail = () => {
         <Header />
         <div className="flex-1 flex items-center justify-center flex-col gap-4 px-4">
           <h1 className="text-xl font-bold text-foreground">পণ্যটি পাওয়া যায়নি</h1>
-          <Link to="/"><Button>হোমপেজে ফিরে যান</Button></Link>
+          <Link to="/">
+            <Button>হোমপেজে ফিরে যান</Button>
+          </Link>
         </div>
         <Footer />
       </div>
@@ -85,19 +87,23 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full rounded-xl bg-white overflow-hidden mb-3 md:aspect-square md:bg-secondary md:block">
+              <div className="w-full rounded-xl bg-gray-50 overflow-hidden mb-3 md:aspect-square md:bg-secondary">
                 <img
                   src={images[selectedImage] || images[0] || "/placeholder.svg"}
                   alt={product.name}
                   loading="eager"
-                  className="w-full h-auto object-contain"
+                  className="w-full object-contain md:w-full md:h-full md:object-cover"
+                  style={{ display: "block", maxHeight: "320px", height: "auto" }}
                 />
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {images.map((img: string, i: number) => (
-                    <button key={i} onClick={() => setSelectedImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}>
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? "border-primary" : "border-transparent"}`}
+                    >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
@@ -126,14 +132,17 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {product.short_description && (
-                <p className="text-muted-foreground mb-4">{product.short_description}</p>
-              )}
+              {product.short_description && <p className="text-muted-foreground mb-4">{product.short_description}</p>}
 
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-sm font-medium">পরিমাণ:</span>
                 <div className="flex items-center border rounded-lg">
-                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="w-10 text-center font-medium">{quantity}</span>
@@ -143,11 +152,11 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2" onClick={handleAddToCart}>
+              <div className="flex flex-col gap-3">
+                <Button size="lg" className="w-full gap-2" onClick={handleAddToCart}>
                   <ShoppingCart className="h-4 w-4" /> কার্টে যোগ করুন
                 </Button>
-                <Link to="/checkout" className="flex-1">
+                <Link to="/checkout" className="w-full">
                   <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
                     এখনই কিনুন
                   </Button>
@@ -156,7 +165,14 @@ const ProductDetail = () => {
 
               <div className="mt-6 space-y-2 text-sm text-muted-foreground">
                 <p>SKU: {product.sku || "N/A"}</p>
-                <p>স্টক: {product.stock > 0 ? <span className="text-success font-medium">ইন স্টক ({product.stock})</span> : <span className="text-destructive">স্টক আউট</span>}</p>
+                <p>
+                  স্টক:{" "}
+                  {product.stock > 0 ? (
+                    <span className="text-success font-medium">ইন স্টক ({product.stock})</span>
+                  ) : (
+                    <span className="text-destructive">স্টক আউট</span>
+                  )}
+                </p>
               </div>
 
               {product.description && (
