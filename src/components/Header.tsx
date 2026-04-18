@@ -31,7 +31,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
-      <div className="container mx-auto px-2 md:px-4 md:max-w-none">
+      <div className="container mx-auto px-2 md:px-4 max-w-[1368px]">
         {/* Mobile Layout */}
         <div className="flex md:hidden items-center justify-between h-16">
           {/* Left: Mobile menu */}
