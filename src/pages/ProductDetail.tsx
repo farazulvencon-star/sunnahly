@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, ArrowLeft, Minus, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -59,7 +59,37 @@ const ProductDetail = () => {
     );
   }
 
-  const images = product.images?.length > 0 ? product.images : ["/placeholder.svg"];
+  const rawImages: unknown = product.images;
+  const images = (() => {
+    if (Array.isArray(rawImages)) {
+      const validImages = rawImages.filter((image): image is string => typeof image === "string" && image.trim().length > 0);
+      return validImages.length > 0 ? validImages : ["/placeholder.svg"];
+    }
+
+    if (typeof rawImages === "string" && rawImages.trim() !== "") {
+      try {
+        const parsed: unknown = JSON.parse(rawImages);
+        if (Array.isArray(parsed)) {
+          const validImages = parsed.filter((image): image is string => typeof image === "string" && image.trim().length > 0);
+          if (validImages.length > 0) return validImages;
+        }
+      } catch {
+        return [rawImages];
+      }
+
+      return [rawImages];
+    }
+
+    return ["/placeholder.svg"];
+  })();
+
+  const currentImage = images[selectedImage] ?? images[0] ?? "/placeholder.svg";
+
+  useEffect(() => {
+    if (selectedImage >= images.length) {
+      setSelectedImage(0);
+    }
+  }, [images.length, selectedImage]);
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -87,13 +117,19 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-6 md:gap-10">
             {/* Images */}
             <div className="w-full min-w-0">
-              <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
-                <img
-                  src={images[selectedImage] || images[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  loading="eager"
-                  className="block w-full h-full object-contain md:object-cover"
-                />
+              <div className="w-full overflow-hidden rounded-xl bg-card mb-3 md:aspect-square md:bg-secondary">
+                <div className="relative aspect-square w-full md:h-full md:aspect-auto">
+                  <img
+                    key={currentImage}
+                    src={currentImage}
+                    alt={product.name}
+                    loading="eager"
+                    onError={(event) => {
+                      event.currentTarget.src = "/placeholder.svg";
+                    }}
+                    className="absolute inset-0 block h-full w-full object-contain p-2 md:static md:h-full md:w-full md:object-cover md:p-0"
+                  />
+                </div>
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
