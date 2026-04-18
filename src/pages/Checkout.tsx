@@ -37,10 +37,7 @@ const Checkout = () => {
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    email: "",
     address: "",
-    area: "",
-    notes: "",
   });
 
   const { data: settings } = useQuery({
