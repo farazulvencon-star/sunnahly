@@ -88,12 +88,13 @@ const ProductDetail = () => {
             {/* Images */}
             <div className="w-full min-w-0">
               <div className="w-full h-[300px] max-h-[350px] rounded-xl bg-white overflow-hidden mb-3 flex items-center justify-center p-2 md:h-auto md:max-h-none md:aspect-square md:bg-secondary md:p-0 md:block">
-                <img
-                  src={images[selectedImage] || images[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  loading="eager"
-                  className="block w-full h-full object-contain md:object-cover"
-                />
+<img
+  src={images[selectedImage] || images[0] || "/placeholder.svg"}
+  alt={product.name}
+  loading="eager"
+  className="block w-full object-contain md:w-full md:h-full md:object-cover"
+  style={{ maxHeight: "300px" }}
+/>
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
