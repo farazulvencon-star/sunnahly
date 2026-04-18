@@ -214,8 +214,6 @@ const ProductDetail = () => {
               </p>
             </div>
           )}
-            </div>
-          </div>
         </div>
       </main>
       <Footer />
