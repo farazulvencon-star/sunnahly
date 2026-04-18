@@ -2,6 +2,9 @@
 # Natural Shefa - SPA Routing for Hostinger
 # ============================================
 
+Options -MultiViews
+DirectoryIndex index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -16,7 +19,8 @@
   RewriteRule ^ - [L]
 
   # All other requests → index.html (React Router handles routing)
-  RewriteRule ^ index.html [L]
+  # Explicit /index.html with QSA preserves query strings & hash for auth callbacks
+  RewriteRule ^(.*)$ /index.html [L,QSA]
 </IfModule>
 
 # ============================================
