@@ -183,11 +183,11 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2 h-16 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
+                <Button size="lg" className="flex-1 gap-2 h-12 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
                   <ShoppingCart className="h-5 w-5 sm:h-4 sm:w-4" /> কার্টে যোগ করুন
                 </Button>
                 <Link to="/checkout" className="flex-1">
-                  <Button size="lg" variant="outline" className="w-full h-16 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
+                  <Button size="lg" variant="outline" className="w-full h-12 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
                     এখনই কিনুন
                   </Button>
                 </Link>
