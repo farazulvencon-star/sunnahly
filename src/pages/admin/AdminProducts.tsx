@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 const emptyProduct = {
   name: "", slug: "", description: "", short_description: "", price: 0, original_price: null as number | null,
-  sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_active: true, category_id: null as string | null,
+  sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_bestseller: false, is_active: true, category_id: null as string | null,
   meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "",
 };
 
@@ -212,7 +212,7 @@ const AdminProducts = () => {
       name: product.name, slug: product.slug, description: product.description || "", short_description: product.short_description || "",
       price: Number(product.price), original_price: product.original_price ? Number(product.original_price) : null,
       sku: product.sku || "", stock: product.stock, images: product.images || [], badge: product.badge || "",
-      is_featured: product.is_featured, is_active: product.is_active, category_id: product.category_id,
+      is_featured: product.is_featured, is_bestseller: product.is_bestseller || false, is_active: product.is_active, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
       video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
     });
@@ -226,7 +226,7 @@ const AdminProducts = () => {
       name: product.name + " (কপি)", slug: "", description: product.description || "", short_description: product.short_description || "",
       price: Number(product.price), original_price: product.original_price ? Number(product.original_price) : null,
       sku: "", stock: product.stock, images: product.images || [], badge: product.badge || "",
-      is_featured: false, is_active: false, category_id: product.category_id,
+      is_featured: false, is_bestseller: false, is_active: false, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
       video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
     });
@@ -475,11 +475,18 @@ const AdminProducts = () => {
                   <div className="flex items-center justify-between border rounded-lg p-3">
                     <div>
                       <Label className="text-sm">ফিচার্ড পণ্য</Label>
-                      <p className="text-xs text-muted-foreground">হোমপেজে দেখাবে</p>
+                      <p className="text-xs text-muted-foreground">ফিচার্ড সেকশনে দেখাবে</p>
                     </div>
                     <Switch checked={form.is_featured} onCheckedChange={(v) => setForm({ ...form, is_featured: v })} />
                   </div>
                   <div className="flex items-center justify-between border rounded-lg p-3">
+                    <div>
+                      <Label className="text-sm">বেস্ট সেলার</Label>
+                      <p className="text-xs text-muted-foreground">সবচেয়ে বিক্রিত সেকশনে</p>
+                    </div>
+                    <Switch checked={form.is_bestseller} onCheckedChange={(v) => setForm({ ...form, is_bestseller: v })} />
+                  </div>
+                  <div className="flex items-center justify-between border rounded-lg p-3 col-span-2">
                     <div>
                       <Label className="text-sm">পাবলিশ স্ট্যাটাস</Label>
                       <p className="text-xs text-muted-foreground">{form.is_active ? "সক্রিয়" : "ড্রাফট"}</p>
