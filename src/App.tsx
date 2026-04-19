@@ -41,6 +41,46 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+import { useCategoriesEnabled } from "./hooks/useCategoriesEnabled";
+
+const AppRoutes = () => {
+  const categoriesEnabled = useCategoriesEnabled();
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/products" element={<AllProductsPage />} />
+      {categoriesEnabled && <Route path="/category/:slug" element={<CategoryProducts />} />}
+      <Route path="/product/:slug" element={<ProductDetail />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+      <Route path="/shefa-tube" element={<ShefaTubePage />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/page/:slug" element={<PolicyPage />} />
+      <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/admin/invoice-print" element={<InvoicePrint />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        {categoriesEnabled && <Route path="categories" element={<AdminCategories />} />}
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
+        <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
+        <Route path="customers" element={<AdminCustomers />} />
+        <Route path="code-snippets" element={<AdminCodeSnippets />} />
+        <Route path="hero-slides" element={<AdminHeroSlides />} />
+        <Route path="content" element={<AdminContentManager />} />
+        <Route path="pages" element={<AdminPages />} />
+        <Route path="reviews" element={<AdminReviews />} />
+        <Route path="shefa-tube" element={<AdminShefaTube />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -52,38 +92,7 @@ const App = () => (
           <BrowserRouter>
             <CodeSnippetInjector />
             <FaviconManager />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<AllProductsPage />} />
-              <Route path="/category/:slug" element={<CategoryProducts />} />
-              <Route path="/product/:slug" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-success/:orderId" element={<OrderSuccess />} />
-              <Route path="/shefa-tube" element={<ShefaTubePage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/page/:slug" element={<PolicyPage />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/admin/invoice-print" element={<InvoicePrint />} />
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="categories" element={<AdminCategories />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
-                <Route path="recovery-analytics" element={<RecoveryAnalytics />} />
-                <Route path="customers" element={<AdminCustomers />} />
-                <Route path="code-snippets" element={<AdminCodeSnippets />} />
-                <Route path="hero-slides" element={<AdminHeroSlides />} />
-                <Route path="content" element={<AdminContentManager />} />
-                <Route path="pages" element={<AdminPages />} />
-                <Route path="reviews" element={<AdminReviews />} />
-                <Route path="shefa-tube" element={<AdminShefaTube />} />
-                <Route path="settings" element={<AdminSettings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AppRoutes />
             <BottomNav />
           </BrowserRouter>
           </TooltipProvider>

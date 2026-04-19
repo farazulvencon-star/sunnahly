@@ -95,6 +95,7 @@ const AdminSettings = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
   const [webhookEnabled, setWebhookEnabled] = useState(false);
+  const [categoriesEnabled, setCategoriesEnabled] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -114,6 +115,7 @@ const AdminSettings = () => {
       setWebhookUrl(settings.order_webhook?.value?.url || "");
       setWebhookSecret(settings.order_webhook?.value?.secret_key || "");
       setWebhookEnabled(settings.order_webhook?.value?.enabled || false);
+      setCategoriesEnabled(settings.categories_enabled?.value?.enabled || false);
     }
   }, [settings]);
 
@@ -201,6 +203,20 @@ const AdminSettings = () => {
           {/* Favicon */}
           <FaviconUpload settings={settings} updateMutation={updateMutation} />
 
+          {/* Categories Toggle */}
+          <div className="bg-card border rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-foreground">ক্যাটাগরি ফিচার</h3>
+                <p className="text-sm text-muted-foreground">ওয়েবসাইটে ক্যাটাগরি সেকশন, ক্যাটাগরি পেইজ ও অ্যাডমিন মেনু চালু/বন্ধ করুন</p>
+              </div>
+              <Switch checked={categoriesEnabled}
+                onCheckedChange={(v) => {
+                  setCategoriesEnabled(v);
+                  updateMutation.mutate({ key: "categories_enabled", value: { enabled: v } });
+                }} />
+            </div>
+          </div>
           {/* Delivery Charge */}
           <div className="bg-card border rounded-xl p-5">
             <h3 className="font-bold text-foreground mb-4">ডেলিভারি চার্জ</h3>
