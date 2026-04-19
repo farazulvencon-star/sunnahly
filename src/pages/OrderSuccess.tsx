@@ -2,13 +2,18 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Download, Package } from "lucide-react";
+import { CheckCircle, Download, Package, Loader2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import InvoicePDF from "@/components/InvoicePDF";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 const OrderSuccess = () => {
   const { orderId } = useParams();
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const { data: order } = useQuery({
     queryKey: ["order", orderId],
@@ -23,36 +28,53 @@ const OrderSuccess = () => {
     },
   });
 
-  const handleDownloadInvoice = () => {
-    if (!order) return;
-    const invoiceContent = `
-    ═══════════════════════════════════
-         Natural Shefa - ইনভয়েস
-    ═══════════════════════════════════
-    অর্ডার নম্বর: ${order.order_number}
-    তারিখ: ${new Date(order.created_at).toLocaleDateString("bn-BD")}
-    
-    কাস্টমার: ${order.customer_name}
-    ফোন: ${order.customer_phone}
-    ঠিকানা: ${order.shipping_address}, ${order.city}
-    
-    ─────────────────────────────────
-    পণ্যসমূহ:
-    ${order.order_items?.map((item: any) => `  ${item.product_name} x${item.quantity} = ৳${item.total}`).join("\n") || ""}
-    ─────────────────────────────────
-    সাবটোটাল: ৳${order.subtotal}
-    ডেলিভারি: ৳${order.delivery_charge}
-    মোট: ৳${order.total}
-    পেমেন্ট: ${order.payment_method === "cod" ? "ক্যাশ অন ডেলিভারি" : "আংশিক পেমেন্ট"}
-    ═══════════════════════════════════
-    `;
-    const blob = new Blob([invoiceContent], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `invoice-${order.order_number}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const { data: branding } = useQuery({
+    queryKey: ["invoice-branding"],
+    queryFn: async () => {
+      const [logoRes, footerRes] = await Promise.all([
+        supabase.rpc("get_public_setting", { _key: "site_logo" }),
+        supabase.rpc("get_public_setting", { _key: "footer_content" }),
+      ]);
+      return {
+        logoUrl: (logoRes.data as any)?.url || "",
+        phone: (footerRes.data as any)?.phone || "",
+        email: (footerRes.data as any)?.email || "",
+        address: (footerRes.data as any)?.address || "",
+      };
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const handleDownloadInvoice = async () => {
+    if (!order || !invoiceRef.current) return;
+    setDownloading(true);
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Invoice-${order.order_number}.pdf`);
+      toast.success("ইনভয়েস ডাউনলোড হয়েছে");
+    } catch (e) {
+      console.error(e);
+      toast.error("ইনভয়েস ডাউনলোড ব্যর্থ হয়েছে");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -84,8 +106,9 @@ const OrderSuccess = () => {
             </div>
           )}
           <div className="flex flex-col gap-2 mt-6">
-            <Button variant="outline" className="gap-2" onClick={handleDownloadInvoice}>
-              <Download className="h-4 w-4" /> ইনভয়েস ডাউনলোড
+            <Button variant="outline" className="gap-2" onClick={handleDownloadInvoice} disabled={!order || downloading}>
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {downloading ? "তৈরি হচ্ছে..." : "ইনভয়েস PDF ডাউনলোড"}
             </Button>
             <Link to="/shefa-tube">
               <Button variant="outline" className="gap-2 w-full">
@@ -97,6 +120,21 @@ const OrderSuccess = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Off-screen invoice for PDF rendering */}
+      {order && (
+        <div style={{ position: "fixed", left: "-99999px", top: 0, pointerEvents: "none" }} aria-hidden>
+          <div ref={invoiceRef}>
+            <InvoicePDF
+              order={order}
+              logoUrl={branding?.logoUrl}
+              brandPhone={branding?.phone}
+              brandEmail={branding?.email}
+              brandAddress={branding?.address}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
