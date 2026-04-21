@@ -381,6 +381,7 @@ export type Database = {
           short_description: string | null
           sku: string | null
           slug: string
+          sort_order: number
           stock: number | null
           updated_at: string
           video_thumbnail: string | null
@@ -405,6 +406,7 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug: string
+          sort_order?: number
           stock?: number | null
           updated_at?: string
           video_thumbnail?: string | null
@@ -429,6 +431,7 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug?: string
+          sort_order?: number
           stock?: number | null
           updated_at?: string
           video_thumbnail?: string | null

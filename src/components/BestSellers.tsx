@@ -11,6 +11,7 @@ const BestSellers = () => {
         .select("*")
         .eq("is_active", true)
         .eq("is_bestseller", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(8);
       return data || [];
