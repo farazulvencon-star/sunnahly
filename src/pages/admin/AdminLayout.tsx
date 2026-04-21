@@ -41,9 +41,9 @@ const AdminLayout = () => {
   if (!user || !isAdmin) return <Navigate to="/admin-login" />;
 
   return (
-    <div className="min-h-screen flex bg-secondary/30">
-      {/* Sidebar */}
-      <aside className="hidden md:flex w-60 bg-card border-r flex-col">
+    <div className="min-h-screen bg-secondary/30">
+      {/* Sidebar - Fixed */}
+      <aside className="hidden md:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r flex-col z-40">
         <div className="p-4 border-b">
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain mb-1" />
@@ -52,7 +52,7 @@ const AdminLayout = () => {
           )}
           <p className="text-xs text-muted-foreground">অ্যাডমিন প্যানেল</p>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <Link key={item.path} to={item.path}
               className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
@@ -70,10 +70,10 @@ const AdminLayout = () => {
       </aside>
 
       {/* Mobile Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50 flex justify-around py-2">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50 flex justify-around py-2 overflow-x-auto">
         {navItems.map((item) => (
           <Link key={item.path} to={item.path}
-            className={cn("flex flex-col items-center gap-0.5 text-xs p-1",
+            className={cn("flex flex-col items-center gap-0.5 text-xs p-1 shrink-0",
               location.pathname === item.path ? "text-primary" : "text-muted-foreground")}>
             <item.icon className="h-5 w-5" />
             {item.label}
@@ -81,8 +81,8 @@ const AdminLayout = () => {
         ))}
       </div>
 
-      {/* Content */}
-      <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6 overflow-auto">
+      {/* Content - offset for fixed sidebar */}
+      <main className="md:ml-60 p-4 md:p-6 pb-20 md:pb-6 min-h-screen">
         <Outlet />
       </main>
     </div>
