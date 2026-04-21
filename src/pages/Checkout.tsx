@@ -55,9 +55,9 @@ const Checkout = () => {
     },
   });
 
-  const deliveryCharge = city === "dhaka"
-    ? (settings?.delivery_charge?.inside_dhaka || 60)
-    : (settings?.delivery_charge?.outside_dhaka || 120);
+  const deliveryCharge = settings?.delivery_charge?.nationwide
+    ?? settings?.delivery_charge?.inside_dhaka
+    ?? 60;
 
   const grandTotal = totalPrice + deliveryCharge;
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
