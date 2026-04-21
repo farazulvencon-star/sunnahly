@@ -142,7 +142,7 @@ const Checkout = () => {
         customer_name: form.name,
         customer_phone: form.phone,
         shipping_address: form.address,
-        city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
+        city: "বাংলাদেশ",
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
         total: grandTotal,
