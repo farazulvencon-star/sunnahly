@@ -73,7 +73,7 @@ const Checkout = () => {
       customer_name: currentForm.name || null,
       customer_phone: currentForm.phone || null,
       shipping_address: currentForm.address || null,
-      city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
+      city: "বাংলাদেশ",
       cart_items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
       cart_total: totalPrice,
       last_activity: new Date().toISOString(),
