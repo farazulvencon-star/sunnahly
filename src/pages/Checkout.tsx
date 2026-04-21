@@ -244,16 +244,16 @@ const Checkout = () => {
                     <div className="flex items-center gap-3 border rounded-lg p-3">
                       <RadioGroupItem value="cod" id="cod" />
                       <Label htmlFor="cod" className="cursor-pointer flex-1">
-                        <span className="font-medium">ক্যাশ অন ডেলিভারি (COD)</span>
-                        <p className="text-xs text-muted-foreground">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
+                        <span className="text-base font-bold text-foreground">ক্যাশ অন ডেলিভারি (COD)</span>
+                        <p className="text-sm text-muted-foreground mt-0.5">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
                       </Label>
                     </div>
                     {isPaymentEnabled && (
                       <div className="flex items-center gap-3 border rounded-lg p-3">
                         <RadioGroupItem value="partial" id="partial" />
                         <Label htmlFor="partial" className="cursor-pointer flex-1">
-                          <span className="font-medium">আংশিক অনলাইন পেমেন্ট</span>
-                          <p className="text-xs text-muted-foreground">মোটের {partialPercent}% বা ডেলিভারি চার্জ (যেটি বেশি) এখনই পে করুন</p>
+                          <span className="text-base font-bold text-foreground">আংশিক অনলাইন পেমেন্ট</span>
+                          <p className="text-sm text-muted-foreground mt-0.5">মোটের {partialPercent}% বা ডেলিভারি চার্জ (যেটি বেশি) এখনই পে করুন</p>
                         </Label>
                       </div>
                     )}
