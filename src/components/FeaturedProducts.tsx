@@ -93,8 +93,8 @@ const FeaturedProducts = () => {
         </div>
         <div
           ref={scrollRef}
-          className="overflow-x-hidden overflow-y-hidden"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="overflow-x-auto overflow-y-hidden scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
         >
           <div className="flex gap-4 md:gap-6 w-max">
             {displayItems.map((p: any, idx: number) => (
