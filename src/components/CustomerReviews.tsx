@@ -49,13 +49,12 @@ const CustomerReviews = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedImage(review.image)}
-                  className="block w-full rounded-xl border-[0.5px] border-primary overflow-hidden cursor-zoom-in transition-transform hover:scale-[1.02]"
+                  className="block w-full rounded-xl border-[0.5px] border-primary overflow-hidden cursor-zoom-in transition-transform hover:scale-[1.02] bg-background"
                 >
                   <img
                     src={review.image}
                     alt="কাস্টমার রিভিউ"
-                    className="w-full object-cover"
-                    style={{ aspectRatio: "350/400" }}
+                    className="w-full h-auto object-contain"
                   />
                 </button>
               </CarouselItem>
