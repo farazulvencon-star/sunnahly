@@ -28,6 +28,7 @@ const FeaturedProducts = () => {
 
     let paused = false;
     let timer: number | undefined;
+    let resumeTimer: number | undefined;
 
     const step = () => {
       if (paused || !el) {
@@ -52,17 +53,29 @@ const FeaturedProducts = () => {
 
     const onEnter = () => { paused = true; };
     const onLeave = () => { paused = false; };
+    // Pause briefly on manual interaction (wheel/touch/drag), then resume
+    const pauseTemporarily = () => {
+      paused = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => { paused = false; }, 3000);
+    };
+
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
     el.addEventListener("touchstart", onEnter, { passive: true });
     el.addEventListener("touchend", onLeave);
+    el.addEventListener("wheel", pauseTemporarily, { passive: true });
+    el.addEventListener("scroll", pauseTemporarily, { passive: true });
 
     return () => {
       if (timer) clearTimeout(timer);
+      if (resumeTimer) clearTimeout(resumeTimer);
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
       el.removeEventListener("touchstart", onEnter);
       el.removeEventListener("touchend", onLeave);
+      el.removeEventListener("wheel", pauseTemporarily);
+      el.removeEventListener("scroll", pauseTemporarily);
     };
   }, [products]);
 
