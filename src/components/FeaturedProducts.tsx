@@ -20,27 +20,35 @@ const FeaturedProducts = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto horizontal scroll (left to right visual = scroll content leftward)
+  // Step-by-step auto scroll: pause 2s, slide to next card smoothly
   useEffect(() => {
     if (!products?.length || products.length < 3) return;
     const el = scrollRef.current;
     if (!el) return;
 
-    let raf = 0;
     let paused = false;
-    const speed = 0.6; // px per frame
+    let timer: number | undefined;
 
-    const tick = () => {
-      if (!paused && el) {
-        el.scrollLeft += speed;
-        // Loop seamlessly when reached halfway (since we duplicate)
-        if (el.scrollLeft >= el.scrollWidth / 2) {
-          el.scrollLeft = 0;
-        }
+    const step = () => {
+      if (paused || !el) {
+        timer = window.setTimeout(step, 2000);
+        return;
       }
-      raf = requestAnimationFrame(tick);
+      const firstCard = el.querySelector<HTMLElement>("[data-card]");
+      const gap = 16; // matches gap-4
+      const cardWidth = (firstCard?.offsetWidth || 200) + gap;
+      let target = el.scrollLeft + cardWidth;
+      // Loop seamlessly when reached halfway
+      if (target >= el.scrollWidth / 2) {
+        target = 0;
+        el.scrollTo({ left: 0, behavior: "auto" });
+      } else {
+        el.scrollTo({ left: target, behavior: "smooth" });
+      }
+      timer = window.setTimeout(step, 2000);
     };
-    raf = requestAnimationFrame(tick);
+
+    timer = window.setTimeout(step, 2000);
 
     const onEnter = () => { paused = true; };
     const onLeave = () => { paused = false; };
@@ -50,7 +58,7 @@ const FeaturedProducts = () => {
     el.addEventListener("touchend", onLeave);
 
     return () => {
-      cancelAnimationFrame(raf);
+      if (timer) clearTimeout(timer);
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
       el.removeEventListener("touchstart", onEnter);
@@ -79,6 +87,7 @@ const FeaturedProducts = () => {
             {displayItems.map((p: any, idx: number) => (
               <div
                 key={`${p.id}-${idx}`}
+                data-card
                 className="w-[160px] sm:w-[200px] md:w-[240px] lg:w-[260px] flex-shrink-0"
               >
                 <ProductCard
