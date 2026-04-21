@@ -140,12 +140,13 @@ const AdminIncompleteOrders = () => {
 
   const exportCSV = () => {
     if (!orders?.length) return;
-    const headers = ["তারিখ", "নাম", "ফোন", "ইমেইল", "ঠিকানা", "শহর", "এলাকা", "কার্ট মোট", "পণ্যসমূহ", "সম্পন্ন %"];
+    const headers = ["তারিখ", "সেশন আইডি", "নাম", "ফোন", "ইমেইল", "ঠিকানা", "শহর", "এলাকা", "কার্ট মোট", "পণ্যসমূহ", "সম্পন্ন %", "প্রথম সক্রিয়", "শেষ সক্রিয়"];
     const rows = orders.map((o: any) => {
       const filled = [o.customer_name, o.customer_phone, o.customer_email, o.shipping_address].filter(Boolean).length;
       const items = (o.cart_items || []).map((i: any) => `${i.name} x${i.quantity}`).join("; ");
       return [
         new Date(o.created_at).toLocaleString("bn-BD"),
+        o.session_id || "",
         o.customer_name || "",
         o.customer_phone || "",
         o.customer_email || "",
@@ -155,6 +156,8 @@ const AdminIncompleteOrders = () => {
         Number(o.cart_total) || 0,
         items,
         Math.round((filled / 4) * 100) + "%",
+        new Date(o.created_at).toLocaleString("bn-BD"),
+        new Date(o.last_activity).toLocaleString("bn-BD"),
       ];
     });
     const csv = "\uFEFF" + [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
