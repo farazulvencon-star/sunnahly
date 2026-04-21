@@ -221,7 +221,19 @@ const Checkout = () => {
                   <div className="mt-4">
                     <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
                     <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা, জেলা" required />
-                    <p className="text-xs text-muted-foreground mt-1">সারা দেশে ডেলিভারি চার্জ ৳{deliveryCharge}</p>
+                  </div>
+                </div>
+
+                {/* Delivery Charge Info Card */}
+                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-4 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary">
+                      <path d="M5 18H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v12" /><path d="M14 9h4l3 3v6h-3" /><circle cx="7.5" cy="18" r="2.5" /><circle cx="17.5" cy="18" r="2.5" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-0.5">সারা বাংলাদেশে ডেলিভারি</p>
+                    <p className="text-base font-bold text-foreground">ডেলিভারি চার্জ: <span className="text-primary">৳{deliveryCharge}</span></p>
                   </div>
                 </div>
 
