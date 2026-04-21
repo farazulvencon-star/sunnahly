@@ -12,6 +12,7 @@ const AllProducts = () => {
         .from("products")
         .select("*, categories(name)")
         .eq("is_active", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(8);
       return data || [];

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 const HeroBanner = () => {
   const [current, setCurrent] = useState(0);
+  const [previous, setPrevious] = useState<number | null>(null);
 
   const { data: slides } = useQuery({
     queryKey: ["hero-slides"],
@@ -21,19 +22,39 @@ const HeroBanner = () => {
 
   const total = slides?.length || 0;
 
+  const goTo = useCallback((idx: number) => {
+    setCurrent((c) => {
+      if (c === idx) return c;
+      setPrevious(c);
+      return idx;
+    });
+  }, []);
+
   const next = useCallback(() => {
-    if (total > 0) setCurrent((c) => (c + 1) % total);
-  }, [total]);
+    if (total > 0) goTo((current + 1) % total);
+  }, [total, current, goTo]);
 
   const prev = useCallback(() => {
-    if (total > 0) setCurrent((c) => (c - 1 + total) % total);
-  }, [total]);
+    if (total > 0) goTo((current - 1 + total) % total);
+  }, [total, current, goTo]);
 
   useEffect(() => {
     if (total <= 1) return;
-    const t = setInterval(next, 5000);
+    const t = setInterval(() => {
+      setCurrent((c) => {
+        setPrevious(c);
+        return (c + 1) % total;
+      });
+    }, 5000);
     return () => clearInterval(t);
-  }, [next, total]);
+  }, [total]);
+
+  // Clear previous after transition completes
+  useEffect(() => {
+    if (previous === null) return;
+    const t = setTimeout(() => setPrevious(null), 800);
+    return () => clearTimeout(t);
+  }, [previous, current]);
 
   if (!total) {
     return (
@@ -53,12 +74,17 @@ const HeroBanner = () => {
   const content = (
     <div className="relative w-full overflow-hidden">
       <div className="relative w-full" style={{ aspectRatio: "1400/500" }}>
-        <img
-          src={slide.image_url}
-          alt={slide.title || "Banner"}
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-        />
+        {slides!.map((s, i) => (
+          <img
+            key={s.id}
+            src={s.image_url}
+            alt={s.title || "Banner"}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
+              i === current ? "opacity-100 z-[1]" : "opacity-0 z-0"
+            }`}
+            loading={i === 0 ? "eager" : "lazy"}
+          />
+        ))}
       </div>
 
       {/* Navigation arrows */}
@@ -85,8 +111,8 @@ const HeroBanner = () => {
           {slides!.map((_, i) => (
             <button
               key={i}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(i); }}
-              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-colors ${i === current ? "bg-primary" : "bg-background/60"}`}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); goTo(i); }}
+              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === current ? "bg-primary w-6 md:w-8" : "bg-background/60"}`}
             />
           ))}
         </div>
