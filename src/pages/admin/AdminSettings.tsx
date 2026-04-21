@@ -85,6 +85,7 @@ const AdminSettings = () => {
   const [pixelEnabled, setPixelEnabled] = useState(false);
   const [pixelId, setPixelId] = useState("");
   const [pixelToken, setPixelToken] = useState("");
+  const [pixelTestCode, setPixelTestCode] = useState("");
   const [cloudName, setCloudName] = useState("");
   const [uploadPreset, setUploadPreset] = useState("");
   const [steadfastApiKey, setSteadfastApiKey] = useState("");
@@ -106,6 +107,7 @@ const AdminSettings = () => {
       setPixelEnabled(settings.facebook_pixel?.value?.enabled || false);
       setPixelId(settings.facebook_pixel?.value?.pixel_id || "");
       setPixelToken(settings.facebook_pixel?.value?.access_token || "");
+      setPixelTestCode(settings.facebook_pixel?.value?.test_event_code || "");
       setCloudName(settings.cloudinary?.value?.cloud_name || "");
       setUploadPreset(settings.cloudinary?.value?.upload_preset || "");
       setSteadfastApiKey(settings.steadfast?.value?.api_key || "");
@@ -292,7 +294,7 @@ const AdminSettings = () => {
                   setPixelEnabled(v);
                   updateMutation.mutate({
                     key: "facebook_pixel",
-                    value: { enabled: v, pixel_id: pixelId, access_token: pixelToken },
+                    value: { enabled: v, pixel_id: pixelId, access_token: pixelToken, test_event_code: pixelTestCode },
                   });
                 }} />
             </div>
@@ -305,9 +307,16 @@ const AdminSettings = () => {
                 <Label>Access Token (Conversions API)</Label>
                 <Input placeholder="আপনার Access Token দিন" value={pixelToken} onChange={(e) => setPixelToken(e.target.value)} className="mt-1" type="password" />
               </div>
+              <div>
+                <Label>Test Event Code</Label>
+                <Input placeholder="যেমন: TEST12345" value={pixelTestCode} onChange={(e) => setPixelTestCode(e.target.value)} className="mt-1" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Events Manager → Test Events ট্যাব থেকে কোড নিন। সেট থাকলে সকল ইভেন্ট টেস্ট মোডে পাঠানো হবে। লাইভে যাওয়ার সময় খালি রাখুন।
+                </p>
+              </div>
               <Button variant="outline" onClick={() => updateMutation.mutate({
                 key: "facebook_pixel",
-                value: { enabled: pixelEnabled, pixel_id: pixelId, access_token: pixelToken },
+                value: { enabled: pixelEnabled, pixel_id: pixelId, access_token: pixelToken, test_event_code: pixelTestCode },
               })}>
                 সেভ করুন
               </Button>
