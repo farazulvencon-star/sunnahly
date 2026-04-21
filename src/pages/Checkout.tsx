@@ -245,7 +245,7 @@ const Checkout = () => {
                       <RadioGroupItem value="cod" id="cod" />
                       <Label htmlFor="cod" className="cursor-pointer flex-1">
                         <span className="font-medium">ক্যাশ অন ডেলিভারি (COD)</span>
-                        <p className="text-xs text-muted-foreground">পণ্য হাতে পেয়ে পেমেন্ট করুন</p>
+                        <p className="text-xs text-muted-foreground">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
                       </Label>
                     </div>
                     {isPaymentEnabled && (
