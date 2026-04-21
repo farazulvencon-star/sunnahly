@@ -292,8 +292,38 @@ const AdminIncompleteOrders = () => {
                     </div>
                   )}
 
-                  {!order.customer_name && !order.customer_phone && cartItems.length === 0 && (
-                    <p className="text-sm text-muted-foreground italic">কোনো তথ্য দেওয়া হয়নি</p>
+                  {!order.customer_name && !order.customer_phone && (
+                    <div className="mt-3 pt-2 border-t bg-muted/30 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+                      <p className="text-xs text-muted-foreground mb-2 font-medium">
+                        🔒 কাস্টমার যোগাযোগ তথ্য দেয়নি — রিটার্গেটিং ডেটা:
+                      </p>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-start gap-2">
+                          <span className="text-muted-foreground min-w-[90px]">সেশন আইডি:</span>
+                          <code className="font-mono text-foreground break-all bg-background px-1.5 py-0.5 rounded border text-[11px]">
+                            {order.session_id}
+                          </code>
+                          <button
+                            type="button"
+                            className="text-primary hover:underline shrink-0"
+                            onClick={() => { navigator.clipboard.writeText(order.session_id); toast.success("কপি হয়েছে"); }}
+                          >
+                            কপি
+                          </button>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="text-muted-foreground min-w-[90px]">প্রথম সক্রিয়:</span>
+                          <span className="text-foreground">{new Date(order.created_at).toLocaleString("bn-BD")}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="text-muted-foreground min-w-[90px]">শেষ সক্রিয়:</span>
+                          <span className="text-foreground">{new Date(order.last_activity).toLocaleString("bn-BD")}</span>
+                        </div>
+                        <p className="text-muted-foreground italic mt-1.5">
+                          💡 এই সেশন আইডি Facebook Pixel কাস্টম অডিয়েন্সে রিটার্গেটিং অ্যাড দেখানোর জন্য ব্যবহার করুন।
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               );
