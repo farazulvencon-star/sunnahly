@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const emptyProduct = {
   name: "", slug: "", description: "", short_description: "", price: 0, original_price: null as number | null,
   sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_bestseller: false, is_active: true, category_id: null as string | null,
-  meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "",
+  meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "", sort_order: 0,
 };
 
 const AdminProducts = () => {
@@ -214,7 +214,7 @@ const AdminProducts = () => {
       sku: product.sku || "", stock: product.stock, images: product.images || [], badge: product.badge || "",
       is_featured: product.is_featured, is_bestseller: product.is_bestseller || false, is_active: product.is_active, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
-      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
+      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "", sort_order: product.sort_order || 0,
     });
     setActiveTab("general");
     setOpen(true);
@@ -228,7 +228,7 @@ const AdminProducts = () => {
       sku: "", stock: product.stock, images: product.images || [], badge: product.badge || "",
       is_featured: false, is_bestseller: false, is_active: false, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
-      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "",
+      video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "", sort_order: 0,
     });
     setActiveTab("general");
     setOpen(true);
@@ -467,9 +467,16 @@ const AdminProducts = () => {
                     {categories?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                <div>
-                  <Label className="text-xs font-medium mb-1.5 block">ব্যাজ</Label>
-                  <Input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="যেমন: বেস্ট সেলার, নতুন, ছাড়" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-medium mb-1.5 block">ব্যাজ</Label>
+                    <Input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="যেমন: নতুন, ছাড়" />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium mb-1.5 block">সর্ট অর্ডার</Label>
+                    <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: +e.target.value })} placeholder="ছোট সংখ্যা আগে দেখাবে" />
+                    <p className="text-[11px] text-muted-foreground mt-1">কম মান = হোম পেইজে আগে দেখাবে</p>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="flex items-center justify-between border rounded-lg p-3">
