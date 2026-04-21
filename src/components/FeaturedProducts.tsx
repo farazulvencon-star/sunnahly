@@ -150,7 +150,7 @@ const FeaturedProducts = () => {
         </div>
         <div
           ref={scrollRef}
-          className="overflow-x-auto overflow-y-hidden scroll-smooth"
+          className="overflow-x-auto overflow-y-hidden scroll-smooth cursor-grab"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
         >
           <div className="flex gap-4 md:gap-6 w-max">
