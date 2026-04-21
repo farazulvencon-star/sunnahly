@@ -219,18 +219,13 @@ const AdminSettings = () => {
           </div>
           {/* Delivery Charge */}
           <div className="bg-card border rounded-xl p-5">
-            <h3 className="font-bold text-foreground mb-4">ডেলিভারি চার্জ</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>ঢাকার ভিতরে (৳)</Label>
-                <Input type="number" value={insideDhaka} onChange={(e) => setInsideDhaka(+e.target.value)} />
-              </div>
-              <div>
-                <Label>ঢাকার বাইরে (৳)</Label>
-                <Input type="number" value={outsideDhaka} onChange={(e) => setOutsideDhaka(+e.target.value)} />
-              </div>
+            <h3 className="font-bold text-foreground mb-1">ডেলিভারি চার্জ</h3>
+            <p className="text-sm text-muted-foreground mb-4">সারা দেশের জন্য একই ডেলিভারি চার্জ প্রযোজ্য হবে</p>
+            <div>
+              <Label>সারা দেশ (৳)</Label>
+              <Input type="number" value={insideDhaka} onChange={(e) => { setInsideDhaka(+e.target.value); setOutsideDhaka(+e.target.value); }} />
             </div>
-            <Button variant="outline" className="mt-3" onClick={() => updateMutation.mutate({ key: "delivery_charge", value: { inside_dhaka: insideDhaka, outside_dhaka: outsideDhaka } })}>
+            <Button variant="outline" className="mt-3" onClick={() => updateMutation.mutate({ key: "delivery_charge", value: { inside_dhaka: insideDhaka, outside_dhaka: insideDhaka, nationwide: insideDhaka } })}>
               সেভ করুন
             </Button>
           </div>

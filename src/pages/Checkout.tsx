@@ -55,9 +55,9 @@ const Checkout = () => {
     },
   });
 
-  const deliveryCharge = city === "dhaka"
-    ? (settings?.delivery_charge?.inside_dhaka || 60)
-    : (settings?.delivery_charge?.outside_dhaka || 120);
+  const deliveryCharge = settings?.delivery_charge?.nationwide
+    ?? settings?.delivery_charge?.inside_dhaka
+    ?? 60;
 
   const grandTotal = totalPrice + deliveryCharge;
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
@@ -73,7 +73,7 @@ const Checkout = () => {
       customer_name: currentForm.name || null,
       customer_phone: currentForm.phone || null,
       shipping_address: currentForm.address || null,
-      city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
+      city: "বাংলাদেশ",
       cart_items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
       cart_total: totalPrice,
       last_activity: new Date().toISOString(),
@@ -142,7 +142,7 @@ const Checkout = () => {
         customer_name: form.name,
         customer_phone: form.phone,
         shipping_address: form.address,
-        city: city === "dhaka" ? "ঢাকা" : "ঢাকার বাইরে",
+        city: "বাংলাদেশ",
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
         total: grandTotal,
@@ -220,20 +220,8 @@ const Checkout = () => {
                   </div>
                   <div className="mt-4">
                     <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
-                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা" required />
-                  </div>
-                  <div className="mt-4">
-                    <Label>শহর *</Label>
-                    <RadioGroup value={city} onValueChange={setCity} className="flex gap-4 mt-2">
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="dhaka" id="dhaka" />
-                        <Label htmlFor="dhaka" className="cursor-pointer">ঢাকা (৳{settings?.delivery_charge?.inside_dhaka || 60})</Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="outside" id="outside" />
-                        <Label htmlFor="outside" className="cursor-pointer">ঢাকার বাইরে (৳{settings?.delivery_charge?.outside_dhaka || 120})</Label>
-                      </div>
-                    </RadioGroup>
+                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা, জেলা" required />
+                    <p className="text-xs text-muted-foreground mt-1">সারা দেশে ডেলিভারি চার্জ ৳{deliveryCharge}</p>
                   </div>
                 </div>
 
