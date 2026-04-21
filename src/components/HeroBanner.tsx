@@ -8,7 +8,7 @@ const HeroBanner = () => {
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState<number | null>(null);
 
-  const { data: slides } = useQuery({
+  const { data: slides, isLoading } = useQuery({
     queryKey: ["hero-slides"],
     queryFn: async () => {
       const { data } = await supabase
