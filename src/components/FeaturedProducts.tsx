@@ -20,22 +20,22 @@ const FeaturedProducts = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto vertical scroll
+  // Auto horizontal scroll (left to right visual = scroll content leftward)
   useEffect(() => {
-    if (!products?.length || products.length < 5) return;
+    if (!products?.length || products.length < 3) return;
     const el = scrollRef.current;
     if (!el) return;
 
     let raf = 0;
     let paused = false;
-    const speed = 0.5; // px per frame
+    const speed = 0.6; // px per frame
 
     const tick = () => {
       if (!paused && el) {
-        el.scrollTop += speed;
-        // Reset to top when reached halfway (since we duplicate)
-        if (el.scrollTop >= el.scrollHeight / 2) {
-          el.scrollTop = 0;
+        el.scrollLeft += speed;
+        // Loop seamlessly when reached halfway (since we duplicate)
+        if (el.scrollLeft >= el.scrollWidth / 2) {
+          el.scrollLeft = 0;
         }
       }
       raf = requestAnimationFrame(tick);
@@ -46,7 +46,7 @@ const FeaturedProducts = () => {
     const onLeave = () => { paused = false; };
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
-    el.addEventListener("touchstart", onEnter);
+    el.addEventListener("touchstart", onEnter, { passive: true });
     el.addEventListener("touchend", onLeave);
 
     return () => {
@@ -61,7 +61,7 @@ const FeaturedProducts = () => {
   if (!products?.length) return null;
 
   // Duplicate items for seamless infinite scroll
-  const displayItems = products.length >= 5 ? [...products, ...products] : products;
+  const displayItems = products.length >= 3 ? [...products, ...products] : products;
 
   return (
     <section className="py-10 md:py-16 bg-secondary/30">
@@ -72,26 +72,26 @@ const FeaturedProducts = () => {
         </div>
         <div
           ref={scrollRef}
-          className="overflow-hidden scrollbar-hide"
-          style={{
-            maxHeight: "640px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
+          className="overflow-x-hidden overflow-y-hidden"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="flex gap-4 md:gap-6 w-max">
             {displayItems.map((p: any, idx: number) => (
-              <ProductCard
+              <div
                 key={`${p.id}-${idx}`}
-                id={p.id}
-                name={p.name}
-                price={Number(p.price)}
-                originalPrice={p.original_price ? Number(p.original_price) : undefined}
-                image={p.images?.[0] || "/placeholder.svg"}
-                badge={p.badge}
-                slug={p.slug}
-                categoryName={p.categories?.name}
-              />
+                className="w-[160px] sm:w-[200px] md:w-[240px] lg:w-[260px] flex-shrink-0"
+              >
+                <ProductCard
+                  id={p.id}
+                  name={p.name}
+                  price={Number(p.price)}
+                  originalPrice={p.original_price ? Number(p.original_price) : undefined}
+                  image={p.images?.[0] || "/placeholder.svg"}
+                  badge={p.badge}
+                  slug={p.slug}
+                  categoryName={p.categories?.name}
+                />
+              </div>
             ))}
           </div>
         </div>
