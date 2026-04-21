@@ -60,12 +60,63 @@ const FeaturedProducts = () => {
       resumeTimer = window.setTimeout(() => { paused = false; }, 3000);
     };
 
+    // Drag-to-scroll with mouse (left-click press + drag)
+    let isDown = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let moved = false;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (e.pointerType !== "mouse") return; // touch already scrolls natively
+      isDown = true;
+      moved = false;
+      startX = e.clientX;
+      startScrollLeft = el.scrollLeft;
+      paused = true;
+      el.style.cursor = "grabbing";
+      el.style.userSelect = "none";
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 3) {
+        moved = true;
+        try { el.setPointerCapture(e.pointerId); } catch {}
+      }
+      el.scrollLeft = startScrollLeft - dx;
+    };
+    const endDrag = (e?: PointerEvent) => {
+      if (!isDown) return;
+      isDown = false;
+      el.style.cursor = "";
+      el.style.userSelect = "";
+      if (e) {
+        try { el.releasePointerCapture(e.pointerId); } catch {}
+      }
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => { paused = false; }, 3000);
+    };
+    const onClickCapture = (e: MouseEvent) => {
+      if (moved) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = false;
+      }
+    };
+
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
     el.addEventListener("touchstart", onEnter, { passive: true });
     el.addEventListener("touchend", onLeave);
     el.addEventListener("wheel", pauseTemporarily, { passive: true });
     el.addEventListener("scroll", pauseTemporarily, { passive: true });
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+    el.addEventListener("pointerleave", endDrag);
+    el.addEventListener("click", onClickCapture, true);
 
     return () => {
       if (timer) clearTimeout(timer);
@@ -76,6 +127,12 @@ const FeaturedProducts = () => {
       el.removeEventListener("touchend", onLeave);
       el.removeEventListener("wheel", pauseTemporarily);
       el.removeEventListener("scroll", pauseTemporarily);
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", endDrag);
+      el.removeEventListener("pointercancel", endDrag);
+      el.removeEventListener("pointerleave", endDrag);
+      el.removeEventListener("click", onClickCapture, true);
     };
   }, [products]);
 
@@ -93,7 +150,7 @@ const FeaturedProducts = () => {
         </div>
         <div
           ref={scrollRef}
-          className="overflow-x-auto overflow-y-hidden scroll-smooth"
+          className="overflow-x-auto overflow-y-hidden scroll-smooth cursor-grab"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
         >
           <div className="flex gap-4 md:gap-6 w-max">
