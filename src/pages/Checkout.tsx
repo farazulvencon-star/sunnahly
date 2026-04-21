@@ -220,20 +220,8 @@ const Checkout = () => {
                   </div>
                   <div className="mt-4">
                     <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
-                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা" required />
-                  </div>
-                  <div className="mt-4">
-                    <Label>শহর *</Label>
-                    <RadioGroup value={city} onValueChange={setCity} className="flex gap-4 mt-2">
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="dhaka" id="dhaka" />
-                        <Label htmlFor="dhaka" className="cursor-pointer">ঢাকা (৳{settings?.delivery_charge?.inside_dhaka || 60})</Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="outside" id="outside" />
-                        <Label htmlFor="outside" className="cursor-pointer">ঢাকার বাইরে (৳{settings?.delivery_charge?.outside_dhaka || 120})</Label>
-                      </div>
-                    </RadioGroup>
+                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা, জেলা" required />
+                    <p className="text-xs text-muted-foreground mt-1">সারা দেশে ডেলিভারি চার্জ ৳{deliveryCharge}</p>
                   </div>
                 </div>
 
