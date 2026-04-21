@@ -56,17 +56,19 @@ const HeroBanner = () => {
     return () => clearTimeout(t);
   }, [previous, current]);
 
-  if (!total) {
+  if (isLoading) {
     return (
       <section className="relative bg-secondary overflow-hidden">
-        <div className="container mx-auto px-4 py-12 md:py-20 lg:py-28 text-center">
-          <p className="text-muted-foreground">অ্যাডমিন প্যানেল থেকে হিরো স্লাইড যোগ করুন</p>
-          <p className="text-xs text-muted-foreground mt-2">
-            ডেস্কটপ: 1400×500px | ট্যাবলেট: 800×400px | মোবাইল: 600×400px (16:9 বা 3:1 রেশিও)
-          </p>
-        </div>
+        <div 
+          className="relative w-full bg-muted animate-pulse"
+          style={{ aspectRatio: "1400/500" }}
+        />
       </section>
     );
+  }
+
+  if (!total) {
+    return null;
   }
 
   const slide = slides![current];
