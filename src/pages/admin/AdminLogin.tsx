@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,20 +9,31 @@ import { toast } from "sonner";
 
 const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
+  const { signIn, user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+
+  // Redirect once auth state confirms admin role (after login or if already logged in)
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) {
+      navigate("/admin", { replace: true });
+    } else if (submitted && !authLoading && user && !isAdmin) {
+      toast.error("আপনার অ্যাডমিন অ্যাক্সেস নেই");
+      setLoading(false);
+    }
+  }, [authLoading, user, isAdmin, submitted, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await signIn(form.email, form.password);
+      setSubmitted(true);
       toast.success("সফলভাবে লগইন হয়েছে");
-      navigate("/admin");
+      // Don't navigate here — wait for isAdmin check via useEffect above
     } catch (err: any) {
       toast.error(err.message || "ইমেইল বা পাসওয়ার্ড ভুল");
-    } finally {
       setLoading(false);
     }
   };
