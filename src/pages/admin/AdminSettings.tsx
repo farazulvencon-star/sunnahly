@@ -120,6 +120,8 @@ const AdminSettings = () => {
       setWebhookSecret(settings.order_webhook?.value?.secret_key || "");
       setWebhookEnabled(settings.order_webhook?.value?.enabled || false);
       setCategoriesEnabled(settings.categories_enabled?.value?.enabled || false);
+      setSiteTitle(settings.site_title?.value?.title || "");
+      setThemeColor(settings.theme_color?.value?.primary_hex || "#1f7a2e");
     }
   }, [settings]);
 
