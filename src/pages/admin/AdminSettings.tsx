@@ -97,6 +97,8 @@ const AdminSettings = () => {
   const [webhookSecret, setWebhookSecret] = useState("");
   const [webhookEnabled, setWebhookEnabled] = useState(false);
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
+  const [siteTitle, setSiteTitle] = useState("");
+  const [themeColor, setThemeColor] = useState("#1f7a2e");
 
   useEffect(() => {
     if (settings) {
@@ -118,6 +120,8 @@ const AdminSettings = () => {
       setWebhookSecret(settings.order_webhook?.value?.secret_key || "");
       setWebhookEnabled(settings.order_webhook?.value?.enabled || false);
       setCategoriesEnabled(settings.categories_enabled?.value?.enabled || false);
+      setSiteTitle(settings.site_title?.value?.title || "");
+      setThemeColor(settings.theme_color?.value?.primary_hex || "#1f7a2e");
     }
   }, [settings]);
 
@@ -204,6 +208,50 @@ const AdminSettings = () => {
 
           {/* Favicon */}
           <FaviconUpload settings={settings} updateMutation={updateMutation} />
+
+          {/* Site Title (Browser Tab) */}
+          <div className="bg-card border rounded-xl p-5">
+            <h3 className="font-bold text-foreground mb-1">সাইট টাইটেল</h3>
+            <p className="text-sm text-muted-foreground mb-4">ব্রাউজার ট্যাবে ফেভিকনের পাশে এই টাইটেল দেখাবে</p>
+            <div className="space-y-3">
+              <div>
+                <Label>টাইটেল</Label>
+                <Input placeholder="যেমন: Natural Shefa - প্রাকৃতিক অর্গানিক পণ্য" value={siteTitle} onChange={(e) => setSiteTitle(e.target.value)} className="mt-1" />
+              </div>
+              <Button variant="outline" onClick={() => updateMutation.mutate({ key: "site_title", value: { title: siteTitle } })}>
+                সেভ করুন
+              </Button>
+            </div>
+          </div>
+
+          {/* Theme Primary Color */}
+          <div className="bg-card border rounded-xl p-5">
+            <h3 className="font-bold text-foreground mb-1">থিম কালার</h3>
+            <p className="text-sm text-muted-foreground mb-4">ওয়েবসাইটের প্রাইমারি কালার এডিট করুন (বাটন, লিংক, হাইলাইট)</p>
+            <div className="space-y-3">
+              <div>
+                <Label>প্রাইমারি কালার</Label>
+                <div className="flex items-center gap-3 mt-1">
+                  <input
+                    type="color"
+                    value={themeColor}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    className="h-10 w-16 rounded-md border border-input cursor-pointer bg-background"
+                  />
+                  <Input
+                    placeholder="#1f7a2e"
+                    value={themeColor}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">HEX কোড দিন (যেমন: #1f7a2e)। সেভ করার পর পরিবর্তন তৎক্ষণাৎ দেখা যাবে।</p>
+              </div>
+              <Button variant="outline" onClick={() => updateMutation.mutate({ key: "theme_color", value: { primary_hex: themeColor } })}>
+                সেভ করুন
+              </Button>
+            </div>
+          </div>
 
           {/* Categories Toggle */}
           <div className="bg-card border rounded-xl p-5">
