@@ -97,6 +97,8 @@ const AdminSettings = () => {
   const [webhookSecret, setWebhookSecret] = useState("");
   const [webhookEnabled, setWebhookEnabled] = useState(false);
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
+  const [siteTitle, setSiteTitle] = useState("");
+  const [themeColor, setThemeColor] = useState("#1f7a2e");
 
   useEffect(() => {
     if (settings) {
