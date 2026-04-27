@@ -125,8 +125,15 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.address) {
+    const cleanName = form.name.trim();
+    const cleanPhone = form.phone.replace(/[^\d+]/g, "").trim();
+    const cleanAddress = form.address.trim();
+    if (!cleanName || !cleanPhone || !cleanAddress) {
       toast.error("সকল প্রয়োজনীয় তথ্য পূরণ করুন");
+      return;
+    }
+    if (cleanPhone.length < 11) {
+      toast.error("সঠিক মোবাইল নম্বর দিন (১১ সংখ্যা)");
       return;
     }
     // Facebook Pixel - InitiateCheckout
@@ -139,9 +146,9 @@ const Checkout = () => {
     try {
       const { data: order, error } = await supabase.from("orders").insert({
         user_id: user?.id || null,
-        customer_name: form.name,
-        customer_phone: form.phone,
-        shipping_address: form.address,
+        customer_name: cleanName,
+        customer_phone: cleanPhone,
+        shipping_address: cleanAddress,
         city: "বাংলাদেশ",
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
@@ -189,8 +196,9 @@ const Checkout = () => {
       toast.success("অর্ডার সফল হয়েছে!");
       navigate(`/order-success/${order.id}`);
     } catch (err: any) {
-      toast.error("অর্ডার প্লেস করতে সমস্যা হয়েছে");
-      console.error(err);
+      const msg = err?.message || err?.error_description || err?.details || "অজানা সমস্যা";
+      toast.error(`অর্ডার সমস্যা: ${msg}`);
+      console.error("Order error:", err);
     } finally {
       setLoading(false);
     }
@@ -215,7 +223,7 @@ const Checkout = () => {
                     </div>
                     <div>
                       <Label htmlFor="phone">মোবাইল নম্বর *</Label>
-                      <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
+                      <Input id="phone" type="tel" inputMode="numeric" pattern="[0-9]*" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
                     </div>
                   </div>
                   <div className="mt-4">
