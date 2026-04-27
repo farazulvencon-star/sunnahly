@@ -196,8 +196,9 @@ const Checkout = () => {
       toast.success("অর্ডার সফল হয়েছে!");
       navigate(`/order-success/${order.id}`);
     } catch (err: any) {
-      toast.error("অর্ডার প্লেস করতে সমস্যা হয়েছে");
-      console.error(err);
+      const msg = err?.message || err?.error_description || err?.details || "অজানা সমস্যা";
+      toast.error(`অর্ডার সমস্যা: ${msg}`);
+      console.error("Order error:", err);
     } finally {
       setLoading(false);
     }
