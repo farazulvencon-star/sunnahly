@@ -169,35 +169,45 @@ const Checkout = () => {
         total: item.price * item.quantity,
       }));
 
-      await supabase.from("order_items").insert(orderItems);
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
 
-      // Mark incomplete order as converted
+      // Mark incomplete order as converted (non-critical)
       if (incompleteIdRef.current) {
-        await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
+        try {
+          await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
+        } catch (e) { console.warn("incomplete update failed", e); }
       }
 
-      // Send webhook (fire and forget)
-      if (settings?.order_webhook?.enabled && settings?.order_webhook?.url) {
-        supabase.functions.invoke("order-webhook", {
-          body: { order_id: order.id },
-        }).catch((err) => console.error("Webhook failed:", err));
-      }
+      // Send webhook (fire and forget, non-critical)
+      try {
+        if (settings?.order_webhook?.enabled && settings?.order_webhook?.url) {
+          supabase.functions.invoke("order-webhook", {
+            body: { order_id: order.id },
+          }).catch((err) => console.error("Webhook failed:", err));
+        }
+      } catch (e) { console.warn("webhook invoke failed", e); }
 
       clearCart();
       sessionStorage.removeItem("checkout_session_id");
-      // Facebook Pixel - Purchase
-      window.fbq?.("track", "Purchase", {
-        value: grandTotal,
-        currency: "BDT",
-        content_ids: items.map((i) => i.id),
-        content_type: "product",
-        num_items: items.length,
-      });
+      // Facebook Pixel - Purchase (non-critical)
+      try {
+        window.fbq?.("track", "Purchase", {
+          value: grandTotal,
+          currency: "BDT",
+          content_ids: items.map((i) => i.id),
+          content_type: "product",
+          num_items: items.length,
+        });
+      } catch (e) { console.warn("fbq failed", e); }
       toast.success("অর্ডার সফল হয়েছে!");
       navigate(`/order-success/${order.id}`);
     } catch (err: any) {
-      const msg = err?.message || err?.error_description || err?.details || "অজানা সমস্যা";
-      toast.error(`অর্ডার সমস্যা: ${msg}`);
+      let msg = err?.message || err?.error_description || err?.details || err?.hint;
+      if (!msg) {
+        try { msg = JSON.stringify(err); } catch { msg = "অজানা সমস্যা"; }
+      }
+      toast.error(`অর্ডার সমস্যা: ${msg}`, { duration: 10000 });
       console.error("Order error:", err);
     } finally {
       setLoading(false);
