@@ -169,19 +169,24 @@ const Checkout = () => {
         total: item.price * item.quantity,
       }));
 
-      await supabase.from("order_items").insert(orderItems);
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
 
-      // Mark incomplete order as converted
+      // Mark incomplete order as converted (non-critical)
       if (incompleteIdRef.current) {
-        await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
+        try {
+          await supabase.from("incomplete_orders").update({ is_converted: true }).eq("id", incompleteIdRef.current);
+        } catch (e) { console.warn("incomplete update failed", e); }
       }
 
-      // Send webhook (fire and forget)
-      if (settings?.order_webhook?.enabled && settings?.order_webhook?.url) {
-        supabase.functions.invoke("order-webhook", {
-          body: { order_id: order.id },
-        }).catch((err) => console.error("Webhook failed:", err));
-      }
+      // Send webhook (fire and forget, non-critical)
+      try {
+        if (settings?.order_webhook?.enabled && settings?.order_webhook?.url) {
+          supabase.functions.invoke("order-webhook", {
+            body: { order_id: order.id },
+          }).catch((err) => console.error("Webhook failed:", err));
+        }
+      } catch (e) { console.warn("webhook invoke failed", e); }
 
       clearCart();
       sessionStorage.removeItem("checkout_session_id");
