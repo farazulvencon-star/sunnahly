@@ -65,6 +65,70 @@ const FaviconUpload = ({ settings, updateMutation }: { settings: any; updateMuta
   );
 };
 
+const MetaCatalogFeedCard = () => {
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "rogjosgrwrlblpslmocr";
+  const base = `https://${projectId}.supabase.co/functions/v1/meta-catalog-feed`;
+  const csvUrl = `${base}?format=csv`;
+  const xmlUrl = `${base}?format=xml`;
+
+  const copy = async (url: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(`${label} URL কপি হয়েছে`);
+    } catch {
+      toast.error("কপি করতে সমস্যা হয়েছে");
+    }
+  };
+
+  return (
+    <div className="bg-card border rounded-xl p-5">
+      <h3 className="font-bold text-foreground mb-1">Meta Catalog Feed</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Facebook/Instagram Catalog Ads (Advantage+ / Multi-product) চালানোর জন্য নিচের URL টি Meta Commerce Manager-এ Data Feed হিসেবে দিন। সব active প্রোডাক্ট অটোমেটিক যুক্ত হবে।
+      </p>
+
+      <div className="space-y-3">
+        <div>
+          <Label>CSV Feed URL (Recommended)</Label>
+          <div className="flex gap-2 mt-1">
+            <Input value={csvUrl} readOnly className="flex-1 text-xs font-mono" onFocus={(e) => e.target.select()} />
+            <Button type="button" variant="outline" size="icon" onClick={() => copy(csvUrl, "CSV")} title="কপি">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button type="button" variant="outline" size="icon" asChild title="ব্রাউজারে দেখুন">
+              <a href={csvUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <Label>XML Feed URL (Google Shopping format)</Label>
+          <div className="flex gap-2 mt-1">
+            <Input value={xmlUrl} readOnly className="flex-1 text-xs font-mono" onFocus={(e) => e.target.select()} />
+            <Button type="button" variant="outline" size="icon" onClick={() => copy(xmlUrl, "XML")} title="কপি">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button type="button" variant="outline" size="icon" asChild title="ব্রাউজারে দেখুন">
+              <a href={xmlUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
+            </Button>
+          </div>
+        </div>
+
+        <div className="bg-secondary/40 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
+          <p className="font-semibold text-foreground">কীভাবে ব্যবহার করবেন:</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li><a href="https://business.facebook.com/commerce" target="_blank" rel="noopener noreferrer" className="text-primary underline">Meta Commerce Manager</a> খুলুন → Catalog → Data Sources</li>
+            <li><strong>Add Items → Use Bulk Upload → Scheduled Feed</strong> সিলেক্ট করুন</li>
+            <li>উপরের <strong>CSV URL</strong> পেস্ট করুন (auth লাগবে না — public)</li>
+            <li>Schedule: Daily সিলেক্ট করুন → Currency: BDT → Save</li>
+            <li>Catalog তৈরি হলে Ads Manager-এ Catalog Sales / Advantage+ Catalog campaign চালু করুন</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminSettings = () => {
   const queryClient = useQueryClient();
 
