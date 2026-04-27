@@ -1,1 +1,4 @@
 project_id = "rogjosgrwrlblpslmocr"
+
+[functions.meta-catalog-feed]
+verify_jwt = false
