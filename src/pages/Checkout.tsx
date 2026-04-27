@@ -223,7 +223,7 @@ const Checkout = () => {
                     </div>
                     <div>
                       <Label htmlFor="phone">মোবাইল নম্বর *</Label>
-                      <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
+                      <Input id="phone" type="tel" inputMode="numeric" pattern="[0-9]*" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
                     </div>
                   </div>
                   <div className="mt-4">
