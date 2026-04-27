@@ -125,8 +125,15 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.address) {
+    const cleanName = form.name.trim();
+    const cleanPhone = form.phone.replace(/[^\d+]/g, "").trim();
+    const cleanAddress = form.address.trim();
+    if (!cleanName || !cleanPhone || !cleanAddress) {
       toast.error("সকল প্রয়োজনীয় তথ্য পূরণ করুন");
+      return;
+    }
+    if (cleanPhone.length < 11) {
+      toast.error("সঠিক মোবাইল নম্বর দিন (১১ সংখ্যা)");
       return;
     }
     // Facebook Pixel - InitiateCheckout
