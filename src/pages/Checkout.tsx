@@ -146,9 +146,9 @@ const Checkout = () => {
     try {
       const { data: order, error } = await supabase.from("orders").insert({
         user_id: user?.id || null,
-        customer_name: form.name,
-        customer_phone: form.phone,
-        shipping_address: form.address,
+        customer_name: cleanName,
+        customer_phone: cleanPhone,
+        shipping_address: cleanAddress,
         city: "বাংলাদেশ",
         subtotal: totalPrice,
         delivery_charge: deliveryCharge,
