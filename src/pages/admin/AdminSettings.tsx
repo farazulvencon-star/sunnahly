@@ -391,6 +391,7 @@ const AdminSettings = () => {
               })}>
                 সেভ করুন
               </Button>
+            </div>
           </div>
 
           {/* WhatsApp Number */}
