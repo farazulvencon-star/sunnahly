@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Upload, Loader2, Trash2 } from "lucide-react";
+import { Upload, Loader2, Trash2, Copy, ExternalLink } from "lucide-react";
 
 const FaviconUpload = ({ settings, updateMutation }: { settings: any; updateMutation: any }) => {
   const [faviconUrl, setFaviconUrl] = useState("");
