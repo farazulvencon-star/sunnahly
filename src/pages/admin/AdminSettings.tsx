@@ -444,6 +444,10 @@ const AdminSettings = () => {
               </Button>
             </div>
           </div>
+
+          {/* Meta Catalog Feed */}
+          <MetaCatalogFeedCard />
+        </div>
         </div>
         </div>
       </div>
