@@ -448,8 +448,6 @@ const AdminSettings = () => {
           {/* Meta Catalog Feed */}
           <MetaCatalogFeedCard />
         </div>
-        </div>
-        </div>
       </div>
     </div>
   );
