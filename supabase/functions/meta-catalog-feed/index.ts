@@ -181,7 +181,8 @@ ${items}
       ].map(csvField).join(",");
     });
 
-    const csv = [headers.join(","), ...rows].join("\n");
+    // Prepend UTF-8 BOM so Excel correctly detects encoding and renders Bangla text
+    const csv = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
 
     return new Response(csv, {
       headers: {
