@@ -45,10 +45,8 @@ const AdminLayout = () => {
       {/* Sidebar - Fixed */}
       <aside className="hidden md:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r flex-col z-40">
         <div className="p-4 border-b">
-          {logoUrl ? (
+          {logoUrl && (
             <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain mb-1" />
-          ) : (
-            <h1 className="font-bold text-primary text-lg">Natural Shefa</h1>
           )}
           <p className="text-xs text-muted-foreground">অ্যাডমিন প্যানেল</p>
         </div>

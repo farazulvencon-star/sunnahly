@@ -199,6 +199,19 @@ app.post('/api/rpc/get_public_setting', async (req, res) => {
   }
 });
 
+app.get('/api/debug_uploads', (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadDir);
+    res.json({
+      uploadDir,
+      exists: fs.existsSync(uploadDir),
+      files
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Generic POST Route
 app.post('/api/:table', async (req, res, next) => {
   const { table } = req.params;
