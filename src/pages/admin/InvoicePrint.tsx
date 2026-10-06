@@ -18,7 +18,7 @@ const InvoicePrint = () => {
     queryFn: async () => {
       const { data } = await supabase.from("site_settings").select("*");
       const map: Record<string, any> = {};
-      data?.forEach((s: any) => { map[s.key] = s.value; });
+      data?.forEach((s: any) => { map[s.key || s.setting_key] = s.value; });
       return map;
     },
   });

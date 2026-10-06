@@ -133,13 +133,15 @@ function buildWhereClause(query) {
   for (const [key, value] of Object.entries(query)) {
     if (key === 'select' || key === 'order' || key === 'single') continue;
     if (typeof value === 'string') {
+      // Map 'key' to 'setting_key' if it's the site_settings table fallback
+      const colName = key === 'key' ? 'setting_key' : key;
       if (value.startsWith('eq.')) {
-        whereParts.push(`${key} = ?`);
+        whereParts.push(`\`${colName}\` = ?`);
         values.push(value.split('eq.')[1]);
       } else if (value.startsWith('in.(')) {
         const inVals = value.slice(4, -1).split(',');
         const placeholders = inVals.map(() => '?').join(',');
-        whereParts.push(`${key} IN (${placeholders})`);
+        whereParts.push(`\`${colName}\` IN (${placeholders})`);
         values.push(...inVals);
       }
     }
@@ -182,10 +184,16 @@ app.post('/api/:table', async (req, res, next) => {
   try {
     const results = [];
     for (const item of items) {
+      // Handle the 'key' to 'setting_key' mapping for insert
+      if (table === 'site_settings' && item.key) {
+        item.setting_key = item.key;
+        delete item.key;
+      }
       const keys = Object.keys(item);
       const vals = Object.values(item).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
+      const escapedKeys = keys.map(k => `\`${k}\``).join(', ');
       const placeholders = keys.map(() => '?').join(', ');
-      const [result] = await pool.query(`INSERT INTO ?? (??) VALUES (${placeholders})`, [table, keys, ...vals]);
+      const [result] = await pool.query(`INSERT INTO ?? (${escapedKeys}) VALUES (${placeholders})`, [table, ...vals]);
       results.push({ ...item, id: result.insertId || item.id });
     }
     res.json(Array.isArray(data) ? results : results[0]);
@@ -203,9 +211,14 @@ app.patch('/api/:table', async (req, res) => {
   if (!whereClause) return res.status(400).json({ error: "Missing where clause for update" });
   
   try {
+    // Handle 'key' to 'setting_key' mapping for updates
+    if (table === 'site_settings' && data.key) {
+      data.setting_key = data.key;
+      delete data.key;
+    }
     const keys = Object.keys(data);
     const setVals = Object.values(data).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
-    const setClause = keys.map(k => `${k} = ?`).join(', ');
+    const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
     
     await pool.query(`UPDATE ?? SET ${setClause} ${whereClause}`, [table, ...setVals, ...values]);
     res.json({ success: true });
