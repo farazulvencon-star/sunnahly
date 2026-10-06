@@ -87,6 +87,12 @@ export const supabase = {
     updateUser: async () => ({ data: {}, error: null }),
     signOut: async () => ({ error: null }),
     signInWithPassword: async () => ({ data: { user: { id: "admin-user" } }, error: null }),
+    getSession: async () => ({ data: { session: { user: { id: "admin-user" } } }, error: null }),
+    onAuthStateChange: (callback: any) => {
+      // immediately call the callback with a signed in session
+      setTimeout(() => callback('SIGNED_IN', { user: { id: 'admin-user' } }), 0);
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    }
   },
   functions: {
     invoke: async (name: string, args: any) => ({ data: {}, error: null })
