@@ -58,15 +58,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              {logoUrl ? (
+              {logoUrl && (
                 <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain brightness-0 invert" />
-              ) : (
-                <>
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm">N</span>
-                  </div>
-                  <span className="text-lg font-bold">Natural Shefa</span>
-                </>
               )}
             </div>
             <p className="text-background/70 text-sm leading-relaxed mb-4">{f.brand_description}</p>

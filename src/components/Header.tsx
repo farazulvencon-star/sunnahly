@@ -62,17 +62,8 @@ const Header = () => {
 
           {/* Center: Logo */}
           <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Natural Shefa" className="h-8 w-auto object-contain" />
-            ) : (
-              <>
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">N</span>
-                </div>
-                <div className="leading-tight">
-                  <h1 className="text-lg font-bold text-primary">Natural Shefa</h1>
-                </div>
-              </>
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
             )}
           </Link>
 
@@ -90,18 +81,8 @@ const Header = () => {
         <div className="hidden md:flex items-center justify-between h-20 pl-0 pr-2 lg:pr-4">
           {/* Left: Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0 -ml-2 lg:-ml-4">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Natural Shefa" className="h-14 w-auto object-contain" />
-            ) : (
-              <>
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-xl">N</span>
-                </div>
-                <div className="leading-tight">
-                  <h1 className="text-2xl font-bold text-primary">Natural Shefa</h1>
-                  <p className="text-sm text-muted-foreground">প্রাকৃতিক সৌন্দর্যের ঠিকানা</p>
-                </div>
-              </>
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-14 w-auto object-contain" />
             )}
           </Link>
 
