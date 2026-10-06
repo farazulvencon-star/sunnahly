@@ -149,7 +149,10 @@ function buildWhereClause(query, table = '') {
       
       if (value.startsWith('eq.')) {
         whereParts.push(`\`${colName}\` = ?`);
-        values.push(value.split('eq.')[1]);
+        let val = value.split('eq.')[1];
+        if (val === 'true') val = 1;
+        else if (val === 'false') val = 0;
+        values.push(val);
       } else if (value.startsWith('in.(')) {
         const inVals = value.slice(4, -1).split(',');
         const placeholders = inVals.map(() => '?').join(',');
