@@ -14,6 +14,11 @@ class QueryBuilder {
     return this;
   }
 
+  in(column: string, values: any[]) {
+    this.queryParams[column] = `in.(${values.join(',')})`;
+    return this;
+  }
+
   order(column: string, options: { ascending?: boolean } = { ascending: true }) {
     this.queryParams.order = `${column}.${options.ascending ? 'asc' : 'desc'}`;
     return this;
