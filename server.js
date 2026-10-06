@@ -165,6 +165,13 @@ function buildWhereClause(query, table = '') {
   return { whereClause, values };
 }
 
+app.get('/api/debug_info', (req, res) => {
+  res.json({
+    dirname: __dirname,
+    uploadDir: uploadDir
+  });
+});
+
 // Generic GET Route
 app.get('/api/:table', async (req, res, next) => {
   const { table } = req.params;
