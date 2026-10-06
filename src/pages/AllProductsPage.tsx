@@ -20,10 +20,9 @@ const AllProductsPage = () => {
   const { data: products, isLoading } = useQuery({
     queryKey: ["all-products-page"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("*, categories(name, slug)")
-        .eq("is_active", true);
+      const res = await fetch("http://localhost:5000/api/products");
+      if (!res.ok) throw new Error("Failed to fetch products");
+      const data = await res.json();
       return data || [];
     },
   });
@@ -31,7 +30,9 @@ const AllProductsPage = () => {
   const { data: categories } = useQuery({
     queryKey: ["categories-filter"],
     queryFn: async () => {
-      const { data } = await supabase.from("categories").select("*").eq("is_active", true).order("sort_order");
+      const res = await fetch("http://localhost:5000/api/categories");
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      const data = await res.json();
       return data || [];
     },
   });
