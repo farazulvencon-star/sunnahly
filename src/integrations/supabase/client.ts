@@ -1,5 +1,5 @@
 // Mock Supabase Client that redirects all calls to our local Node.js API
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.PROD ? "/api" : "http://localhost:5000/api";
 
 class QueryBuilder {
   constructor(public table: string, public method: string = "GET", public payload: any = null, public queryParams: any = {}) {}
