@@ -177,6 +177,21 @@ app.get('/api/:table', async (req, res, next) => {
   }
 });
 
+// RPC route for get_public_setting
+app.post('/api/rpc/get_public_setting', async (req, res) => {
+  const { _key } = req.body;
+  try {
+    const [rows] = await pool.query('SELECT setting_value FROM site_settings WHERE setting_key = ?', [_key]);
+    if (rows.length > 0) {
+      res.json(rows[0].setting_value);
+    } else {
+      res.json(null);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Generic POST Route
 app.post('/api/:table', async (req, res, next) => {
   const { table } = req.params;

@@ -32,8 +32,8 @@ const FaviconManager = () => {
   const { data: faviconUrl } = useQuery({
     queryKey: ["site-favicon"],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_setting", { _key: "site_favicon" });
-      return (data as any)?.url || "";
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "site_favicon").single();
+      return (data?.value || data?.setting_value as any)?.url || "";
     },
     staleTime: 1000 * 60 * 10,
   });
@@ -41,8 +41,8 @@ const FaviconManager = () => {
   const { data: siteTitle } = useQuery({
     queryKey: ["site-title"],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_setting", { _key: "site_title" });
-      return (data as any)?.title || "";
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "site_title").single();
+      return (data?.value || data?.setting_value as any)?.title || "";
     },
     staleTime: 1000 * 60 * 10,
   });
@@ -50,22 +50,26 @@ const FaviconManager = () => {
   const { data: themeColor } = useQuery({
     queryKey: ["theme-color"],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_setting", { _key: "theme_color" });
-      return (data as any)?.primary_hex || "";
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "theme_color").single();
+      return (data?.value || data?.setting_value as any)?.primary_hex || "";
     },
     staleTime: 1000 * 60 * 10,
   });
 
   useEffect(() => {
     if (!faviconUrl) return;
-    let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
+    // Remove all existing favicons
+    document.querySelectorAll("link[rel*='icon']").forEach(el => el.remove());
+    
+    // Create new favicon link
+    const link = document.createElement("link");
+    link.rel = "icon";
     link.href = faviconUrl;
-    link.type = faviconUrl.endsWith(".svg") ? "image/svg+xml" : "image/png";
+    if (faviconUrl.endsWith(".svg")) link.type = "image/svg+xml";
+    else if (faviconUrl.endsWith(".webp")) link.type = "image/webp";
+    else if (faviconUrl.endsWith(".ico")) link.type = "image/x-icon";
+    else link.type = "image/png"; // fallback
+    document.head.appendChild(link);
   }, [faviconUrl]);
 
   useEffect(() => {
