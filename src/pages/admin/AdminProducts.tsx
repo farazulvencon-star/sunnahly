@@ -56,25 +56,19 @@ const AdminProducts = () => {
     },
   });
 
-  const hasCloudinary = !!(cloudinaryConfig?.cloud_name && cloudinaryConfig?.upload_preset);
+  const hasCloudinary = true; // Bypassed to use local uploading
 
   const uploadToCloudinary = useCallback(async (file: File, resourceType: "image" | "video" = "image") => {
-    if (!cloudinaryConfig?.cloud_name || !cloudinaryConfig?.upload_preset) {
-      toast.error("Cloudinary সেটআপ করুন (Settings → Cloudinary)");
-      return null;
-    }
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", cloudinaryConfig.upload_preset);
-    formData.append("folder", "products");
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloud_name}/${resourceType}/upload`, {
+    const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
     });
     if (!res.ok) throw new Error("আপলোড ব্যর্থ হয়েছে");
     return await res.json();
-  }, [cloudinaryConfig]);
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -85,9 +79,8 @@ const AdminProducts = () => {
         Array.from(files).map(async (file) => {
           const result = await uploadToCloudinary(file, "image");
           if (!result) return null;
-          // Use Cloudinary transformation for optimized delivery
-          const optimizedUrl = result.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_800/");
-          return optimizedUrl;
+          // It returns the server path /uploads/...
+          return result.secure_url;
         })
       );
       const validUrls = uploads.filter(Boolean) as string[];
@@ -111,7 +104,7 @@ const AdminProducts = () => {
       const result = await uploadToCloudinary(file, "video");
       if (result) {
         const videoUrl = result.secure_url;
-        const thumbnail = result.secure_url.replace(/\.\w+$/, ".jpg").replace("/upload/", "/upload/f_auto,q_auto,w_600,so_1/");
+        const thumbnail = ""; // Thumbnail generation from video would require ffmpeg, leaving empty for now
         setForm(prev => ({ ...prev, video_url: videoUrl, video_thumbnail: thumbnail }));
         toast.success("ভিডিও আপলোড হয়েছে");
       }

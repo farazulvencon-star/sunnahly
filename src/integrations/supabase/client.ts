@@ -103,9 +103,25 @@ export const supabase = {
     invoke: async (name: string, args: any) => ({ data: {}, error: null })
   },
   storage: {
-    from: () => ({
-      upload: async () => ({ data: { path: "mock-path" }, error: null }),
-      getPublicUrl: () => ({ data: { publicUrl: "mock-url" } })
+    from: (bucket: string) => ({
+      upload: async (path: string, file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          const res = await fetch("/api/upload", { method: "POST", body: formData });
+          if (!res.ok) throw new Error("Upload failed");
+          const data = await res.json();
+          // data.secure_url is the returned path from our server.js upload endpoint
+          return { data: { path: data.secure_url }, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      },
+      getPublicUrl: (path: string) => {
+        // If the path is already a full URL or starts with /uploads, return it as is.
+        // The mock upload method sets path to the data.secure_url from /api/upload.
+        return { data: { publicUrl: path } };
+      }
     })
   }
 };

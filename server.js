@@ -3,6 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
+import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +17,53 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Set up uploads directory
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+// Serve uploads folder
+app.use('/uploads', express.static(uploadDir));
+
+// Configure multer (memory storage for sharp processing)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Upload Endpoint
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const isImage = req.file.mimetype.startsWith('image/');
+    const timestamp = Date.now();
+    let filename;
+    
+    if (isImage) {
+      filename = `img-${timestamp}.webp`;
+      const outputPath = path.join(uploadDir, filename);
+      
+      // Auto-reduce and convert to WebP
+      await sharp(req.file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toFile(outputPath);
+    } else {
+      // Handle videos
+      const ext = path.extname(req.file.originalname) || '';
+      filename = `vid-${timestamp}${ext}`;
+      const outputPath = path.join(uploadDir, filename);
+      fs.writeFileSync(outputPath, req.file.buffer);
+    }
+
+    // Return URL format expected by frontend
+    res.json({ secure_url: `/uploads/${filename}` });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
 
 // Create Database Connection Pool
 const pool = mysql.createPool({
