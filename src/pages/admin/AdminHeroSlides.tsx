@@ -35,22 +35,17 @@ const AdminHeroSlides = () => {
   });
 
   const uploadImage = useCallback(async (file: File) => {
-    const cn = settings?.cloudinary?.value?.cloud_name;
-    const preset = settings?.cloudinary?.value?.upload_preset;
-    if (!cn || !preset) { toast.error("আগে Cloudinary সেটআপ করুন"); return; }
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("upload_preset", preset);
-      fd.append("folder", "hero-slides");
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
       const result = await res.json();
       setForm((f) => ({ ...f, image_url: result.secure_url }));
       toast.success("ছবি আপলোড হয়েছে");
     } catch { toast.error("আপলোড ব্যর্থ"); }
     finally { setUploading(false); }
-  }, [settings]);
+  }, []);
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {

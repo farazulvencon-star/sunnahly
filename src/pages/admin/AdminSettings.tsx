@@ -17,16 +17,11 @@ const FaviconUpload = ({ settings, updateMutation }: { settings: any; updateMuta
   }, [settings]);
 
   const upload = async (file: File) => {
-    const cn = settings?.cloudinary?.value?.cloud_name;
-    const preset = settings?.cloudinary?.value?.upload_preset;
-    if (!cn || !preset) { toast.error("আগে Cloudinary সেটআপ করুন"); return; }
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("upload_preset", preset);
-      fd.append("folder", "branding");
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
       const result = await res.json();
       setFaviconUrl(result.secure_url);
       updateMutation.mutate({ key: "site_favicon", value: { url: result.secure_url } });
@@ -190,19 +185,11 @@ const AdminSettings = () => {
   }, [settings]);
 
   const uploadLogo = useCallback(async (file: File) => {
-    const cn = settings?.cloudinary?.value?.cloud_name;
-    const preset = settings?.cloudinary?.value?.upload_preset;
-    if (!cn || !preset) {
-      toast.error("আগে Cloudinary সেটআপ করুন");
-      return;
-    }
     setLogoUploading(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("upload_preset", preset);
-      fd.append("folder", "branding");
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, { method: "POST", body: fd });
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
       const result = await res.json();
       const url = result.secure_url;
       setLogoUrl(url);
