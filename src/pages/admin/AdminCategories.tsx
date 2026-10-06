@@ -23,7 +23,7 @@ const AdminCategories = () => {
     queryFn: async () => {
       const { data } = await supabase.from("site_settings").select("*");
       const map: Record<string, any> = {};
-      data?.forEach((s: any) => { map[s.key || s.setting_key] = { id: s.id, value: s.value }; });
+      data?.forEach((s: any) => { map[s.key || s.setting_key] = { id: s.id, value: s.value || s.setting_value }; });
       return map;
     },
   });

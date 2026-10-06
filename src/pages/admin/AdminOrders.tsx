@@ -61,7 +61,7 @@ const AdminOrders = () => {
     queryKey: ["steadfast-config"],
     queryFn: async () => {
       const { data } = await supabase.from("site_settings").select("*").eq("key", "steadfast").single();
-      return data?.value as { api_key?: string; secret_key?: string } | null;
+      return (data?.value || data?.setting_value) as { api_key?: string; secret_key?: string } | null;
     },
   });
 

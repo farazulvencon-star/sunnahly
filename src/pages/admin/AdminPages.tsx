@@ -29,7 +29,7 @@ const AdminPages = () => {
       const keys = pages.map(p => p.key);
       const { data } = await supabase.from("site_settings").select("*").in("key", keys);
       const map: Record<string, any> = {};
-      data?.forEach((s: any) => { map[s.key || s.setting_key] = s.value; });
+      data?.forEach((s: any) => { map[s.key || s.setting_key] = s.value || s.setting_value; });
       return map;
     },
   });
@@ -50,7 +50,7 @@ const AdminPages = () => {
   const saveMutation = useMutation({
     mutationFn: async (key: string) => {
       const value = { title: titles[key] || "", body: bodies[key] || "" };
-      const { data: existing } = await supabase.from("site_settings").select("id").eq("key", key).single();
+      const { data: existing } = await supabase.from("site_settings").select("*").eq("key", key).single();
       if (existing) {
         const { error } = await supabase.from("site_settings").update({ value }).eq("key", key);
         if (error) throw error;

@@ -127,14 +127,19 @@ app.get('/api/categories', async (req, res, next) => {
   }
 });
 
-function buildWhereClause(query) {
+function buildWhereClause(query, table = '') {
   let whereParts = [];
   let values = [];
   for (const [key, value] of Object.entries(query)) {
     if (key === 'select' || key === 'order' || key === 'single') continue;
     if (typeof value === 'string') {
-      // Map 'key' to 'setting_key' if it's the site_settings table fallback
-      const colName = key === 'key' ? 'setting_key' : key;
+      // Map 'key' to 'setting_key' and 'value' to 'setting_value' for site_settings
+      let colName = key;
+      if (table === 'site_settings') {
+        if (key === 'key') colName = 'setting_key';
+        if (key === 'value') colName = 'setting_value';
+      }
+      
       if (value.startsWith('eq.')) {
         whereParts.push(`\`${colName}\` = ?`);
         values.push(value.split('eq.')[1]);
@@ -156,7 +161,7 @@ app.get('/api/:table', async (req, res, next) => {
   // Ignore specific routes already handled above
   if (['products', 'categories', 'rpc'].includes(table)) return next();
   
-  const { whereClause, values } = buildWhereClause(req.query);
+  const { whereClause, values } = buildWhereClause(req.query, table);
   let orderClause = '';
   if (req.query.order) {
     const [col, dir] = req.query.order.split('.');
@@ -185,9 +190,15 @@ app.post('/api/:table', async (req, res, next) => {
     const results = [];
     for (const item of items) {
       // Handle the 'key' to 'setting_key' mapping for insert
-      if (table === 'site_settings' && item.key) {
-        item.setting_key = item.key;
-        delete item.key;
+      if (table === 'site_settings') {
+        if (item.key !== undefined) {
+          item.setting_key = item.key;
+          delete item.key;
+        }
+        if (item.value !== undefined) {
+          item.setting_value = item.value;
+          delete item.value;
+        }
       }
       const keys = Object.keys(item);
       const vals = Object.values(item).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
@@ -206,15 +217,21 @@ app.post('/api/:table', async (req, res, next) => {
 app.patch('/api/:table', async (req, res) => {
   const { table } = req.params;
   const data = req.body;
-  const { whereClause, values } = buildWhereClause(req.query);
+  const { whereClause, values } = buildWhereClause(req.query, table);
   
   if (!whereClause) return res.status(400).json({ error: "Missing where clause for update" });
   
   try {
-    // Handle 'key' to 'setting_key' mapping for updates
-    if (table === 'site_settings' && data.key) {
-      data.setting_key = data.key;
-      delete data.key;
+    // Handle 'key' to 'setting_key' and 'value' to 'setting_value' mapping for updates
+    if (table === 'site_settings') {
+      if (data.key !== undefined) {
+        data.setting_key = data.key;
+        delete data.key;
+      }
+      if (data.value !== undefined) {
+        data.setting_value = data.value;
+        delete data.value;
+      }
     }
     const keys = Object.keys(data);
     const setVals = Object.values(data).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
@@ -230,7 +247,7 @@ app.patch('/api/:table', async (req, res) => {
 // Generic DELETE Route
 app.delete('/api/:table', async (req, res) => {
   const { table } = req.params;
-  const { whereClause, values } = buildWhereClause(req.query);
+  const { whereClause, values } = buildWhereClause(req.query, table);
   if (!whereClause) return res.status(400).json({ error: "Missing where clause for delete" });
   
   try {

@@ -51,8 +51,8 @@ const AdminProducts = () => {
   const { data: cloudinaryConfig } = useQuery({
     queryKey: ["cloudinary-config"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "cloudinary").single();
-      return data?.value as { cloud_name?: string; upload_preset?: string } || null;
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "cloudinary").single();
+      return (data?.value || data?.setting_value) as { cloud_name?: string; upload_preset?: string } || null;
     },
   });
 

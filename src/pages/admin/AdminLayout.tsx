@@ -31,8 +31,8 @@ const AdminLayout = () => {
   const { data: logoUrl } = useQuery({
     queryKey: ["site-logo"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "site_logo").single();
-      return (data?.value as any)?.url || "";
+      const { data } = await supabase.from("site_settings").select("*").eq("key", "site_logo").single();
+      return ((data?.value || data?.setting_value) as any)?.url || "";
     },
     staleTime: 1000 * 60 * 10,
   });
