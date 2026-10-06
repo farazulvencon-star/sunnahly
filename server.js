@@ -23,8 +23,15 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
-// Serve uploads folder
-app.use('/uploads', express.static(uploadDir));
+// Serve uploads folder via API route to bypass Hostinger static file interception
+app.get(['/api/uploads/:filename', '/uploads/:filename'], (req, res) => {
+  const filePath = path.join(uploadDir, req.params.filename);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('File not found');
+  }
+});
 
 // Configure multer (memory storage for sharp processing)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -57,8 +64,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       fs.writeFileSync(outputPath, req.file.buffer);
     }
 
-    // Return URL format expected by frontend
-    res.json({ secure_url: `/uploads/${filename}` });
+    // Return URL format expected by frontend, using /api/uploads to avoid static routing issues
+    res.json({ secure_url: `/api/uploads/${filename}` });
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Upload failed' });
