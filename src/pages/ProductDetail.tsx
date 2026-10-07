@@ -214,7 +214,7 @@ const ProductDetail = () => {
               {/<\/?[a-z][\s\S]*>/i.test(product.description) ? (
                 <div 
                   className="text-muted-foreground break-words leading-relaxed text-base md:text-lg prose max-w-none prose-p:my-2 prose-headings:my-3 prose-a:text-primary prose-ul:my-2 prose-li:my-0.5"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
+                  dangerouslySetInnerHTML={{ __html: product.description.replace(/```(html)?/gi, '') }}
                 />
               ) : (
                 <div className="text-muted-foreground whitespace-pre-line break-words leading-relaxed text-base md:text-lg">
