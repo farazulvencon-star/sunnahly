@@ -16,6 +16,8 @@ const emptyProduct = {
   name: "", slug: "", description: "", short_description: "", price: 0, original_price: null as number | null,
   sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_bestseller: false, is_active: true, category_id: null as string | null,
   meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "", sort_order: 0,
+  delivery_type: "global", delivery_inside_dhaka: null as number | null, delivery_outside_dhaka: null as number | null, delivery_nationwide: null as number | null,
+  payment_requirement: "cod" as "cod" | "delivery_advance" | "full_advance",
 };
 
 const AdminProducts = () => {
@@ -208,6 +210,11 @@ const AdminProducts = () => {
       is_featured: product.is_featured, is_bestseller: product.is_bestseller || false, is_active: product.is_active, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
       video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "", sort_order: product.sort_order || 0,
+      delivery_type: product.delivery_type || "global",
+      delivery_inside_dhaka: product.delivery_inside_dhaka,
+      delivery_outside_dhaka: product.delivery_outside_dhaka,
+      delivery_nationwide: product.delivery_nationwide,
+      payment_requirement: product.payment_requirement || "cod",
     });
     setActiveTab("general");
     setOpen(true);
@@ -222,6 +229,11 @@ const AdminProducts = () => {
       is_featured: false, is_bestseller: false, is_active: false, category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
       video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "", sort_order: 0,
+      delivery_type: product.delivery_type || "global",
+      delivery_inside_dhaka: product.delivery_inside_dhaka,
+      delivery_outside_dhaka: product.delivery_outside_dhaka,
+      delivery_nationwide: product.delivery_nationwide,
+      payment_requirement: product.payment_requirement || "cod",
     });
     setActiveTab("general");
     setOpen(true);
@@ -427,6 +439,7 @@ const AdminProducts = () => {
                   { value: "description", label: "বিবরণ" },
                   { value: "media", label: "মিডিয়া", icon: <Image className="h-3.5 w-3.5" /> },
                   { value: "inventory", label: "ইনভেন্টরি" },
+                  { value: "delivery", label: "ডেলিভারি ও পেমেন্ট" },
                   { value: "seo", label: "SEO" },
                 ].map(t => (
                   <TabsTrigger key={t.value} value={t.value}
@@ -641,6 +654,61 @@ const AdminProducts = () => {
                   <p className={`text-sm ${form.stock <= 0 ? "text-destructive" : form.stock <= 5 ? "text-yellow-600" : "text-green-600"}`}>
                     {form.stock <= 0 ? "স্টক নেই" : form.stock <= 5 ? `কম স্টক — মাত্র ${form.stock}টি বাকি` : `স্টকে আছে — ${form.stock}টি`}
                   </p>
+                </div>
+              </TabsContent>
+
+              {/* Delivery & Payment Tab */}
+              <TabsContent value="delivery" className="space-y-6 mt-4">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm border-b pb-2">পেমেন্ট নিয়ম</h4>
+                  <div>
+                    <Label className="text-xs font-medium mb-2 block">এই পণ্যের জন্য পেমেন্ট অপশন</Label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
+                        <input type="radio" name="payment_req" checked={form.payment_requirement === "cod"} onChange={() => setForm({ ...form, payment_requirement: "cod" })} className="text-primary" />
+                        <span>ক্যাশ অন ডেলিভারি (সম্পূর্ণ টাকা ডেলিভারি ম্যানকে দিবে)</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
+                        <input type="radio" name="payment_req" checked={form.payment_requirement === "delivery_advance"} onChange={() => setForm({ ...form, payment_requirement: "delivery_advance" })} className="text-primary" />
+                        <span>ডেলিভারি চার্জ আগে দিতে হবে (অ্যাডভান্সড)</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
+                        <input type="radio" name="payment_req" checked={form.payment_requirement === "full_advance"} onChange={() => setForm({ ...form, payment_requirement: "full_advance" })} className="text-primary" />
+                        <span>সম্পূর্ণ টাকা আগে দিতে হবে (প্রিপেইড)</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <h4 className="font-medium text-sm border-b pb-2">ডেলিভারি চার্জ</h4>
+                  <div className="flex gap-4 mb-2">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input type="radio" checked={form.delivery_type === "global"} onChange={() => setForm({ ...form, delivery_type: "global" })} />
+                      <span>গ্লোবাল সেটিংস ব্যবহার করুন</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input type="radio" checked={form.delivery_type === "custom"} onChange={() => setForm({ ...form, delivery_type: "custom" })} />
+                      <span>এই পণ্যের জন্য আলাদা ডেলিভারি চার্জ</span>
+                    </label>
+                  </div>
+
+                  {form.delivery_type === "custom" && (
+                    <div className="grid grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/20">
+                      <div>
+                        <Label className="text-xs font-medium mb-1 block">সারা দেশ (৳)</Label>
+                        <Input type="number" value={form.delivery_nationwide || ""} onChange={(e) => setForm({ ...form, delivery_nationwide: e.target.value ? +e.target.value : null })} placeholder="যেমন: 120" />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium mb-1 block">ঢাকার ভেতর (৳)</Label>
+                        <Input type="number" value={form.delivery_inside_dhaka || ""} onChange={(e) => setForm({ ...form, delivery_inside_dhaka: e.target.value ? +e.target.value : null })} placeholder="যেমন: 60" />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium mb-1 block">ঢাকার বাহিরে (৳)</Label>
+                        <Input type="number" value={form.delivery_outside_dhaka || ""} onChange={(e) => setForm({ ...form, delivery_outside_dhaka: e.target.value ? +e.target.value : null })} placeholder="যেমন: 120" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
