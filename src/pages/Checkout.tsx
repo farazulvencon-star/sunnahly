@@ -55,14 +55,56 @@ const Checkout = () => {
     },
   });
 
-  const deliveryCharge = settings?.delivery_charge?.nationwide
-    ?? settings?.delivery_charge?.inside_dhaka
-    ?? 60;
+  const { data: cartProducts } = useQuery({
+    queryKey: ["cart-products-checkout", items.map(i => i.id).join(",")],
+    queryFn: async () => {
+      if (items.length === 0) return [];
+      const { data } = await supabase.from("products").select("id, delivery_type, delivery_inside_dhaka, delivery_outside_dhaka, delivery_nationwide, payment_requirement").in("id", items.map(i => i.id));
+      return data || [];
+    },
+    enabled: items.length > 0,
+  });
+
+  const globalInside = settings?.delivery_charge?.inside_dhaka ?? 60;
+  const globalOutside = settings?.delivery_charge?.outside_dhaka ?? settings?.delivery_charge?.nationwide ?? 120;
+
+  let deliveryCharge = 0;
+  if (cartProducts && cartProducts.length > 0) {
+    cartProducts.forEach((p) => {
+      let charge = 0;
+      if (p.delivery_type === "custom") {
+        charge = city === "dhaka" 
+          ? (p.delivery_inside_dhaka ?? globalInside)
+          : (p.delivery_outside_dhaka ?? p.delivery_nationwide ?? globalOutside);
+      } else {
+        charge = city === "dhaka" ? globalInside : globalOutside;
+      }
+      if (charge > deliveryCharge) deliveryCharge = charge;
+    });
+  } else {
+    deliveryCharge = city === "dhaka" ? globalInside : globalOutside;
+  }
+
+  let reqAdvance = false;
+  let reqFull = false;
+  if (cartProducts) {
+    cartProducts.forEach(p => {
+      if (p.payment_requirement === "delivery_advance") reqAdvance = true;
+      if (p.payment_requirement === "full_advance") reqFull = true;
+    });
+  }
 
   const grandTotal = totalPrice + deliveryCharge;
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
   const partialPercent = settings?.partial_payment_percent?.percent || 10;
-  const partialAmount = paymentMethod === "partial" ? Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge)) : 0;
+  let partialAmount = paymentMethod === "partial" ? Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge)) : 0;
+  if (reqAdvance && paymentMethod === "partial") partialAmount = deliveryCharge;
+  if (reqFull && paymentMethod === "partial") partialAmount = grandTotal;
+
+  useEffect(() => {
+    if (reqFull) setPaymentMethod("full");
+    else if (reqAdvance && !isPaymentEnabled) setPaymentMethod("cod"); // fallback if gateway disabled
+  }, [reqFull, reqAdvance, isPaymentEnabled]);
 
   // Save incomplete order data
   const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
@@ -236,9 +278,25 @@ const Checkout = () => {
                       <Input id="phone" type="tel" inputMode="numeric" pattern="[0-9]*" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
                     </div>
                   </div>
-                  <div className="mt-4">
-                    <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
-                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা, জেলা" required />
+                  <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
+                      <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা" required rows={2} />
+                    </div>
+                    <div>
+                      <Label htmlFor="city">আপনার এলাকা *</Label>
+                      <div className="mt-1">
+                        <select 
+                          id="city" 
+                          value={city} 
+                          onChange={(e) => setCity(e.target.value)}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="dhaka">ঢাকার ভেতর</option>
+                          <option value="outside">ঢাকার বাহিরে</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -250,7 +308,7 @@ const Checkout = () => {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground mb-0.5">সারা বাংলাদেশে ডেলিভারি</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">{city === "dhaka" ? "ঢাকার ভেতরে ডেলিভারি" : "ঢাকার বাহিরে ডেলিভারি"}</p>
                     <p className="text-base font-bold text-foreground">ডেলিভারি চার্জ: <span className="text-primary">৳{deliveryCharge}</span></p>
                   </div>
                 </div>
@@ -259,22 +317,39 @@ const Checkout = () => {
                 <div className="bg-card border rounded-xl p-5">
                   <h3 className="font-bold text-foreground mb-4">পেমেন্ট পদ্ধতি</h3>
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
-                    <div className="flex items-center gap-3 border rounded-lg p-3">
-                      <RadioGroupItem value="cod" id="cod" />
-                      <Label htmlFor="cod" className="cursor-pointer flex-1">
-                        <span className="text-base font-bold text-foreground">ক্যাশ অন ডেলিভারি (COD)</span>
-                        <p className="text-sm text-muted-foreground mt-0.5">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
-                      </Label>
-                    </div>
-                    {isPaymentEnabled && (
+                    
+                    {!reqFull && (
                       <div className="flex items-center gap-3 border rounded-lg p-3">
-                        <RadioGroupItem value="partial" id="partial" />
-                        <Label htmlFor="partial" className="cursor-pointer flex-1">
-                          <span className="text-base font-bold text-foreground">আংশিক অনলাইন পেমেন্ট</span>
-                          <p className="text-sm text-muted-foreground mt-0.5">মোটের {partialPercent}% বা ডেলিভারি চার্জ (যেটি বেশি) এখনই পে করুন</p>
+                        <RadioGroupItem value="cod" id="cod" />
+                        <Label htmlFor="cod" className="cursor-pointer flex-1">
+                          <span className="text-base font-bold text-foreground">{reqAdvance ? "ক্যাশ অন ডেলিভারি (অ্যাডভান্স প্রযোজ্য)" : "ক্যাশ অন ডেলিভারি (COD)"}</span>
+                          <p className="text-sm text-muted-foreground mt-0.5">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
                         </Label>
                       </div>
                     )}
+
+                    {isPaymentEnabled && (
+                      <div className="flex items-center gap-3 border rounded-lg p-3">
+                        <RadioGroupItem value={reqFull ? "full" : "partial"} id="partial" />
+                        <Label htmlFor="partial" className="cursor-pointer flex-1">
+                          <span className="text-base font-bold text-foreground">{reqFull ? "সম্পূর্ণ টাকা অ্যাডভান্স (অনলাইন পেমেন্ট)" : reqAdvance ? "ডেলিভারি চার্জ অ্যাডভান্স করুন" : "আংশিক পেমেন্ট করে অর্ডার কনফার্ম করুন"}</span>
+                          <p className="text-sm text-muted-foreground mt-0.5">বিকাশ, নগদ বা রকেটের মাধ্যমে নিরাপদে পেমেন্ট করুন।</p>
+                        </Label>
+                      </div>
+                    )}
+                    
+                    {!isPaymentEnabled && reqFull && (
+                       <div className="p-3 bg-primary/10 text-primary font-medium rounded-lg text-sm">
+                         এই পণ্যের জন্য সম্পূর্ণ টাকা অ্যাডভান্স প্রযোজ্য। অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে পেমেন্ট রিসিভ করবে।
+                       </div>
+                    )}
+                    
+                    {!isPaymentEnabled && reqAdvance && (
+                       <div className="p-3 bg-primary/10 text-primary font-medium rounded-lg text-sm mt-2">
+                         বিঃদ্রঃ এই অর্ডারের জন্য ডেলিভারি চার্জ অ্যাডভান্স প্রযোজ্য। অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করবে।
+                       </div>
+                    )}
+
                   </RadioGroup>
                 </div>
               </div>
