@@ -88,14 +88,18 @@ const Checkout = () => {
 
   const deliveryCharge = city === "dhaka" ? insideCharge : outsideCharge;
 
-  let reqAdvance = false;
-  let reqFull = false;
+  let allowedMethods = ["cod", "delivery_advance", "full_advance"];
   if (cartProducts) {
     cartProducts.forEach(p => {
-      if (p.payment_requirement === "delivery_advance") reqAdvance = true;
-      if (p.payment_requirement === "full_advance") reqFull = true;
+      const pMethods = p.payment_requirement ? p.payment_requirement.split(",") : ["cod"];
+      allowedMethods = allowedMethods.filter(m => pMethods.includes(m));
     });
   }
+  if (allowedMethods.length === 0) allowedMethods = ["cod"]; // Fallback if disjoint sets
+
+  const canCOD = allowedMethods.includes("cod");
+  const reqFull = !canCOD && allowedMethods.includes("full_advance") && !allowedMethods.includes("delivery_advance");
+  const reqAdvance = !canCOD && !reqFull;
 
   const grandTotal = Number(totalPrice) + Number(deliveryCharge);
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;

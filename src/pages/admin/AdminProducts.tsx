@@ -17,7 +17,7 @@ const emptyProduct = {
   sku: "", stock: 0, images: [] as string[], badge: "", is_featured: false, is_bestseller: false, is_active: true, category_id: null as string | null,
   meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "", sort_order: 0,
   delivery_type: "global", delivery_inside_dhaka: null as number | null, delivery_outside_dhaka: null as number | null, delivery_nationwide: null as number | null,
-  payment_requirement: "cod" as "cod" | "delivery_advance" | "full_advance",
+  payment_requirement: "cod" as string,
   landing_page_html: "",
 };
 
@@ -676,18 +676,39 @@ const AdminProducts = () => {
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm border-b pb-2">পেমেন্ট নিয়ম</h4>
                   <div>
-                    <Label className="text-xs font-medium mb-2 block">এই পণ্যের জন্য পেমেন্ট অপশন</Label>
+                    <Label className="text-xs font-medium mb-2 block">এই পণ্যের জন্য পেমেন্ট অপশন (একাধিক সিলেক্ট করা যাবে)</Label>
                     <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="radio" name="payment_req" checked={form.payment_requirement === "cod"} onChange={() => setForm({ ...form, payment_requirement: "cod" })} className="text-primary" />
+                        <input type="checkbox" checked={form.payment_requirement?.includes("cod")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                          if (current.includes("cod")) {
+                            setForm({ ...form, payment_requirement: current.filter(c => c !== "cod").join(",") });
+                          } else {
+                            setForm({ ...form, payment_requirement: [...current, "cod"].join(",") });
+                          }
+                        }} className="text-primary rounded" />
                         <span>ক্যাশ অন ডেলিভারি (সম্পূর্ণ টাকা ডেলিভারি ম্যানকে দিবে)</span>
                       </label>
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="radio" name="payment_req" checked={form.payment_requirement === "delivery_advance"} onChange={() => setForm({ ...form, payment_requirement: "delivery_advance" })} className="text-primary" />
+                        <input type="checkbox" checked={form.payment_requirement?.includes("delivery_advance")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                          if (current.includes("delivery_advance")) {
+                            setForm({ ...form, payment_requirement: current.filter(c => c !== "delivery_advance").join(",") });
+                          } else {
+                            setForm({ ...form, payment_requirement: [...current, "delivery_advance"].join(",") });
+                          }
+                        }} className="text-primary rounded" />
                         <span>ডেলিভারি চার্জ আগে দিতে হবে (অ্যাডভান্সড)</span>
                       </label>
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="radio" name="payment_req" checked={form.payment_requirement === "full_advance"} onChange={() => setForm({ ...form, payment_requirement: "full_advance" })} className="text-primary" />
+                        <input type="checkbox" checked={form.payment_requirement?.includes("full_advance")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                          if (current.includes("full_advance")) {
+                            setForm({ ...form, payment_requirement: current.filter(c => c !== "full_advance").join(",") });
+                          } else {
+                            setForm({ ...form, payment_requirement: [...current, "full_advance"].join(",") });
+                          }
+                        }} className="text-primary rounded" />
                         <span>সম্পূর্ণ টাকা আগে দিতে হবে (প্রিপেইড)</span>
                       </label>
                     </div>
