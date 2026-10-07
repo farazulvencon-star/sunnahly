@@ -16,6 +16,14 @@ const CategorySlider = () => {
     },
   });
 
+  const { data: gridSettings } = useQuery({
+    queryKey: ["category-grid-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "category_grid").single();
+      return data?.value || { desktop: 6, mobile: 3 };
+    },
+  });
+
   if (!categories?.length) return null;
 
   return (
@@ -25,12 +33,25 @@ const CategorySlider = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">ক্যাটাগরি সমূহ</h2>
           <p className="text-muted-foreground mt-2">আপনার প্রয়োজন অনুযায়ী পণ্য বেছে নিন</p>
         </div>
-        <div className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <style>{`
+          .category-grid-custom {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(${gridSettings?.mobile || 3}, minmax(0, 1fr));
+          }
+          @media (min-width: 768px) {
+            .category-grid-custom {
+              gap: 1.5rem;
+              grid-template-columns: repeat(${gridSettings?.desktop || 6}, minmax(0, 1fr));
+            }
+          }
+        `}</style>
+        <div className="category-grid-custom pb-2">
           {categories.map((cat: any) => (
             <Link
               key={cat.id}
               to={`/category/${cat.slug}`}
-              className="shrink-0 w-[150px] md:w-[200px] snap-start group"
+              className="group block"
             >
               <div className="bg-secondary rounded-2xl overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-[1.03]">
                 <div className="w-full aspect-[300/350] bg-primary/5 flex items-center justify-center overflow-hidden">
