@@ -68,18 +68,18 @@ const Checkout = () => {
   const globalInside = settings?.delivery_charge?.inside_dhaka ?? 60;
   const globalOutside = settings?.delivery_charge?.outside_dhaka ?? settings?.delivery_charge?.nationwide ?? 120;
 
-  let insideCharge = globalInside;
-  let outsideCharge = globalOutside;
+  let insideCharge = Number(globalInside);
+  let outsideCharge = Number(globalOutside);
   
   if (cartProducts && cartProducts.length > 0) {
     insideCharge = 0;
     outsideCharge = 0;
     cartProducts.forEach((p) => {
-      let currIn = globalInside;
-      let currOut = globalOutside;
+      let currIn = Number(globalInside);
+      let currOut = Number(globalOutside);
       if (p.delivery_type === "custom") {
-        currIn = p.delivery_inside_dhaka ?? globalInside;
-        currOut = p.delivery_outside_dhaka ?? p.delivery_nationwide ?? globalOutside;
+        currIn = Number(p.delivery_inside_dhaka ?? globalInside);
+        currOut = Number(p.delivery_outside_dhaka ?? p.delivery_nationwide ?? globalOutside);
       }
       if (currIn > insideCharge) insideCharge = currIn;
       if (currOut > outsideCharge) outsideCharge = currOut;
@@ -97,7 +97,7 @@ const Checkout = () => {
     });
   }
 
-  const grandTotal = totalPrice + deliveryCharge;
+  const grandTotal = Number(totalPrice) + Number(deliveryCharge);
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
   const partialPercent = settings?.partial_payment_percent?.percent || 10;
   let partialAmount = paymentMethod === "partial" ? Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge)) : 0;
