@@ -68,22 +68,25 @@ const Checkout = () => {
   const globalInside = settings?.delivery_charge?.inside_dhaka ?? 60;
   const globalOutside = settings?.delivery_charge?.outside_dhaka ?? settings?.delivery_charge?.nationwide ?? 120;
 
-  let deliveryCharge = 0;
+  let insideCharge = globalInside;
+  let outsideCharge = globalOutside;
+  
   if (cartProducts && cartProducts.length > 0) {
+    insideCharge = 0;
+    outsideCharge = 0;
     cartProducts.forEach((p) => {
-      let charge = 0;
+      let currIn = globalInside;
+      let currOut = globalOutside;
       if (p.delivery_type === "custom") {
-        charge = city === "dhaka" 
-          ? (p.delivery_inside_dhaka ?? globalInside)
-          : (p.delivery_outside_dhaka ?? p.delivery_nationwide ?? globalOutside);
-      } else {
-        charge = city === "dhaka" ? globalInside : globalOutside;
+        currIn = p.delivery_inside_dhaka ?? globalInside;
+        currOut = p.delivery_outside_dhaka ?? p.delivery_nationwide ?? globalOutside;
       }
-      if (charge > deliveryCharge) deliveryCharge = charge;
+      if (currIn > insideCharge) insideCharge = currIn;
+      if (currOut > outsideCharge) outsideCharge = currOut;
     });
-  } else {
-    deliveryCharge = city === "dhaka" ? globalInside : globalOutside;
   }
+
+  const deliveryCharge = city === "dhaka" ? insideCharge : outsideCharge;
 
   let reqAdvance = false;
   let reqFull = false;
@@ -278,39 +281,31 @@ const Checkout = () => {
                       <Input id="phone" type="tel" inputMode="numeric" pattern="[0-9]*" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" required />
                     </div>
                   </div>
-                  <div className="mt-4 grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
-                      <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা" required rows={2} />
-                    </div>
-                    <div>
-                      <Label htmlFor="city">আপনার এলাকা *</Label>
-                      <div className="mt-1">
-                        <select 
-                          id="city" 
-                          value={city} 
-                          onChange={(e) => setCity(e.target.value)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <option value="dhaka">ঢাকার ভেতর</option>
-                          <option value="outside">ঢাকার বাহিরে</option>
-                        </select>
-                      </div>
-                    </div>
+                  <div className="mt-4">
+                    <Label htmlFor="address">সম্পূর্ণ ঠিকানা *</Label>
+                    <Textarea id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="বাসা নং, রোড, এলাকা, জেলা" required rows={2} />
                   </div>
                 </div>
 
                 {/* Delivery Charge Info Card */}
-                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-4 flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary">
-                      <path d="M5 18H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v12" /><path d="M14 9h4l3 3v6h-3" /><circle cx="7.5" cy="18" r="2.5" /><circle cx="17.5" cy="18" r="2.5" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground mb-0.5">{city === "dhaka" ? "ঢাকার ভেতরে ডেলিভারি" : "ঢাকার বাহিরে ডেলিভারি"}</p>
-                    <p className="text-base font-bold text-foreground">ডেলিভারি চার্জ: <span className="text-primary">৳{deliveryCharge}</span></p>
-                  </div>
+                <div className="bg-card border rounded-xl p-5">
+                  <h3 className="font-bold text-foreground mb-4">ডেলিভারি এরিয়া</h3>
+                  <RadioGroup value={city} onValueChange={setCity} className="space-y-3">
+                    <div className="flex items-center gap-3 border rounded-lg p-3">
+                      <RadioGroupItem value="dhaka" id="dhaka" />
+                      <Label htmlFor="dhaka" className="cursor-pointer flex-1 flex justify-between items-center">
+                        <span className="font-medium">ঢাকার ভেতর</span>
+                        <span className="font-bold text-primary">৳{insideCharge}</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-3 border rounded-lg p-3">
+                      <RadioGroupItem value="outside" id="outside" />
+                      <Label htmlFor="outside" className="cursor-pointer flex-1 flex justify-between items-center">
+                        <span className="font-medium">ঢাকার বাহিরে</span>
+                        <span className="font-bold text-primary">৳{outsideCharge}</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
 
                 {/* Payment */}
