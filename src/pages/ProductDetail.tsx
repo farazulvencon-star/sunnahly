@@ -211,9 +211,16 @@ const ProductDetail = () => {
           {product.description && (
             <div className="mt-8 lg:mt-12 w-full max-w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-border/50">
               <h3 className="font-bold text-foreground mb-4 text-xl border-b pb-2 inline-block border-primary">বিস্তারিত বিবরণ</h3>
-              <div className="text-muted-foreground whitespace-pre-line break-words leading-relaxed text-base md:text-lg">
-                {product.description}
-              </div>
+              {/<\/?[a-z][\s\S]*>/i.test(product.description) ? (
+                <div 
+                  className="text-muted-foreground break-words leading-relaxed text-base md:text-lg prose max-w-none prose-p:my-2 prose-headings:my-3 prose-a:text-primary prose-ul:my-2 prose-li:my-0.5"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              ) : (
+                <div className="text-muted-foreground whitespace-pre-line break-words leading-relaxed text-base md:text-lg">
+                  {product.description}
+                </div>
+              )}
             </div>
           )}
 
