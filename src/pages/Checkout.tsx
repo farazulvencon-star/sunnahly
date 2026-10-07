@@ -104,14 +104,22 @@ const Checkout = () => {
   const grandTotal = Number(totalPrice) + Number(deliveryCharge);
   const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
   const partialPercent = settings?.partial_payment_percent?.percent || 10;
-  let partialAmount = paymentMethod === "partial" ? Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge)) : 0;
+  let partialAmount = 0;
+  if (paymentMethod === "delivery_advance") {
+    partialAmount = deliveryCharge;
+  } else if (paymentMethod === "full_advance" || paymentMethod === "full") {
+    partialAmount = grandTotal;
+  } else if (paymentMethod === "partial") {
+    partialAmount = Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge));
+  }
   if (reqAdvance && paymentMethod === "partial") partialAmount = deliveryCharge;
   if (reqFull && paymentMethod === "partial") partialAmount = grandTotal;
 
   useEffect(() => {
-    if (reqFull) setPaymentMethod("full");
-    else if (reqAdvance && !isPaymentEnabled) setPaymentMethod("cod"); // fallback if gateway disabled
-  }, [reqFull, reqAdvance, isPaymentEnabled]);
+    if (!allowedMethods.includes(paymentMethod)) {
+      setPaymentMethod(allowedMethods[0] || "cod");
+    }
+  }, [allowedMethods.join(","), paymentMethod]);
 
   // Save incomplete order data
   const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
@@ -317,38 +325,40 @@ const Checkout = () => {
                   <h3 className="font-bold text-foreground mb-4">পেমেন্ট পদ্ধতি</h3>
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
                     
-                    {!reqFull && (
+                    {allowedMethods.includes("cod") && (
                       <div className="flex items-center gap-3 border rounded-lg p-3">
                         <RadioGroupItem value="cod" id="cod" />
                         <Label htmlFor="cod" className="cursor-pointer flex-1">
-                          <span className="text-base font-bold text-foreground">{reqAdvance ? "ক্যাশ অন ডেলিভারি (অ্যাডভান্স প্রযোজ্য)" : "ক্যাশ অন ডেলিভারি (COD)"}</span>
+                          <span className="text-base font-bold text-foreground">ক্যাশ অন ডেলিভারি (COD)</span>
                           <p className="text-sm text-muted-foreground mt-0.5">পণ্য হাতে পেয়ে, দেখে, বুঝে তারপরে পেমেন্ট করুন।</p>
                         </Label>
                       </div>
                     )}
 
-                    {isPaymentEnabled && (
+                    {allowedMethods.includes("delivery_advance") && (
                       <div className="flex items-center gap-3 border rounded-lg p-3">
-                        <RadioGroupItem value={reqFull ? "full" : "partial"} id="partial" />
-                        <Label htmlFor="partial" className="cursor-pointer flex-1">
-                          <span className="text-base font-bold text-foreground">{reqFull ? "সম্পূর্ণ টাকা অ্যাডভান্স (অনলাইন পেমেন্ট)" : reqAdvance ? "ডেলিভারি চার্জ অ্যাডভান্স করুন" : "আংশিক পেমেন্ট করে অর্ডার কনফার্ম করুন"}</span>
-                          <p className="text-sm text-muted-foreground mt-0.5">বিকাশ, নগদ বা রকেটের মাধ্যমে নিরাপদে পেমেন্ট করুন।</p>
+                        <RadioGroupItem value="delivery_advance" id="delivery_advance" />
+                        <Label htmlFor="delivery_advance" className="cursor-pointer flex-1">
+                          <span className="text-base font-bold text-foreground">ডেলিভারি চার্জ অ্যাডভান্স করুন</span>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {isPaymentEnabled ? "বিকাশ, নগদ বা রকেটের মাধ্যমে নিরাপদে পেমেন্ট করুন।" : "অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে পেমেন্ট রিসিভ করবে।"}
+                          </p>
+                        </Label>
+                      </div>
+                    )}
+
+                    {allowedMethods.includes("full_advance") && (
+                      <div className="flex items-center gap-3 border rounded-lg p-3">
+                        <RadioGroupItem value="full_advance" id="full_advance" />
+                        <Label htmlFor="full_advance" className="cursor-pointer flex-1">
+                          <span className="text-base font-bold text-foreground">সম্পূর্ণ টাকা অ্যাডভান্স (প্রিপেইড)</span>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {isPaymentEnabled ? "বিকাশ, নগদ বা রকেটের মাধ্যমে নিরাপদে পেমেন্ট করুন।" : "অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে পেমেন্ট রিসিভ করবে।"}
+                          </p>
                         </Label>
                       </div>
                     )}
                     
-                    {!isPaymentEnabled && reqFull && (
-                       <div className="p-3 bg-primary/10 text-primary font-medium rounded-lg text-sm">
-                         এই পণ্যের জন্য সম্পূর্ণ টাকা অ্যাডভান্স প্রযোজ্য। অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে পেমেন্ট রিসিভ করবে।
-                       </div>
-                    )}
-                    
-                    {!isPaymentEnabled && reqAdvance && (
-                       <div className="p-3 bg-primary/10 text-primary font-medium rounded-lg text-sm mt-2">
-                         বিঃদ্রঃ এই অর্ডারের জন্য ডেলিভারি চার্জ অ্যাডভান্স প্রযোজ্য। অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করবে।
-                       </div>
-                    )}
-
                   </RadioGroup>
                 </div>
               </div>
@@ -371,13 +381,13 @@ const Checkout = () => {
                 <div className="border-t mt-4 pt-3 space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">সাবটোটাল</span><span>৳{totalPrice}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">ডেলিভারি চার্জ</span><span>৳{deliveryCharge}</span></div>
-                  {paymentMethod === "partial" && (
-                    <div className="flex justify-between text-primary"><span>আংশিক পেমেন্ট</span><span>৳{partialAmount}</span></div>
+                  {paymentMethod !== "cod" && partialAmount > 0 && (
+                    <div className="flex justify-between text-primary"><span>অ্যাডভান্স পেমেন্ট</span><span>৳{partialAmount}</span></div>
                   )}
                   <div className="border-t pt-2 flex justify-between font-bold text-base">
                     <span>মোট</span><span className="text-primary">৳{grandTotal}</span>
                   </div>
-                  {paymentMethod === "partial" && (
+                  {paymentMethod !== "cod" && grandTotal > partialAmount && (
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>বাকি (COD)</span><span>৳{grandTotal - partialAmount}</span>
                     </div>
