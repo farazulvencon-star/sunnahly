@@ -64,7 +64,13 @@ class QueryBuilder {
 
       const res = await fetch(url, options);
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
+      let data = await res.json();
+      
+      // Handle .single() to match Supabase behavior (return object instead of array)
+      if (this.queryParams.single && Array.isArray(data)) {
+        data = data.length > 0 ? data[0] : null;
+      }
+      
       resolve({ data, error: null });
     } catch (error) {
       resolve({ data: null, error });
