@@ -18,6 +18,7 @@ const emptyProduct = {
   meta_title: "", meta_description: "", focus_keyword: "", video_url: "", video_thumbnail: "", sort_order: 0,
   delivery_type: "global", delivery_inside_dhaka: null as number | null, delivery_outside_dhaka: null as number | null, delivery_nationwide: null as number | null,
   payment_requirement: "cod" as "cod" | "delivery_advance" | "full_advance",
+  landing_page_html: "",
 };
 
 const AdminProducts = () => {
@@ -215,6 +216,7 @@ const AdminProducts = () => {
       delivery_outside_dhaka: product.delivery_outside_dhaka,
       delivery_nationwide: product.delivery_nationwide,
       payment_requirement: product.payment_requirement || "cod",
+      landing_page_html: product.landing_page_html || "",
     });
     setActiveTab("general");
     setOpen(true);
@@ -234,6 +236,7 @@ const AdminProducts = () => {
       delivery_outside_dhaka: product.delivery_outside_dhaka,
       delivery_nationwide: product.delivery_nationwide,
       payment_requirement: product.payment_requirement || "cod",
+      landing_page_html: product.landing_page_html || "",
     });
     setActiveTab("general");
     setOpen(true);
@@ -437,6 +440,7 @@ const AdminProducts = () => {
                 {[
                   { value: "general", label: "সাধারণ" },
                   { value: "description", label: "বিবরণ" },
+                  { value: "landing", label: "ল্যান্ডিং পেজ ডিজাইন" },
                   { value: "media", label: "মিডিয়া", icon: <Image className="h-3.5 w-3.5" /> },
                   { value: "inventory", label: "ইনভেন্টরি" },
                   { value: "delivery", label: "ডেলিভারি ও পেমেন্ট" },
@@ -521,6 +525,16 @@ const AdminProducts = () => {
                   <Label className="text-xs font-medium mb-1.5 block">বিস্তারিত বিবরণ</Label>
                   <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
                     placeholder="পণ্যের বিস্তারিত বিবরণ লিখুন..." rows={8} />
+                </div>
+              </TabsContent>
+
+              {/* Landing Page Custom HTML Tab */}
+              <TabsContent value="landing" className="space-y-4 mt-4">
+                <div>
+                  <Label className="text-sm font-medium mb-2 block text-primary">কাস্টম ল্যান্ডিং পেজ ডিজাইন (HTML)</Label>
+                  <p className="text-xs text-muted-foreground mb-4">এখানে HTML কোড দিয়ে প্রোডাক্ট পেজের একদম নিচে আপনার নিজস্ব ডিজাইন বসাতে পারবেন। খালি রাখলে ডিফল্ট ডিজাইন দেখাবে।</p>
+                  <Textarea value={form.landing_page_html || ""} onChange={(e) => setForm({ ...form, landing_page_html: e.target.value })} 
+                    placeholder="<div class='bg-primary/10 p-8'>...</div>" className="min-h-[400px] font-mono text-sm bg-slate-50" />
                 </div>
               </TabsContent>
 

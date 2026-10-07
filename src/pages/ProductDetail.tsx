@@ -225,70 +225,77 @@ const ProductDetail = () => {
           )}
 
           {/* Landing Page Style Sections */}
-          <div className="mt-12 space-y-12">
-            {/* Why Choose Us */}
-            <div className="bg-primary/5 rounded-3xl p-8 md:p-12 text-center border border-primary/10">
-              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-foreground">কেন আমাদের পণ্যটি সেরা?</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShieldCheck className="h-8 w-8 text-primary" />
+          {product.landing_page_html ? (
+            <div 
+              className="mt-12 w-full max-w-full"
+              dangerouslySetInnerHTML={{ __html: product.landing_page_html.replace(/```(html)?/gi, '') }}
+            />
+          ) : (
+            <div className="mt-12 space-y-12">
+              {/* Why Choose Us */}
+              <div className="bg-primary/5 rounded-3xl p-8 md:p-12 text-center border border-primary/10">
+                <h2 className="text-2xl md:text-3xl font-bold mb-8 text-foreground">কেন আমাদের পণ্যটি সেরা?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShieldCheck className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">১০০% আসল পণ্য</h3>
+                    <p className="text-muted-foreground text-sm">আমরা সরাসরি প্রস্তুতকারক থেকে অরিজিনাল পণ্য সংগ্রহ করি, তাই কোয়ালিটি নিয়ে কোনো আপস নেই।</p>
                   </div>
-                  <h3 className="font-bold text-lg mb-2">১০০% আসল পণ্য</h3>
-                  <p className="text-muted-foreground text-sm">আমরা সরাসরি প্রস্তুতকারক থেকে অরিজিনাল পণ্য সংগ্রহ করি, তাই কোয়ালিটি নিয়ে কোনো আপস নেই।</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Truck className="h-8 w-8 text-primary" />
+                  <div className="bg-white p-6 rounded-2xl shadow-sm">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Truck className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">সুপার ফাস্ট ডেলিভারি</h3>
+                    <p className="text-muted-foreground text-sm">অর্ডার করার পর যত দ্রুত সম্ভব আপনার ঠিকানায় পণ্য পৌঁছে দিতে আমরা বদ্ধপরিকর।</p>
                   </div>
-                  <h3 className="font-bold text-lg mb-2">সুপার ফাস্ট ডেলিভারি</h3>
-                  <p className="text-muted-foreground text-sm">অর্ডার করার পর যত দ্রুত সম্ভব আপনার ঠিকানায় পণ্য পৌঁছে দিতে আমরা বদ্ধপরিকর।</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Clock className="h-8 w-8 text-primary" />
+                  <div className="bg-white p-6 rounded-2xl shadow-sm">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Clock className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">২৪/৭ কাস্টমার সাপোর্ট</h3>
+                    <p className="text-muted-foreground text-sm">পণ্য সংক্রান্ত যেকোনো প্রয়োজনে আমাদের এক্সপার্ট টিম আপনাকে সাহায্য করতে প্রস্তুত।</p>
                   </div>
-                  <h3 className="font-bold text-lg mb-2">২৪/৭ কাস্টমার সাপোর্ট</h3>
-                  <p className="text-muted-foreground text-sm">পণ্য সংক্রান্ত যেকোনো প্রয়োজনে আমাদের এক্সপার্ট টিম আপনাকে সাহায্য করতে প্রস্তুত।</p>
                 </div>
               </div>
-            </div>
 
-            {/* How to order */}
-            <div className="py-8">
-              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-foreground">যেভাবে অর্ডার করবেন</h2>
-              <div className="max-w-3xl mx-auto space-y-4">
-                <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
-                  <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">১</div>
-                  <p className="font-medium">নিচের <span className="text-primary font-bold">"এখনই কিনুন"</span> বাটনে ক্লিক করুন।</p>
-                </div>
-                <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
-                  <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">২</div>
-                  <p className="font-medium">আপনার নাম, মোবাইল নাম্বার এবং সম্পূর্ণ ঠিকানা সঠিকভাবে লিখুন।</p>
-                </div>
-                <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
-                  <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">৩</div>
-                  <p className="font-medium">"অর্ডার কনফার্ম করুন" বাটনে ক্লিক করে আপনার অর্ডারটি নিশ্চিত করুন।</p>
+              {/* How to order */}
+              <div className="py-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-foreground">যেভাবে অর্ডার করবেন</h2>
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
+                    <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">১</div>
+                    <p className="font-medium">নিচের <span className="text-primary font-bold">"এখনই কিনুন"</span> বাটনে ক্লিক করুন।</p>
+                  </div>
+                  <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
+                    <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">২</div>
+                    <p className="font-medium">আপনার নাম, মোবাইল নাম্বার এবং সম্পূর্ণ ঠিকানা সঠিকভাবে লিখুন।</p>
+                  </div>
+                  <div className="flex items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
+                    <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">৩</div>
+                    <p className="font-medium">"অর্ডার কনফার্ম করুন" বাটনে ক্লিক করে আপনার অর্ডারটি নিশ্চিত করুন।</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Final CTA Banner */}
-            <div className="bg-gradient-to-r from-primary/90 to-primary text-white rounded-3xl p-8 md:p-12 text-center shadow-lg relative overflow-hidden">
-              <div className="relative z-10">
-                <h2 className="text-2xl md:text-4xl font-bold mb-4">আর দেরি কেন?</h2>
-                <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">স্টক ফুরিয়ে যাওয়ার আগেই আপনার প্রয়োজনীয় পণ্যটি আজই অর্ডার করুন এবং উপভোগ করুন সেরা শপিং অভিজ্ঞতা।</p>
-                <Link to="/checkout" onClick={handleAddToCart} className="inline-block bg-white text-primary font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 transition-transform hover:scale-105">
-                  এখনই অর্ডার করুন
-                </Link>
-                <p className="mt-4 text-sm opacity-80 flex items-center justify-center gap-2">
-                  <Shield className="h-4 w-4" /> ১০০% নিরাপদ শপিং
-                </p>
+              {/* Final CTA Banner */}
+              <div className="bg-gradient-to-r from-primary/90 to-primary text-white rounded-3xl p-8 md:p-12 text-center shadow-lg relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-2xl md:text-4xl font-bold mb-4">আর দেরি কেন?</h2>
+                  <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">স্টক ফুরিয়ে যাওয়ার আগেই আপনার প্রয়োজনীয় পণ্যটি আজই অর্ডার করুন এবং উপভোগ করুন সেরা শপিং অভিজ্ঞতা।</p>
+                  <Link to="/checkout" onClick={handleAddToCart} className="inline-block bg-white text-primary font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 transition-transform hover:scale-105">
+                    এখনই অর্ডার করুন
+                  </Link>
+                  <p className="mt-4 text-sm opacity-80 flex items-center justify-center gap-2">
+                    <Shield className="h-4 w-4" /> ১০০% নিরাপদ শপিং
+                  </p>
+                </div>
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
               </div>
-              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
             </div>
-          </div>
+          )}
         </div>
         <FeaturedProducts />
         <AllProducts />
