@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,15 +46,21 @@ const AdminHeroSlides = () => {
 
   useEffect(() => {
     if (settings?.hero_promo_banner?.value) {
-      const val = settings.hero_promo_banner.value;
-      const parsed = typeof val === "string" ? JSON.parse(val) : val;
-      setPromoForm({
-        enabled: parsed.enabled !== undefined ? Boolean(parsed.enabled) : true,
-        image_url: parsed.image_url || "",
-        link_url: parsed.link_url || "",
-        title: parsed.title || "",
-        open_in_new_tab: Boolean(parsed.open_in_new_tab),
-      });
+      try {
+        const val = settings.hero_promo_banner.value;
+        const parsed = typeof val === "string" ? JSON.parse(val) : val;
+        if (parsed && typeof parsed === "object") {
+          setPromoForm({
+            enabled: parsed.enabled !== undefined ? Boolean(parsed.enabled) : true,
+            image_url: parsed.image_url || "",
+            link_url: parsed.link_url || "",
+            title: parsed.title || "",
+            open_in_new_tab: Boolean(parsed.open_in_new_tab),
+          });
+        }
+      } catch (err) {
+        console.error("Failed to parse hero_promo_banner setting", err);
+      }
     }
   }, [settings]);
 
