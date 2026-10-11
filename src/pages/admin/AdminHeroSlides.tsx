@@ -72,8 +72,12 @@ const AdminHeroSlides = () => {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const result = await res.json();
       if (result.secure_url) {
-        setPromoForm((f) => ({ ...f, image_url: result.secure_url }));
-        toast.success("প্রোমো ব্যানার ছবি আপলোড হয়েছে");
+        setPromoForm((f) => {
+          const updated = { ...f, image_url: result.secure_url };
+          savePromoMutation.mutate(updated);
+          return updated;
+        });
+        toast.success("প্রোমো ব্যানার ছবি আপলোড ও সেভ হয়েছে");
       } else {
         toast.error("ছবি পাওয়া যায়নি");
       }
@@ -82,7 +86,7 @@ const AdminHeroSlides = () => {
     } finally {
       setPromoUploading(false);
     }
-  }, []);
+  }, [savePromoMutation]);
 
   const savePromoMutation = useMutation({
     mutationFn: async (promoData: any) => {
