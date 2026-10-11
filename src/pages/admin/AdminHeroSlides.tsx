@@ -34,6 +34,74 @@ const AdminHeroSlides = () => {
     },
   });
 
+  // Side promo banner state
+  const [promoForm, setPromoForm] = useState({
+    enabled: true,
+    image_url: "",
+    link_url: "",
+    title: "",
+    open_in_new_tab: false,
+  });
+  const [promoUploading, setPromoUploading] = useState(false);
+
+  useEffect(() => {
+    if (settings?.hero_promo_banner?.value) {
+      const val = settings.hero_promo_banner.value;
+      const parsed = typeof val === "string" ? JSON.parse(val) : val;
+      setPromoForm({
+        enabled: parsed.enabled !== undefined ? Boolean(parsed.enabled) : true,
+        image_url: parsed.image_url || "",
+        link_url: parsed.link_url || "",
+        title: parsed.title || "",
+        open_in_new_tab: Boolean(parsed.open_in_new_tab),
+      });
+    }
+  }, [settings]);
+
+  const uploadPromoImage = useCallback(async (file: File) => {
+    setPromoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const result = await res.json();
+      if (result.secure_url) {
+        setPromoForm((f) => ({ ...f, image_url: result.secure_url }));
+        toast.success("প্রোমো ব্যানার ছবি আপলোড হয়েছে");
+      } else {
+        toast.error("ছবি পাওয়া যায়নি");
+      }
+    } catch {
+      toast.error("আপলোড ব্যর্থ হয়েছে");
+    } finally {
+      setPromoUploading(false);
+    }
+  }, []);
+
+  const savePromoMutation = useMutation({
+    mutationFn: async (promoData: any) => {
+      const existing = settings?.hero_promo_banner;
+      if (existing) {
+        const { error } = await supabase
+          .from("site_settings")
+          .update({ value: promoData })
+          .eq("key", "hero_promo_banner");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("site_settings")
+          .insert({ key: "hero_promo_banner", value: promoData });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-promo-banner"] });
+      toast.success("সাইড প্রোমো ব্যানার সংরক্ষণ হয়েছে");
+    },
+    onError: (e: any) => toast.error(e.message || "সংরক্ষণ ব্যর্থ হয়েছে"),
+  });
+
   const uploadImage = useCallback(async (file: File) => {
     setUploading(true);
     try {
@@ -87,12 +155,134 @@ const AdminHeroSlides = () => {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-8">
+      {/* Side Promo Banner Card */}
+      <div className="bg-card border rounded-2xl p-5 md:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 mb-5">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground">সাইড প্রোমো ব্যানার (ডেস্কটপ ভিউ)</h2>
+              {promoForm.enabled && promoForm.image_url ? (
+                <span className="bg-emerald-500/15 text-emerald-600 text-xs px-2.5 py-0.5 rounded-full font-medium">সক্রিয়</span>
+              ) : (
+                <span className="bg-muted text-muted-foreground text-xs px-2.5 py-0.5 rounded-full">বন্ধ</span>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              ডেস্কটপ ভিউতে হিরো স্লাইডারের ডান পাশে এই ব্যানারটি দেখাবে। ফোন ভিউতে এটি প্রদর্শিত হবে না (স্বয়ংক্রিয়ভাবে বন্ধ থাকবে)।
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Label htmlFor="promo-toggle" className="text-sm font-medium cursor-pointer">
+              {promoForm.enabled ? "চালু আছে" : "বন্ধ আছে"}
+            </Label>
+            <Switch
+              id="promo-toggle"
+              checked={promoForm.enabled}
+              onCheckedChange={(v) => setPromoForm((f) => ({ ...f, enabled: v }))}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          {/* Left: Image Upload & Preview */}
+          <div>
+            <Label className="text-sm font-semibold">ব্যানার ছবি *</Label>
+            <p className="text-xs text-muted-foreground mb-2">রেকমেন্ডেড সাইজ: 600×500px বা 4:3 / 1:1 অনুপাত</p>
+            {promoForm.image_url ? (
+              <div className="relative rounded-xl overflow-hidden border bg-muted/30 aspect-[4/3] max-h-56">
+                <img
+                  src={promoForm.image_url}
+                  alt="Promo preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setPromoForm((f) => ({ ...f, image_url: "" }))}
+                  className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow hover:bg-destructive/90 transition-colors"
+                  title="ছবি মুছুন"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer hover:bg-secondary/40 transition-colors">
+                {promoUploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                ) : (
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground mt-2 font-medium">
+                  {promoUploading ? "আপলোড হচ্ছে..." : "ছবি আপলোড করুন (বা সিলেক্ট করুন)"}
+                </span>
+                <span className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) uploadPromoImage(e.target.files[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+
+            <div className="mt-3">
+              <Label className="text-xs text-muted-foreground">অথবা ছবির সরাসরি লিংক (Image URL)</Label>
+              <Input
+                value={promoForm.image_url}
+                onChange={(e) => setPromoForm((f) => ({ ...f, image_url: e.target.value }))}
+                placeholder="https://..."
+                className="mt-1 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Right: Link & Title & Save */}
+          <div className="space-y-4">
+            <div>
+              <Label>লিংক URL (ক্লিক করলে যেখানে যাবে)</Label>
+              <Input
+                value={promoForm.link_url}
+                onChange={(e) => setPromoForm((f) => ({ ...f, link_url: e.target.value }))}
+                placeholder="যেমন: /product/african-organic-wild-honey বা /category/honey"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                গ্রাহক ব্যানারে ক্লিক করলে নির্দিষ্ট পণ্য বা ক্যাটাগরিতে যাবে।
+              </p>
+            </div>
+
+            <div>
+              <Label>ব্যানার টাইটেল / Alt Text (ঐচ্ছিক)</Label>
+              <Input
+                value={promoForm.title}
+                onChange={(e) => setPromoForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="যেমন: আফ্রিকান অর্গানিক ওয়াইল্ড হানি"
+                className="mt-1"
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button
+                onClick={() => savePromoMutation.mutate(promoForm)}
+                disabled={savePromoMutation.isPending}
+                className="gap-2"
+              >
+                {savePromoMutation.isPending ? "সংরক্ষণ হচ্ছে..." : "প্রোমো ব্যানার সংরক্ষণ করুন"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Hero Slider List */}
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">হিরো স্লাইডার ({slides?.length || 0})</h1>
+          <h1 className="text-2xl font-bold text-foreground">প্রধান হিরো স্লাইডার ({slides?.length || 0})</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            রেকমেন্ডেড সাইজ: <strong>1400×500px</strong> (ডেস্কটপ), ট্যাব/মোবাইলে অটো ফিট হবে। 3:1 রেশিও ব্যবহার করুন।
+            রেকমেন্ডেড সাইজ: <strong>1400×500px</strong> (ডেস্কটপ), ট্যাব/মোবাইলে অটো ফিট হবে।
           </p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditing(null); setForm({ image_url: "", link_url: "", title: "", sort_order: 0, is_active: true }); } }}>

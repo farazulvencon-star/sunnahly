@@ -158,6 +158,7 @@ const AdminSettings = () => {
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
   const [catDesktopCols, setCatDesktopCols] = useState(6);
   const [catMobileCols, setCatMobileCols] = useState(3);
+  const [catTitle, setCatTitle] = useState("Featured Categories");
   const [siteTitle, setSiteTitle] = useState("");
   const [themeColor, setThemeColor] = useState("#1f7a2e");
 
@@ -183,6 +184,7 @@ const AdminSettings = () => {
       setCategoriesEnabled(settings.categories_enabled?.value?.enabled || false);
       setCatDesktopCols(settings.category_grid?.value?.desktop || 6);
       setCatMobileCols(settings.category_grid?.value?.mobile || 3);
+      setCatTitle(settings.category_grid?.value?.title || "Featured Categories");
       setSiteTitle(settings.site_title?.value?.title || "");
       setThemeColor(settings.theme_color?.value?.primary_hex || "#1f7a2e");
     }
@@ -324,6 +326,15 @@ const AdminSettings = () => {
             {categoriesEnabled && (
               <div className="mt-4 pt-4 border-t space-y-4">
                 <div>
+                  <Label>ক্যাটাগরি সেকশন শিরোনাম (Title)</Label>
+                  <Input
+                    value={catTitle}
+                    onChange={(e) => setCatTitle(e.target.value)}
+                    placeholder="Featured Categories"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
                   <Label>ডেস্কটপে প্রতি লাইনে ক্যাটাগরি</Label>
                   <Input type="number" value={catDesktopCols} onChange={(e) => setCatDesktopCols(+e.target.value)} className="mt-1" min={1} max={12} />
                 </div>
@@ -333,7 +344,7 @@ const AdminSettings = () => {
                 </div>
                 <Button variant="outline" onClick={() => updateMutation.mutate({
                   key: "category_grid",
-                  value: { desktop: catDesktopCols, mobile: catMobileCols }
+                  value: { desktop: catDesktopCols, mobile: catMobileCols, title: catTitle }
                 })}>
                   সেভ করুন
                 </Button>

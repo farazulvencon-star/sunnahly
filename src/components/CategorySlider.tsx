@@ -20,28 +20,42 @@ const CategorySlider = () => {
     queryKey: ["category-grid-settings"],
     queryFn: async () => {
       const { data } = await supabase.from("site_settings").select("value").eq("key", "category_grid").single();
-      return data?.value || { desktop: 6, mobile: 3 };
+      const raw = data?.value;
+      if (!raw) return { desktop: 6, mobile: 3, title: "Featured Categories" };
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      return { desktop: 6, mobile: 3, title: "Featured Categories", ...parsed };
     },
   });
 
   if (!categories?.length) return null;
 
+  const sectionTitle = gridSettings?.title || "Featured Categories";
+
   return (
-    <section className="py-10 md:py-16 bg-background">
+    <section className="py-6 md:py-10 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">ক্যাটাগরি সমূহ</h2>
-          <p className="text-muted-foreground mt-2">আপনার প্রয়োজন অনুযায়ী পণ্য বেছে নিন</p>
+        <div className="text-center mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+            {sectionTitle}
+          </h2>
+          {gridSettings?.subtitle && (
+            <p className="text-muted-foreground text-sm mt-1.5">{gridSettings.subtitle}</p>
+          )}
         </div>
         <style>{`
           .category-grid-custom {
             display: grid;
-            gap: 1rem;
+            gap: 0.75rem;
             grid-template-columns: repeat(${gridSettings?.mobile || 3}, minmax(0, 1fr));
+          }
+          @media (min-width: 640px) {
+            .category-grid-custom {
+              gap: 1rem;
+            }
           }
           @media (min-width: 768px) {
             .category-grid-custom {
-              gap: 1.5rem;
+              gap: 1.25rem;
               grid-template-columns: repeat(${gridSettings?.desktop || 6}, minmax(0, 1fr));
             }
           }
@@ -53,16 +67,20 @@ const CategorySlider = () => {
               to={`/category/${cat.slug}`}
               className="group block"
             >
-              <div className="bg-secondary rounded-2xl overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-[1.03]">
-                <div className="w-full aspect-[300/350] bg-primary/5 flex items-center justify-center overflow-hidden">
+              <div className="bg-card rounded-2xl border border-border/50 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                <div className="w-full aspect-[4/3] sm:aspect-square bg-secondary/30 flex items-center justify-center overflow-hidden p-2.5 sm:p-3">
                   {cat.image ? (
-                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
                   ) : (
-                    <Leaf className="h-12 w-12 text-primary/40" />
+                    <Leaf className="h-10 w-10 text-primary/40" />
                   )}
                 </div>
-                <div className="p-3 text-center">
-                  <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                <div className="p-2 sm:p-2.5 text-center">
+                  <h3 className="font-medium text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
                     {cat.name}
                   </h3>
                 </div>

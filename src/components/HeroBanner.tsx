@@ -6,9 +6,8 @@ import { Link } from "react-router-dom";
 
 const HeroBanner = () => {
   const [current, setCurrent] = useState(0);
-  const [previous, setPrevious] = useState<number | null>(null);
 
-  const { data: slides, isLoading } = useQuery({
+  const { data: slides, isLoading: slidesLoading } = useQuery({
     queryKey: ["hero-slides"],
     queryFn: async () => {
       const { data } = await supabase
@@ -20,49 +19,48 @@ const HeroBanner = () => {
     },
   });
 
+  const { data: promoSetting, isLoading: promoLoading } = useQuery({
+    queryKey: ["hero-promo-banner"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("key", "hero_promo_banner")
+        .single();
+      const raw = data?.value || data?.setting_value;
+      if (!raw) return null;
+      return typeof raw === "string" ? JSON.parse(raw) : raw;
+    },
+  });
+
   const total = slides?.length || 0;
 
   const goTo = useCallback((idx: number) => {
-    setCurrent((c) => {
-      if (c === idx) return c;
-      setPrevious(c);
-      return idx;
-    });
+    setCurrent(idx);
   }, []);
 
   const next = useCallback(() => {
-    if (total > 0) goTo((current + 1) % total);
-  }, [total, current, goTo]);
+    if (total > 0) setCurrent((c) => (c + 1) % total);
+  }, [total]);
 
   const prev = useCallback(() => {
-    if (total > 0) goTo((current - 1 + total) % total);
-  }, [total, current, goTo]);
+    if (total > 0) setCurrent((c) => (c - 1 + total) % total);
+  }, [total]);
 
   useEffect(() => {
     if (total <= 1) return;
     const t = setInterval(() => {
-      setCurrent((c) => {
-        setPrevious(c);
-        return (c + 1) % total;
-      });
+      setCurrent((c) => (c + 1) % total);
     }, 5000);
     return () => clearInterval(t);
   }, [total]);
 
-  // Clear previous after transition completes
-  useEffect(() => {
-    if (previous === null) return;
-    const t = setTimeout(() => setPrevious(null), 800);
-    return () => clearTimeout(t);
-  }, [previous, current]);
-
-  if (isLoading) {
+  if (slidesLoading || promoLoading) {
     return (
-      <section className="relative bg-secondary overflow-hidden">
-        <div 
-          className="relative w-full bg-muted animate-pulse"
-          style={{ aspectRatio: "1400/500" }}
-        />
+      <section className="bg-background py-3 md:py-4">
+        <div className="container mx-auto px-4">
+          <div className="w-full bg-muted animate-pulse rounded-2xl aspect-[1400/500]" />
+        </div>
       </section>
     );
   }
@@ -71,66 +69,160 @@ const HeroBanner = () => {
     return null;
   }
 
-  const slide = slides![current];
+  const hasPromo = Boolean(promoSetting?.enabled && promoSetting?.image_url);
 
-  const content = (
-    <div className="relative w-full overflow-hidden">
-      <div className="relative w-full" style={{ aspectRatio: "1400/500" }}>
-        {slides!.map((s, i) => (
-          <img
-            key={s.id}
-            src={s.image_url}
-            alt={s.title || "Banner"}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-              i === current ? "opacity-100 z-[1]" : "opacity-0 z-0"
-            }`}
-            loading={i === 0 ? "eager" : "lazy"}
-          />
-        ))}
-      </div>
-
-      {/* Navigation arrows */}
-      {total > 1 && (
-        <>
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-background/60 hover:bg-background/80 rounded-full p-1.5 md:p-2 transition-colors z-10"
+  return (
+    <section className="bg-background py-3 md:py-4">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row gap-3 md:gap-4 items-stretch">
+          {/* Main Hero Slider */}
+          <div
+            className={`w-full ${
+              hasPromo ? "lg:w-[67%]" : "w-full"
+            } relative rounded-2xl overflow-hidden shadow-xs bg-muted/40`}
           >
-            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-foreground" />
-          </button>
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-background/60 hover:bg-background/80 rounded-full p-1.5 md:p-2 transition-colors z-10"
-          >
-            <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-foreground" />
-          </button>
-        </>
-      )}
+            <div
+              className={`relative w-full ${
+                hasPromo
+                  ? "aspect-[1400/600] lg:aspect-[1.62/1]"
+                  : "aspect-[1400/500]"
+              }`}
+            >
+              {slides!.map((s, i) => {
+                const isCurrent = i === current;
+                const imgElement = (
+                  <img
+                    src={s.image_url}
+                    alt={s.title || "Banner"}
+                    className="w-full h-full object-cover"
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                );
 
-      {/* Dots */}
-      {total > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {slides!.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); goTo(i); }}
-              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === current ? "bg-primary w-6 md:w-8" : "bg-background/60"}`}
-            />
-          ))}
+                return (
+                  <div
+                    key={s.id}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
+                      isCurrent
+                        ? "opacity-100 z-[1] pointer-events-auto"
+                        : "opacity-0 z-0 pointer-events-none"
+                    }`}
+                  >
+                    {s.link_url ? (
+                      s.link_url.startsWith("http") ? (
+                        <a
+                          href={s.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block w-full h-full"
+                        >
+                          {imgElement}
+                        </a>
+                      ) : (
+                        <Link to={s.link_url} className="block w-full h-full">
+                          {imgElement}
+                        </Link>
+                      )
+                    ) : (
+                      imgElement
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Navigation arrows */}
+              {total > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      prev();
+                    }}
+                    className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-amber-600 shadow-md rounded-full p-1.5 md:p-2 transition-all hover:scale-105 z-10"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      next();
+                    }}
+                    className="absolute right-2.5 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-amber-600 shadow-md rounded-full p-1.5 md:p-2 transition-all hover:scale-105 z-10"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />
+                  </button>
+                </>
+              )}
+
+              {/* Pagination Dots (Bottom-Left as in reference design) */}
+              {total > 1 && (
+                <div className="absolute bottom-3 md:bottom-4 left-4 md:left-6 flex items-center gap-1.5 z-10">
+                  {slides!.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goTo(i);
+                      }}
+                      aria-label={`Slide ${i + 1}`}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === current
+                          ? "w-2.5 h-2.5 md:w-3 md:h-3 bg-amber-600 ring-2 ring-white/90"
+                          : "w-2 h-2 md:w-2.5 md:h-2.5 bg-white/80 hover:bg-white"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Side Promo Banner (Desktop Only, hidden on mobile) */}
+          {hasPromo && (
+            <div className="hidden lg:block lg:w-[33%] shrink-0">
+              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xs bg-muted/40 group">
+                {promoSetting.link_url ? (
+                  promoSetting.link_url.startsWith("http") ? (
+                    <a
+                      href={promoSetting.link_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full h-full"
+                    >
+                      <img
+                        src={promoSetting.image_url}
+                        alt={promoSetting.title || "Promo Banner"}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </a>
+                  ) : (
+                    <Link to={promoSetting.link_url} className="block w-full h-full">
+                      <img
+                        src={promoSetting.image_url}
+                        alt={promoSetting.title || "Promo Banner"}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </Link>
+                  )
+                ) : (
+                  <img
+                    src={promoSetting.image_url}
+                    alt={promoSetting.title || "Promo Banner"}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
-
-  if (slide.link_url) {
-    const isExternal = slide.link_url.startsWith("http");
-    if (isExternal) {
-      return <a href={slide.link_url} target="_blank" rel="noopener noreferrer">{content}</a>;
-    }
-    return <Link to={slide.link_url}>{content}</Link>;
-  }
-
-  return content;
 };
 
 export default HeroBanner;
