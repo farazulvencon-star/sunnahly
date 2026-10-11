@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -29,6 +29,20 @@ const Header = () => {
     staleTime: 1000 * 60 * 10,
   });
 
+  // Categories ordered by created_at ascending (oldest/first created first)
+  const { data: categories } = useQuery({
+    queryKey: ["header-categories"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
       <div className="container mx-auto px-2 md:px-4 max-w-[1368px]">
@@ -54,6 +68,25 @@ const Header = () => {
                     <Link to="/dashboard" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">আমার একাউন্ট</Link>
                   ) : (
                     <Link to="/auth" className="px-3 py-3 rounded-md text-foreground hover:bg-accent transition-colors font-medium">লগইন / সাইনআপ</Link>
+                  )}
+
+                  {/* Mobile Drawer Categories */}
+                  {categories && categories.length > 0 && (
+                    <div className="mt-4 pt-4 border-t">
+                      <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">ক্যাটাগরি সমূহ</p>
+                      <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                        {categories.map((cat: any) => (
+                          <Link
+                            key={cat.id}
+                            to={`/category/${cat.slug}`}
+                            className="px-3 py-2 rounded-md text-sm text-foreground hover:bg-accent transition-colors flex items-center justify-between"
+                          >
+                            <span>{cat.name}</span>
+                            <ChevronDown className="h-3.5 w-3.5 -rotate-90 opacity-40" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </nav>
               </SheetContent>
@@ -127,6 +160,29 @@ const Header = () => {
           </div>
         )}
       </div>
+
+      {/* Categories Bar Below Header */}
+      {categories && categories.length > 0 && (
+        <div className="bg-[#09241d] text-white border-t border-white/10 shadow-xs">
+          <div className="container mx-auto px-3 md:px-4 max-w-[1368px]">
+            <nav
+              aria-label="Category Navigation"
+              className="flex items-center gap-5 sm:gap-7 md:gap-8 overflow-x-auto md:overflow-hidden whitespace-nowrap py-2.5 text-xs sm:text-sm font-semibold tracking-wide no-scrollbar"
+            >
+              {categories.map((cat: any) => (
+                <Link
+                  key={cat.id}
+                  to={`/category/${cat.slug}`}
+                  className="inline-flex items-center shrink-0 text-white/90 hover:text-white transition-colors py-0.5 group"
+                >
+                  <span>{cat.name}</span>
+                  <ChevronDown className="h-3.5 w-3.5 ml-1 text-white/60 group-hover:text-white transition-colors" />
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
