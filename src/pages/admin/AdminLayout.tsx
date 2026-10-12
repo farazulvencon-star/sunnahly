@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link, Outlet, useLocation } from "react-router-dom";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft, FolderOpen, AlertTriangle, Code2, Image, FileText, BookOpen, Star, Youtube } from "lucide-react";
@@ -5,6 +6,38 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCategoriesEnabled } from "@/hooks/useCategoriesEnabled";
+
+class AdminErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error("Admin Page Error:", error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive space-y-3">
+          <h2 className="text-lg font-bold">এই পেইজটি লোড হতে সমস্যা হয়েছে</h2>
+          <p className="text-sm font-mono bg-background/80 p-3 rounded border text-foreground overflow-auto">
+            {this.state.error?.message || String(this.state.error)}
+          </p>
+          <button
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90"
+          >
+            আবার চেষ্টা করুন (রিলোড)
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const baseNavItems = [
   { path: "/admin", icon: LayoutDashboard, label: "ড্যাশবোর্ড" },
@@ -81,7 +114,9 @@ const AdminLayout = () => {
 
       {/* Content - offset for fixed sidebar */}
       <main className="md:ml-60 p-4 md:p-6 pb-20 md:pb-6 min-h-screen">
-        <Outlet />
+        <AdminErrorBoundary>
+          <Outlet />
+        </AdminErrorBoundary>
       </main>
     </div>
   );

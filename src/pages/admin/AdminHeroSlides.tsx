@@ -64,30 +64,6 @@ const AdminHeroSlides = () => {
     }
   }, [settings]);
 
-  const uploadPromoImage = useCallback(async (file: File) => {
-    setPromoUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const result = await res.json();
-      if (result.secure_url) {
-        setPromoForm((f) => {
-          const updated = { ...f, image_url: result.secure_url };
-          savePromoMutation.mutate(updated);
-          return updated;
-        });
-        toast.success("প্রোমো ব্যানার ছবি আপলোড ও সেভ হয়েছে");
-      } else {
-        toast.error("ছবি পাওয়া যায়নি");
-      }
-    } catch {
-      toast.error("আপলোড ব্যর্থ হয়েছে");
-    } finally {
-      setPromoUploading(false);
-    }
-  }, [savePromoMutation]);
-
   const savePromoMutation = useMutation({
     mutationFn: async (promoData: any) => {
       const existing = settings?.hero_promo_banner;
@@ -111,6 +87,30 @@ const AdminHeroSlides = () => {
     },
     onError: (e: any) => toast.error(e.message || "সংরক্ষণ ব্যর্থ হয়েছে"),
   });
+
+  const uploadPromoImage = useCallback(async (file: File) => {
+    setPromoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const result = await res.json();
+      if (result.secure_url) {
+        setPromoForm((f) => {
+          const updated = { ...f, image_url: result.secure_url };
+          savePromoMutation.mutate(updated);
+          return updated;
+        });
+        toast.success("প্রোমো ব্যানার ছবি আপলোড ও সেভ হয়েছে");
+      } else {
+        toast.error("ছবি পাওয়া যায়নি");
+      }
+    } catch {
+      toast.error("আপলোড ব্যর্থ হয়েছে");
+    } finally {
+      setPromoUploading(false);
+    }
+  }, [savePromoMutation]);
 
   const uploadImage = useCallback(async (file: File) => {
     setUploading(true);
