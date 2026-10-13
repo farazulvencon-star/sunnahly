@@ -58,7 +58,7 @@ const HeroBanner = () => {
   if (slidesLoading || promoLoading) {
     return (
       <section className="bg-background py-2 md:py-3">
-        <div className="container mx-auto px-3 md:px-4 max-w-[1368px]">
+        <div className="container mx-auto px-4 max-w-[1368px]">
           <div className="w-full bg-muted animate-pulse rounded-2xl aspect-[2.1/1] max-h-[390px]" />
         </div>
       </section>
@@ -73,7 +73,7 @@ const HeroBanner = () => {
 
   return (
     <section className="bg-background py-2.5 md:py-3.5">
-      <div className="container mx-auto px-3 md:px-4 max-w-[1368px]">
+      <div className="container mx-auto px-4 max-w-[1368px]">
         <div className="flex flex-col lg:flex-row gap-3 md:gap-4 items-stretch">
           {/* Main Hero Slider */}
           <div
