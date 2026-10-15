@@ -113,9 +113,19 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="border-t border-background/10">
-        <div className="container mx-auto px-4 py-4">
-          <p className="text-center text-sm text-background/50">{f.copyright}</p>
+      {/* Bottom Sub-Footer: Copyright + EPS Payment Gateway Trust Banner */}
+      <div className="bg-white text-gray-800 border-t border-gray-200 py-3.5">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs md:text-sm text-gray-600 text-center md:text-left order-2 md:order-1 font-medium">
+            {f.copyright}
+          </p>
+          <div className="flex items-center justify-center order-1 md:order-2">
+            <img 
+              src="/eps-payment-methods.png" 
+              alt="Pay with - Verified by EPS Easy Payment System" 
+              className="h-10 md:h-12 w-auto object-contain max-w-full"
+            />
+          </div>
         </div>
       </div>
     </footer>
