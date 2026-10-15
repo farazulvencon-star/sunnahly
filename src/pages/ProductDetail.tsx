@@ -111,10 +111,10 @@ const ProductDetail = () => {
             <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
           </Link>
 
-          <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-10">
+          <div className="grid items-start gap-6 lg:grid-cols-12 lg:gap-10 max-w-6xl mx-auto">
             {/* Images */}
-            <div className="w-full min-w-0 mx-auto max-w-full sm:max-w-[420px] md:max-w-[380px] lg:max-w-none lg:mx-0">
-              <div className="mb-3 aspect-square w-full max-w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/30 lg:bg-secondary">
+            <div className="lg:col-span-5 w-full min-w-0 mx-auto max-w-[360px] sm:max-w-[380px] lg:max-w-[400px]">
+              <div className="mb-3 aspect-square w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/20 shadow-xs flex items-center justify-center p-2">
                 <img
                   key={currentImage}
                   src={currentImage}
@@ -123,18 +123,18 @@ const ProductDetail = () => {
                   onError={(event) => {
                     event.currentTarget.src = "/placeholder.svg";
                   }}
-                  className="block h-full w-full object-contain p-3 lg:object-cover lg:p-0"
+                  className="block max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-300 hover:scale-105"
                 />
               </div>
               {images.length > 1 && (
-                <div className="flex gap-2.5 overflow-x-auto pb-1">
+                <div className="flex gap-2.5 overflow-x-auto pb-1 justify-center sm:justify-start">
                   {images.map((img: string, i: number) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`h-16 w-16 overflow-hidden rounded-lg border-2 bg-card flex-shrink-0 sm:h-20 sm:w-20 ${safeSelectedImage === i ? "border-primary" : "border-transparent"}`}
+                      className={`h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-lg border-2 bg-card flex-shrink-0 transition-all ${safeSelectedImage === i ? "border-primary ring-1 ring-primary/40 shadow-xs" : "border-border/60 hover:border-primary/50"}`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-contain p-1" />
                     </button>
                   ))}
                 </div>
@@ -142,7 +142,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Details */}
-            <div className="w-full min-w-0 max-w-full mx-auto md:max-w-xl lg:max-w-none lg:mx-0">
+            <div className="lg:col-span-7 w-full min-w-0 mx-auto">
               {product.categories?.name && (
                 <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                   {product.categories.name}
