@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Upload, Loader2, Trash2, Copy, ExternalLink } from "lucide-react";
+import { Upload, Loader2, Trash2, Copy, ExternalLink, ShieldCheck, Eye, EyeOff, CreditCard, RefreshCw } from "lucide-react";
 
 const FaviconUpload = ({ settings, updateMutation }: { settings: any; updateMutation: any }) => {
   const [faviconUrl, setFaviconUrl] = useState("");
@@ -138,6 +138,19 @@ const AdminSettings = () => {
   });
 
   const [paymentEnabled, setPaymentEnabled] = useState(false);
+  // EPS Payment Gateway state
+  const [epsEnabled, setEpsEnabled] = useState(false);
+  const [epsMode, setEpsMode] = useState<"sandbox" | "live">("sandbox");
+  const [epsUsername, setEpsUsername] = useState("");
+  const [epsPassword, setEpsPassword] = useState("");
+  const [epsHashKey, setEpsHashKey] = useState("");
+  const [epsMerchantId, setEpsMerchantId] = useState("");
+  const [epsStoreId, setEpsStoreId] = useState("");
+  const [epsApiUrl, setEpsApiUrl] = useState("https://pgapi.eps.com.bd");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showHashKey, setShowHashKey] = useState(false);
+  const [epsTesting, setEpsTesting] = useState(false);
+
   const [insideDhaka, setInsideDhaka] = useState(60);
   const [outsideDhaka, setOutsideDhaka] = useState(120);
   const [partialPercent, setPartialPercent] = useState(10);
@@ -164,7 +177,18 @@ const AdminSettings = () => {
 
   useEffect(() => {
     if (settings) {
-      setPaymentEnabled(settings.payment_gateway?.value?.enabled || false);
+      const pg = settings.payment_gateway?.value;
+      if (pg) {
+        setEpsEnabled(pg.enabled || false);
+        setPaymentEnabled(pg.enabled || false);
+        setEpsMode(pg.mode || "sandbox");
+        setEpsUsername(pg.username || "");
+        setEpsPassword(pg.password || "");
+        setEpsHashKey(pg.hash_key || "");
+        setEpsMerchantId(pg.merchant_id || "");
+        setEpsStoreId(pg.store_id || "");
+        setEpsApiUrl(pg.api_url || "https://pgapi.eps.com.bd");
+      }
       setInsideDhaka(settings.delivery_charge?.value?.inside_dhaka || 60);
       setOutsideDhaka(settings.delivery_charge?.value?.outside_dhaka || 120);
       setPartialPercent(settings.partial_payment_percent?.value?.percent || 10);
@@ -189,6 +213,55 @@ const AdminSettings = () => {
       setThemeColor(settings.theme_color?.value?.primary_hex || "#1f7a2e");
     }
   }, [settings]);
+
+  const handleSaveEps = (overrideEnabled?: boolean) => {
+    const isEn = typeof overrideEnabled === "boolean" ? overrideEnabled : epsEnabled;
+    updateMutation.mutate({
+      key: "payment_gateway",
+      value: {
+        enabled: isEn,
+        provider: "eps",
+        mode: epsMode,
+        username: epsUsername.trim(),
+        password: epsPassword.trim(),
+        hash_key: epsHashKey.trim(),
+        merchant_id: epsMerchantId.trim(),
+        store_id: epsStoreId.trim(),
+        api_url: epsApiUrl.trim() || "https://pgapi.eps.com.bd",
+      },
+    });
+  };
+
+  const handleTestEpsConnection = async () => {
+    if (!epsUsername || !epsPassword || !epsHashKey) {
+      toast.error("User Name, Password এবং Hash Key পূরণ করুন");
+      return;
+    }
+    setEpsTesting(true);
+    try {
+      const res = await fetch("/api/eps/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: epsUsername.trim(),
+          password: epsPassword.trim(),
+          hash_key: epsHashKey.trim(),
+          api_url: epsApiUrl.trim() || "https://pgapi.eps.com.bd",
+          mode: epsMode,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success("EPS কানেকশন সফল! টোকেন সফলভাবে জেনারেট হয়েছে।");
+      } else {
+        toast.error(`কানেকশন ব্যর্থ: ${data.error || "অথেনটিকেশন ব্যর্থ"}`);
+      }
+    } catch (err: any) {
+      toast.error(`কানেকশন ত্রুটি: ${err.message}`);
+    } finally {
+      setEpsTesting(false);
+    }
+  };
 
   const uploadLogo = useCallback(async (file: File) => {
     setLogoUploading(true);
@@ -390,25 +463,205 @@ const AdminSettings = () => {
 
         {/* Col 2 */}
         <div className="space-y-6">
-          {/* Payment Gateway */}
-          <div className="bg-card border rounded-xl p-5">
-            <div className="flex items-center justify-between mb-4">
+          {/* EPS Payment Gateway */}
+          <div className="bg-card border rounded-xl p-5 space-y-4">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-bold text-foreground">পেমেন্ট গেটওয়ে (SSLCommerz)</h3>
-                <p className="text-sm text-muted-foreground">অনলাইন পেমেন্ট চালু/বন্ধ করুন</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-bold text-foreground text-base">পেমেন্ট গেটওয়ে (EPS)</h3>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    epsEnabled 
+                      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" 
+                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                  }`}>
+                    {epsEnabled ? "চালু আছে" : "বন্ধ"}
+                  </span>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    epsMode === "live" 
+                      ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" 
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                  }`}>
+                    {epsMode === "live" ? "Live Mode" : "Sandbox Mode"}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  Easy Payment System (বিকাশ, নগদ, রকেট, ভিসা/মাস্টারকার্ড ও ব্যাংক পেমেন্ট)
+                </p>
               </div>
-              <Switch checked={paymentEnabled}
+              <Switch
+                checked={epsEnabled}
                 onCheckedChange={(v) => {
-                  setPaymentEnabled(v);
-                  updateMutation.mutate({ key: "payment_gateway", value: { enabled: v, provider: "sslcommerz" } });
-                }} />
+                  setEpsEnabled(v);
+                  handleSaveEps(v);
+                }}
+              />
             </div>
-            <div>
-              <Label>আংশিক পেমেন্ট (%)</Label>
-              <div className="flex gap-2 mt-1">
-                <Input type="number" value={partialPercent} onChange={(e) => setPartialPercent(+e.target.value)} className="w-24" />
-                <Button variant="outline" size="sm" onClick={() => updateMutation.mutate({ key: "partial_payment_percent", value: { percent: partialPercent } })}>
-                  সেভ
+
+            {/* Mode Selector (Sandbox vs Live) */}
+            <div className="p-3 bg-secondary/30 rounded-lg border border-border/50">
+              <Label className="text-xs font-semibold text-foreground">পরিবেশ মোড (Environment Mode)</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setEpsMode("sandbox")}
+                  className={`py-2 px-3 rounded-md text-xs font-medium border text-center transition-all cursor-pointer ${
+                    epsMode === "sandbox"
+                      ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                      : "bg-background text-muted-foreground border-border hover:bg-secondary/50"
+                  }`}
+                >
+                  🧪 স্যান্ডবক্স / টেস্ট মোড (Sandbox)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEpsMode("live")}
+                  className={`py-2 px-3 rounded-md text-xs font-medium border text-center transition-all cursor-pointer ${
+                    epsMode === "live"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-background text-muted-foreground border-border hover:bg-secondary/50"
+                  }`}
+                >
+                  🚀 লাইভ মোড (Live Production)
+                </button>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                {epsMode === "sandbox"
+                  ? "স্যান্ডবক্স মোডে টেস্ট ক্রেডেনশিয়াল দিয়ে ডেমো পেমেন্ট পরীক্ষা করতে পারবেন।"
+                  : "লাইভ মোডে কাস্টমারদের আসল পেমেন্ট প্রসেস হবে। EPS থেকে প্রাপ্ত লাইভ ক্রেডেনশিয়াল দিন।"}
+              </p>
+            </div>
+
+            {/* Credentials Fields */}
+            <div className="space-y-3 pt-1">
+              <div>
+                <Label className="text-xs">User Name *</Label>
+                <Input
+                  placeholder="EPS User Name (যেমন: dt_merchant@eps.com.bd)"
+                  value={epsUsername}
+                  onChange={(e) => setEpsUsername(e.target.value)}
+                  className="mt-1 font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Password *</Label>
+                <div className="relative mt-1">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="EPS Password"
+                    value={epsPassword}
+                    onChange={(e) => setEpsPassword(e.target.value)}
+                    className="font-mono text-xs pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">Hash Key (Secret Key) *</Label>
+                <div className="relative mt-1">
+                  <Input
+                    type={showHashKey ? "text" : "password"}
+                    placeholder="SFNLQHJlY2lwZXdhbGEjYTc3Zi..."
+                    value={epsHashKey}
+                    onChange={(e) => setEpsHashKey(e.target.value)}
+                    className="font-mono text-xs pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowHashKey(!showHashKey)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                  >
+                    {showHashKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  EPS হতে প্রদত্ত HMAC-SHA512 সিক্রেট হ্যাশ-কি।
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Merchant ID *</Label>
+                  <Input
+                    placeholder="094980ee-XXX-XXX-XXX"
+                    value={epsMerchantId}
+                    onChange={(e) => setEpsMerchantId(e.target.value)}
+                    className="mt-1 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Store ID *</Label>
+                  <Input
+                    placeholder="35b518f6-XXXX-XXXX"
+                    value={epsStoreId}
+                    onChange={(e) => setEpsStoreId(e.target.value)}
+                    className="mt-1 font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">API Endpoint URL (ঐচ্ছিক)</Label>
+                <Input
+                  placeholder="https://pgapi.eps.com.bd"
+                  value={epsApiUrl}
+                  onChange={(e) => setEpsApiUrl(e.target.value)}
+                  className="mt-1 font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  ডিফল্ট: https://pgapi.eps.com.bd (স্যান্ডবক্স বা আলাদা এন্ডপয়েন্ট থাকলে পরিবর্তন করতে পারেন)
+                </p>
+              </div>
+
+              {/* Partial Payment Setting */}
+              <div className="pt-2 border-t border-border/60">
+                <Label className="text-xs">আংশিক পেমেন্ট হার (%)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    type="number"
+                    value={partialPercent}
+                    onChange={(e) => setPartialPercent(+e.target.value)}
+                    className="w-24 text-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateMutation.mutate({ key: "partial_payment_percent", value: { percent: partialPercent } })}
+                  >
+                    সেভ
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  অনলাইন গেটওয়ের মাধ্যমে কাস্টমার চাইলে মোট অর্ডারের এই % অগ্রিম দিতে পারবে।
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestEpsConnection}
+                  disabled={epsTesting}
+                  className="gap-1.5"
+                >
+                  {epsTesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5 text-primary" />}
+                  টেস্ট কানেকশন
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => handleSaveEps()}
+                >
+                  ক্রেডেনশিয়াল সেভ করুন
                 </Button>
               </div>
             </div>

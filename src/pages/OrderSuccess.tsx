@@ -77,6 +77,8 @@ const OrderSuccess = () => {
     }
   };
 
+  const paymentParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("payment") : null;
+
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar /><Header />
@@ -84,9 +86,26 @@ const OrderSuccess = () => {
         <div className="max-w-md w-full text-center">
           <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">অর্ডার সফল হয়েছে!</h1>
-          <p className="text-muted-foreground mb-2">আপনার অর্ডারটি সফলভাবে প্লেস হয়েছে।</p>
+          <p className="text-muted-foreground mb-4">আপনার অর্ডারটি সফলভাবে প্লেস হয়েছে।</p>
+
+          {paymentParam === "success" && (
+            <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl p-3.5 mb-4 text-green-800 dark:text-green-300 text-sm font-medium">
+              ✓ আলহামদুলিল্লাহ! আপনার অনলাইন পেমেন্ট (EPS) সফলভাবে সম্পন্ন হয়েছে।
+            </div>
+          )}
+          {paymentParam === "failed" && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-3.5 mb-4 text-amber-800 dark:text-amber-300 text-xs sm:text-sm text-left">
+              অনলাইন পেমেন্ট সম্পন্ন হয়নি। আপনার অর্ডারটি ক্যাশ অন ডেলিভারি (পেন্ডিং) হিসেবে গ্রহণ করা হয়েছে। ডেলিভারির সময় মূল্য পরিশোধ করতে পারবেন।
+            </div>
+          )}
+          {paymentParam === "cancelled" && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-3.5 mb-4 text-amber-800 dark:text-amber-300 text-xs sm:text-sm text-left">
+              পেমেন্ট বাতিল করা হয়েছে। আপনার অর্ডারটি ক্যাশ অন ডেলিভারি হিসেবে সংরক্ষিত রয়েছে।
+            </div>
+          )}
+
           {order && (
-            <div className="bg-card border rounded-xl p-5 text-left mt-6 space-y-3">
+            <div className="bg-card border rounded-xl p-5 text-left mt-2 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">অর্ডার নম্বর</span>
                 <span className="font-bold text-primary">{order.order_number}</span>
@@ -96,12 +115,30 @@ const OrderSuccess = () => {
                 <span className="font-bold">৳{Number(order.total)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">পেমেন্ট</span>
-                <span>{order.payment_method === "cod" ? "ক্যাশ অন ডেলিভারি" : "আংশিক অনলাইন"}</span>
+                <span className="text-muted-foreground">পেমেন্ট মেথড</span>
+                <span className="font-medium">
+                  {order.payment_method === "cod" 
+                    ? "ক্যাশ অন ডেলিভারি" 
+                    : order.payment_method === "eps" 
+                    ? "অনলাইন পেমেন্ট (EPS)" 
+                    : "অনলাইন পেমেন্ট"}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">স্ট্যাটাস</span>
-                <span className="bg-warning/10 text-warning px-2 py-0.5 rounded-full text-xs font-medium">পেন্ডিং</span>
+                <span className="text-muted-foreground">পেমেন্ট স্ট্যাটাস</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  order.payment_status === "paid"
+                    ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+                    : "bg-warning/10 text-warning"
+                }`}>
+                  {order.payment_status === "paid" ? "পরিশোধিত (Paid)" : "বকেয়া (Pending)"}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">অর্ডার স্ট্যাটাস</span>
+                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-medium">
+                  {order.order_status === "confirmed" ? "কনফার্মড" : "পেন্ডিং"}
+                </span>
               </div>
             </div>
           )}

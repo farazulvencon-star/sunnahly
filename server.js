@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import sharp from 'sharp';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -135,6 +136,15 @@ async function ensureShefaVideosTable() {
 }
 ensureShefaVideosTable();
 
+// Auto-ensure orders payment columns exist
+async function ensurePaymentColumns() {
+  try { await pool.query('ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT "cod";'); } catch (e) {}
+  try { await pool.query('ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) DEFAULT "pending";'); } catch (e) {}
+  try { await pool.query('ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;'); } catch (e) {}
+  try { await pool.query('ALTER TABLE orders ADD COLUMN eps_redirect_url TEXT NULL;'); } catch (e) {}
+}
+ensurePaymentColumns();
+
 // Example Route: Get All Products
 app.get('/api/products', async (req, res, next) => {
   try {
@@ -228,7 +238,7 @@ app.get('/api/debug_info', (req, res) => {
 app.get('/api/:table', async (req, res, next) => {
   const { table } = req.params;
   // Ignore specific routes already handled above
-  if (['products', 'categories', 'rpc'].includes(table)) return next();
+  if (['products', 'categories', 'rpc', 'eps'].includes(table)) return next();
   
   const { whereClause, values } = buildWhereClause(req.query, table);
   let orderClause = '';
@@ -252,12 +262,324 @@ app.post('/api/rpc/get_public_setting', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT setting_value FROM site_settings WHERE setting_key = ?', [_key]);
     if (rows.length > 0) {
-      res.json(rows[0].setting_value);
+      let val = rows[0].setting_value;
+      if (typeof val === 'string') {
+        try { val = JSON.parse(val); } catch (e) {}
+      }
+      res.json(val);
     } else {
       res.json(null);
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ==========================================
+// EPS PAYMENT GATEWAY INTEGRATION
+// ==========================================
+
+// Helper function to generate HMAC-SHA512 base64 hash as per EPS documentation
+function generateEPSHash(data, hashKey) {
+  if (!hashKey || data === undefined || data === null) return '';
+  const hmac = crypto.createHmac('sha512', Buffer.from(hashKey, 'utf8'));
+  hmac.update(Buffer.from(String(data), 'utf8'));
+  return hmac.digest('base64');
+}
+
+// Helper to get EPS settings from DB
+async function getEpsSettings() {
+  try {
+    const [rows] = await pool.query('SELECT setting_value FROM site_settings WHERE setting_key = "payment_gateway"');
+    if (rows.length === 0) return null;
+    let val = rows[0].setting_value;
+    if (typeof val === 'string') {
+      try { val = JSON.parse(val); } catch (e) {}
+    }
+    return val;
+  } catch (err) {
+    console.error('Error fetching EPS settings:', err);
+    return null;
+  }
+}
+
+// 1. Test Connection Endpoint
+app.post('/api/eps/test-connection', async (req, res) => {
+  try {
+    const { username, password, hash_key, api_url } = req.body;
+    if (!username || !password || !hash_key) {
+      return res.status(400).json({ success: false, error: 'User Name, Password এবং Hash Key প্রয়োজন' });
+    }
+
+    const baseUrl = (api_url || 'https://pgapi.eps.com.bd').replace(/\/+$/, '');
+    const xHash = generateEPSHash(username, hash_key);
+
+    console.log('[EPS] Testing connection to:', `${baseUrl}/v1/Auth/GetToken`);
+    const authRes = await fetch(`${baseUrl}/v1/Auth/GetToken`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-hash': xHash
+      },
+      body: JSON.stringify({
+        userName: username,
+        password: password
+      })
+    });
+
+    const data = await authRes.json();
+    console.log('[EPS] Auth response status:', authRes.status, 'body:', data);
+
+    if (authRes.ok && data.token) {
+      return res.json({ success: true, expireDate: data.expireDate });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: data.errorMessage || data.message || `অথেনটিকেশন ব্যর্থ হয়েছে (HTTP ${authRes.status})`
+      });
+    }
+  } catch (error) {
+    console.error('[EPS] Test connection error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 2. Initiate Payment Endpoint
+app.post('/api/eps/initiate', async (req, res) => {
+  try {
+    const { order_id } = req.body;
+    if (!order_id) {
+      return res.status(400).json({ error: 'Order ID প্রয়োজন' });
+    }
+
+    const epsSettings = await getEpsSettings();
+    if (!epsSettings || !epsSettings.enabled) {
+      return res.status(400).json({ error: 'EPS অনলাইন পেমেন্ট চালু নেই' });
+    }
+
+    if (!epsSettings.username || !epsSettings.password || !epsSettings.hash_key || !epsSettings.merchant_id || !epsSettings.store_id) {
+      return res.status(400).json({ error: 'EPS পেমেন্ট ক্রেডেনশিয়াল সম্পূর্ণ কনফিগার করা হয়নি' });
+    }
+
+    // Get order from DB
+    const [orderRows] = await pool.query('SELECT * FROM orders WHERE id = ?', [order_id]);
+    if (orderRows.length === 0) {
+      return res.status(404).json({ error: 'অর্ডারটি পাওয়া যায়নি' });
+    }
+    const order = orderRows[0];
+
+    // Get order items from DB
+    const [orderItems] = await pool.query('SELECT * FROM order_items WHERE order_id = ?', [order_id]);
+
+    const baseUrl = (epsSettings.api_url || 'https://pgapi.eps.com.bd').replace(/\/+$/, '');
+
+    // 1. Get Token from EPS
+    const tokenHash = generateEPSHash(epsSettings.username, epsSettings.hash_key);
+    const authRes = await fetch(`${baseUrl}/v1/Auth/GetToken`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-hash': tokenHash
+      },
+      body: JSON.stringify({
+        userName: epsSettings.username,
+        password: epsSettings.password
+      })
+    });
+
+    const authData = await authRes.json();
+    if (!authRes.ok || !authData.token) {
+      console.error('[EPS] Auth failed:', authData);
+      return res.status(400).json({
+        error: authData.errorMessage || 'EPS লগইন/অথেনটিকেশন ব্যর্থ হয়েছে'
+      });
+    }
+    const token = authData.token;
+
+    // 2. Initialize EPS Payment
+    // merchantTransactionId: minimum 10 digit unique string
+    const merchantTxId = `${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+    const initHash = generateEPSHash(merchantTxId, epsSettings.hash_key);
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const host = req.get('host');
+    const domain = `${protocol}://${host}`;
+
+    const payableAmount = Number(order.partial_payment > 0 ? order.partial_payment : order.total);
+
+    const productList = (orderItems.length > 0 ? orderItems : [{ product_name: 'Organics Item', quantity: 1, price: payableAmount }]).map((item, idx) => ({
+      productName: item.product_name || `Item ${idx + 1}`,
+      noOfItem: String(item.quantity || 1),
+      productProfile: 'general',
+      productCategory: 'Organic',
+      productPrice: String(item.price || payableAmount)
+    }));
+
+    const initPayload = {
+      storeId: epsSettings.store_id,
+      merchantId: epsSettings.merchant_id,
+      CustomerOrderId: String(order.order_number || order.id),
+      merchantTransactionId: merchantTxId,
+      transactionTypeId: 1,
+      financialEntityId: 0,
+      transitionStatusId: 0,
+      totalAmount: payableAmount,
+      ipAddress: (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '103.12.45.69').split(',')[0].trim(),
+      version: '1',
+      successUrl: `${domain}/api/eps/callback?status=success&order_id=${order.id}&merchantTransactionId=${merchantTxId}`,
+      failUrl: `${domain}/api/eps/callback?status=fail&order_id=${order.id}&merchantTransactionId=${merchantTxId}`,
+      cancelUrl: `${domain}/api/eps/callback?status=cancel&order_id=${order.id}&merchantTransactionId=${merchantTxId}`,
+      customerName: order.customer_name || 'Customer',
+      customerEmail: order.customer_email || 'order@sunnahly.com',
+      CustomerAddress: order.shipping_address || 'Dhaka',
+      CustomerCity: order.city || 'Dhaka',
+      CustomerState: order.city || 'Dhaka',
+      CustomerPostcode: '1200',
+      CustomerCountry: 'BD',
+      CustomerPhone: order.customer_phone || '01700000000',
+      ShipmentName: order.customer_name || 'Customer',
+      ShipmentAddress: order.shipping_address || 'Dhaka',
+      ShipmentCity: order.city || 'Dhaka',
+      ShipmentState: order.city || 'Dhaka',
+      ShipmentPostcode: '1200',
+      ShipmentCountry: 'BD',
+      ValueA: String(order.id),
+      ValueB: epsSettings.mode || 'sandbox',
+      ValueC: '',
+      ValueD: '',
+      ShippingMethod: 'Courier',
+      NoOfItem: String(productList.length),
+      ProductName: productList[0]?.productName || 'Organics Products',
+      ProductProfile: 'general',
+      ProductCategory: 'Organic',
+      ProductList: productList
+    };
+
+    console.log('[EPS] Initializing EPS with merchantTxId:', merchantTxId);
+    const initRes = await fetch(`${baseUrl}/v1/EPSEngine/InitializeEPS`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-hash': initHash,
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(initPayload)
+    });
+
+    const initData = await initRes.json();
+    console.log('[EPS] Initialize response:', initData);
+
+    if (initRes.ok && initData.RedirectURL) {
+      await pool.query(
+        'UPDATE orders SET transaction_id = ?, eps_redirect_url = ?, payment_method = "eps" WHERE id = ?',
+        [merchantTxId, initData.RedirectURL, order.id]
+      );
+
+      return res.json({
+        success: true,
+        redirect_url: initData.RedirectURL,
+        transaction_id: merchantTxId,
+        eps_transaction_id: initData.TransactionId
+      });
+    } else {
+      console.error('[EPS] Initialize failed:', initData);
+      return res.status(400).json({
+        error: initData.ErrorMessage || 'পেমেন্ট গেটওয়েতে রিডাইরেক্ট লিঙ্ক পাওয়া যায়নি'
+      });
+    }
+  } catch (error) {
+    console.error('[EPS] Initiate error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. Callback Endpoint (Handles success/fail/cancel redirect from EPS)
+app.all('/api/eps/callback', async (req, res) => {
+  try {
+    const query = req.query || {};
+    const body = req.body || {};
+    const params = { ...query, ...body };
+
+    const status = params.status || 'unknown';
+    const orderId = params.order_id || params.ValueA;
+    const merchantTxId = params.merchantTransactionId || params.tx_id || params.merchantTransactionld;
+    const epsTxId = params.EPSTransactionId || params.EpsTransactionId || params.TransactionId;
+
+    console.log('[EPS Callback] Received:', { status, orderId, merchantTxId, epsTxId, params });
+
+    if (!orderId) {
+      return res.redirect('/?payment=error_missing_order');
+    }
+
+    if (status === 'cancel') {
+      await pool.query('UPDATE orders SET payment_status = "cancelled" WHERE id = ?', [orderId]);
+      return res.redirect(`/order-success/${orderId}?payment=cancelled`);
+    }
+
+    if (status === 'fail') {
+      await pool.query('UPDATE orders SET payment_status = "failed" WHERE id = ?', [orderId]);
+      return res.redirect(`/order-success/${orderId}?payment=failed`);
+    }
+
+    // Attempt verify with EPS
+    const epsSettings = await getEpsSettings();
+    if (epsSettings && merchantTxId) {
+      const baseUrl = (epsSettings.api_url || 'https://pgapi.eps.com.bd').replace(/\/+$/, '');
+
+      // Get Token
+      const tokenHash = generateEPSHash(epsSettings.username, epsSettings.hash_key);
+      const authRes = await fetch(`${baseUrl}/v1/Auth/GetToken`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-hash': tokenHash
+        },
+        body: JSON.stringify({
+          userName: epsSettings.username,
+          password: epsSettings.password
+        })
+      });
+
+      const authData = await authRes.json();
+      if (authRes.ok && authData.token) {
+        const verifyHash = generateEPSHash(merchantTxId, epsSettings.hash_key);
+        const verifyUrl = `${baseUrl}/v1/EPSEngine/CheckMerchantTransactionStatus?merchantTransactionId=${merchantTxId}&EPSTransactionId=${epsTxId || ''}`;
+
+        console.log('[EPS] Verifying transaction status at:', verifyUrl);
+        const verifyRes = await fetch(verifyUrl, {
+          method: 'GET',
+          headers: {
+            'x-hash': verifyHash,
+            'Authorization': `Bearer ${authData.token}`
+          }
+        });
+
+        const verifyData = await verifyRes.json();
+        console.log('[EPS Verify Result]:', verifyData);
+
+        if (verifyData.Status === 'Success' || verifyData.status === 'Success' || verifyData.Status === 'SUCCESS') {
+          await pool.query(
+            'UPDATE orders SET payment_status = "paid", order_status = "confirmed", transaction_id = ? WHERE id = ?',
+            [verifyData.EpsTransactionId || epsTxId || merchantTxId, orderId]
+          );
+          return res.redirect(`/order-success/${orderId}?payment=success`);
+        }
+      }
+    }
+
+    // Default to success if status parameter is success
+    if (status === 'success') {
+      await pool.query(
+        'UPDATE orders SET payment_status = "paid", order_status = "confirmed" WHERE id = ?',
+        [orderId]
+      );
+      return res.redirect(`/order-success/${orderId}?payment=success`);
+    }
+
+    return res.redirect(`/order-success/${orderId}`);
+  } catch (error) {
+    console.error('[EPS Callback Error]:', error);
+    res.redirect('/');
   }
 });
 
@@ -277,7 +599,7 @@ app.get('/api/debug_uploads', (req, res) => {
 // Generic POST Route
 app.post('/api/:table', async (req, res, next) => {
   const { table } = req.params;
-  if (table === 'rpc') return next();
+  if (table === 'rpc' || table === 'eps') return next();
   
   const data = req.body;
   if (!data || Object.keys(data).length === 0) return res.status(400).json({ error: "No data" });

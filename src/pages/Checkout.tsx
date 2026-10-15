@@ -102,12 +102,14 @@ const Checkout = () => {
   const reqAdvance = !canCOD && !reqFull;
 
   const grandTotal = Number(totalPrice) + Number(deliveryCharge);
-  const isPaymentEnabled = settings?.payment_gateway?.enabled || false;
+  const isPaymentEnabled = typeof settings?.payment_gateway === "string" 
+    ? (JSON.parse(settings.payment_gateway)?.enabled || false)
+    : (settings?.payment_gateway?.enabled || false);
   const partialPercent = settings?.partial_payment_percent?.percent || 10;
   let partialAmount = 0;
   if (paymentMethod === "delivery_advance") {
     partialAmount = deliveryCharge;
-  } else if (paymentMethod === "full_advance" || paymentMethod === "full") {
+  } else if (paymentMethod === "full_advance" || paymentMethod === "full" || paymentMethod === "eps") {
     partialAmount = grandTotal;
   } else if (paymentMethod === "partial") {
     partialAmount = Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge));
@@ -116,10 +118,11 @@ const Checkout = () => {
   if (reqFull && paymentMethod === "partial") partialAmount = grandTotal;
 
   useEffect(() => {
-    if (!allowedMethods.includes(paymentMethod)) {
+    const valid = isPaymentEnabled ? [...allowedMethods, "eps"] : allowedMethods;
+    if (!valid.includes(paymentMethod)) {
       setPaymentMethod(allowedMethods[0] || "cod");
     }
-  }, [allowedMethods.join(","), paymentMethod]);
+  }, [allowedMethods.join(","), paymentMethod, isPaymentEnabled]);
 
   // Save incomplete order data
   const saveIncompleteOrder = useCallback(async (currentForm: typeof form) => {
@@ -245,6 +248,39 @@ const Checkout = () => {
         }
       } catch (e) { console.warn("webhook invoke failed", e); }
 
+      // If customer chose online payment (EPS)
+      if (paymentMethod === "eps" || ((paymentMethod === "delivery_advance" || paymentMethod === "full_advance") && isPaymentEnabled)) {
+        try {
+          const payRes = await fetch("/api/eps/initiate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order_id: order.id }),
+          });
+          const payData = await payRes.json();
+          if (payRes.ok && payData.redirect_url) {
+            clearCart();
+            sessionStorage.removeItem("checkout_session_id");
+            toast.success("পেমেন্ট গেটওয়েতে নিয়ে যাওয়া হচ্ছে...");
+            window.location.href = payData.redirect_url;
+            return;
+          } else {
+            console.error("EPS initiate error:", payData);
+            toast.error(payData.error || "পেমেন্ট গেটওয়ে সংযোগে সমস্যা, তবে আপনার অর্ডার সফলভাবে সংরক্ষিত হয়েছে।");
+            clearCart();
+            sessionStorage.removeItem("checkout_session_id");
+            navigate(`/order-success/${order.id}?payment=failed`);
+            return;
+          }
+        } catch (payErr: any) {
+          console.error("EPS initiate error:", payErr);
+          toast.error("পেমেন্ট গেটওয়েতে সংযোগ সমস্যা");
+          clearCart();
+          sessionStorage.removeItem("checkout_session_id");
+          navigate(`/order-success/${order.id}?payment=failed`);
+          return;
+        }
+      }
+
       clearCart();
       sessionStorage.removeItem("checkout_session_id");
       // Facebook Pixel - Purchase (non-critical)
@@ -335,6 +371,25 @@ const Checkout = () => {
                       </div>
                     )}
 
+                    {isPaymentEnabled && (
+                      <div className="flex items-center gap-3 border rounded-lg p-3.5 bg-primary/5 border-primary/25">
+                        <RadioGroupItem value="eps" id="eps" />
+                        <Label htmlFor="eps" className="cursor-pointer flex-1">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <span className="text-base font-bold text-foreground">
+                              অনলাইন পেমেন্ট (EPS)
+                            </span>
+                            <span className="text-[11px] bg-primary/10 text-primary font-semibold px-2.5 py-0.5 rounded-full">
+                              বিকাশ • নগদ • রকেট • কার্ড
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            বিকাশ, নগদ, রকেট, ডেবিট/ক্রেডিট কার্ড বা ব্যাংকের মাধ্যমে সরাসরি সুরক্ষিত পেমেন্ট করুন।
+                          </p>
+                        </Label>
+                      </div>
+                    )}
+
                     {allowedMethods.includes("delivery_advance") && (
                       <div className="flex items-center gap-3 border rounded-lg p-3">
                         <RadioGroupItem value="delivery_advance" id="delivery_advance" />
@@ -381,20 +436,23 @@ const Checkout = () => {
                 <div className="border-t mt-4 pt-3 space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">সাবটোটাল</span><span>৳{totalPrice}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">ডেলিভারি চার্জ</span><span>৳{deliveryCharge}</span></div>
-                  {paymentMethod !== "cod" && partialAmount > 0 && (
+                  {paymentMethod !== "cod" && partialAmount > 0 && paymentMethod !== "eps" && (
                     <div className="flex justify-between text-primary"><span>অ্যাডভান্স পেমেন্ট</span><span>৳{partialAmount}</span></div>
+                  )}
+                  {paymentMethod === "eps" && (
+                    <div className="flex justify-between text-primary font-medium"><span>অনলাইন প্রিপেইড</span><span>৳{grandTotal}</span></div>
                   )}
                   <div className="border-t pt-2 flex justify-between font-bold text-base">
                     <span>মোট</span><span className="text-primary">৳{grandTotal}</span>
                   </div>
-                  {paymentMethod !== "cod" && grandTotal > partialAmount && (
+                  {paymentMethod !== "cod" && paymentMethod !== "eps" && grandTotal > partialAmount && (
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>বাকি (COD)</span><span>৳{grandTotal - partialAmount}</span>
                     </div>
                   )}
                 </div>
                 <Button type="submit" className="w-full mt-4" size="lg" disabled={loading}>
-                  {loading ? "প্রসেস হচ্ছে..." : "অর্ডার কনফার্ম করুন"}
+                  {loading ? "প্রসেস হচ্ছে..." : paymentMethod === "eps" ? "অনলাইনে পেমেন্ট করুন" : "অর্ডার কনফার্ম করুন"}
                 </Button>
                 {!user && (
                   <p className="text-xs text-center text-muted-foreground mt-2">

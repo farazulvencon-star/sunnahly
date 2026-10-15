@@ -324,6 +324,7 @@ const AdminOrders = () => {
                           <SelectItem value="cod">COD</SelectItem>
                           <SelectItem value="partial">আংশিক</SelectItem>
                           <SelectItem value="online">অনলাইন</SelectItem>
+                          <SelectItem value="eps">EPS অনলাইন</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -418,6 +419,7 @@ const AdminOrders = () => {
                   <SelectItem value="cod">COD</SelectItem>
                   <SelectItem value="partial">আংশিক</SelectItem>
                   <SelectItem value="online">অনলাইন</SelectItem>
+                  <SelectItem value="eps">EPS অনলাইন</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -570,6 +572,11 @@ const AdminOrders = () => {
                     ) : (
                       getStatusBadge(order.payment_status, paymentStatusOptions)
                     )}
+                    {order.payment_method && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                        {order.payment_method === "eps" ? "⚡ EPS অনলাইন" : order.payment_method === "cod" ? "ক্যাশ অন ডেলিভারি" : order.payment_method}
+                      </p>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <p className="font-bold text-sm">৳{Number(order.total)}</p>
@@ -691,6 +698,20 @@ const AdminOrders = () => {
               <div className="text-sm">
                 <p className="text-muted-foreground text-xs">ঠিকানা</p>
                 <p>{viewOrder.shipping_address}{viewOrder.area ? `, ${viewOrder.area}` : ""}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm bg-muted/40 p-2.5 rounded-lg border">
+                <div>
+                  <p className="text-muted-foreground text-xs">পেমেন্ট মেথড</p>
+                  <p className="font-medium text-xs">
+                    {viewOrder.payment_method === 'eps' ? '⚡ EPS অনলাইন গেটওয়ে' : viewOrder.payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি (COD)' : (viewOrder.payment_method || 'COD')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">ট্রানজেকশন আইডি</p>
+                  <p className="font-mono text-xs text-primary font-semibold">
+                    {viewOrder.transaction_id || 'প্রযোজ্য নয়'}
+                  </p>
+                </div>
               </div>
               {viewOrder.notes && (
                 <div className="text-sm">

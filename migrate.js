@@ -63,6 +63,16 @@ async function migrate() {
   } catch (err) {
     console.error("shefa_videos migration error:", err.message);
   }
+
+  try {
+    await pool.query('ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT "cod";');
+    await pool.query('ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) DEFAULT "pending";');
+    await pool.query('ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;');
+    await pool.query('ALTER TABLE orders ADD COLUMN eps_redirect_url TEXT NULL;');
+    console.log("orders payment columns migration success");
+  } catch (err) {
+    console.log("Note on orders payment columns:", err.message);
+  }
   process.exit(0);
 }
 migrate();
