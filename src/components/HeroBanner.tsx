@@ -58,8 +58,8 @@ const HeroBanner = () => {
   if (slidesLoading || promoLoading) {
     return (
       <section className="bg-background py-2 md:py-3">
-        <div className="container mx-auto px-4 max-w-[1368px]">
-          <div className="w-full bg-muted animate-pulse rounded-2xl aspect-[2.1/1] max-h-[390px]" />
+        <div className="container mx-auto px-4 max-w-[1536px]">
+          <div className="w-full bg-muted animate-pulse rounded-none aspect-[2.1/1] max-h-[420px]" />
         </div>
       </section>
     );
@@ -72,20 +72,20 @@ const HeroBanner = () => {
   const hasPromo = Boolean(promoSetting?.enabled && promoSetting?.image_url);
 
   return (
-    <section className="bg-background py-2.5 md:py-3.5">
-      <div className="container mx-auto px-4 max-w-[1368px]">
+    <section className="bg-background py-2 md:py-3">
+      <div className="container mx-auto px-4 max-w-[1536px]">
         <div className="flex flex-col lg:flex-row gap-3 md:gap-4 items-stretch">
           {/* Main Hero Slider */}
           <div
             className={`w-full ${
               hasPromo ? "lg:w-[67%]" : "w-full"
-            } relative rounded-2xl overflow-hidden shadow-xs bg-muted/40`}
+            } relative rounded-none overflow-hidden bg-muted/40`}
           >
             <div
               className={`relative w-full ${
                 hasPromo
-                  ? "aspect-[16/9] sm:aspect-[2/1] lg:aspect-[2.15/1] max-h-[340px] md:max-h-[380px] lg:max-h-[400px]"
-                  : "aspect-[16/8] md:aspect-[1400/440] max-h-[340px] md:max-h-[390px]"
+                  ? "aspect-[16/9] sm:aspect-[2/1] lg:aspect-[2.35/1] max-h-[360px] md:max-h-[400px] lg:max-h-[440px]"
+                  : "aspect-[16/8] md:aspect-[1400/440] max-h-[360px] md:max-h-[420px]"
               }`}
             >
               {slides!.map((s, i) => {
@@ -185,7 +185,7 @@ const HeroBanner = () => {
           {/* Side Promo Banner (Desktop Only, hidden on mobile) */}
           {hasPromo && (
             <div className="hidden lg:block lg:w-[33%] shrink-0">
-              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xs bg-muted/40 group">
+              <div className="relative w-full h-full rounded-none overflow-hidden bg-muted/40 group">
                 {promoSetting.link_url ? (
                   promoSetting.link_url.startsWith("http") ? (
                     <a

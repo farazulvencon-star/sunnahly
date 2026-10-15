@@ -22,7 +22,7 @@ const PromoBanners = () => {
 
   return (
     <section className="py-6 md:py-10 bg-background">
-      <div className="container mx-auto px-4 max-w-[1368px]">
+      <div className="container mx-auto px-4 max-w-[1536px]">
         <div className="grid md:grid-cols-2 gap-4 md:gap-6">
           <div className="relative bg-primary rounded-2xl overflow-hidden p-6 md:p-8 min-h-[170px] flex flex-col justify-center">
             <span className="text-primary-foreground/70 text-sm font-medium mb-1.5">{b1.subtitle}</span>

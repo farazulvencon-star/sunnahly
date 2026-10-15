@@ -45,7 +45,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b shadow-sm">
-      <div className="container mx-auto px-4 max-w-[1368px]">
+      <div className="container mx-auto px-4 max-w-[1536px]">
         {/* Mobile Layout */}
         <div className="flex md:hidden items-center justify-between h-16">
           {/* Left: Mobile menu */}
@@ -178,7 +178,7 @@ const Header = () => {
       {/* Categories Bar Below Header */}
       {categories && categories.length > 0 && (
         <div className="bg-[#09241d] text-white border-t border-white/10 shadow-xs">
-          <div className="container mx-auto px-4 max-w-[1368px]">
+          <div className="container mx-auto px-4 max-w-[1536px]">
             <nav
               aria-label="Category Navigation"
               className="flex items-center gap-5 sm:gap-7 md:gap-8 overflow-x-auto md:overflow-hidden whitespace-nowrap py-2.5 text-xs sm:text-sm font-semibold tracking-wide no-scrollbar"
