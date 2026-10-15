@@ -493,8 +493,13 @@ const AdminProducts = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-xs font-medium mb-1.5 block">ব্যাজ</Label>
-                    <Input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="যেমন: নতুন, ছাড়" />
+                    <Label className="text-xs font-medium mb-1.5 block">ব্যাজ (ঐচ্ছিক)</Label>
+                    <Input
+                      value={form.badge}
+                      onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                      placeholder="যেমন: Best Selling, নতুন, হট ডিল"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">খালি রাখলে প্রোডাক্ট কার্ডে কোনো ব্যাজ দেখাবে না</p>
                   </div>
                   <div>
                     <Label className="text-xs font-medium mb-1.5 block">সর্ট অর্ডার</Label>

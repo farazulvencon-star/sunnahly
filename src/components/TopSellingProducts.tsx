@@ -94,11 +94,13 @@ const TopSellingProducts = () => {
                 to={`/product/${product.slug}`}
                 className="group bg-white rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all p-2.5 sm:p-4 md:p-6 lg:p-7 md:min-h-[250px] lg:min-h-[270px] flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 md:gap-6 lg:gap-7 relative overflow-hidden text-left"
               >
-                {/* Fire Best Selling Badge */}
-                <span className="absolute top-2 right-2 md:top-3 md:right-3 bg-red-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full flex items-center gap-1 shadow-xs tracking-wide z-10">
-                  <Flame className="h-3 w-3 md:h-3.5 md:w-3.5 fill-amber-300 text-amber-300" />
-                  <span>Best Selling</span>
-                </span>
+                {/* Badge from Admin - only shown if badge is set */}
+                {Boolean(product.badge && product.badge.trim()) && (
+                  <span className="absolute top-2 right-2 md:top-3 md:right-3 bg-red-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full flex items-center gap-1 shadow-xs tracking-wide z-10">
+                    <Flame className="h-3 w-3 md:h-3.5 md:w-3.5 fill-amber-300 text-amber-300 shrink-0" />
+                    <span>{product.badge}</span>
+                  </span>
+                )}
 
                 {/* Product Image - compact on mobile, larger & taller on desktop */}
                 <div className="w-full aspect-square md:w-48 md:h-48 lg:w-56 lg:h-56 bg-slate-50/70 rounded-lg md:rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-2 md:p-3 border border-slate-100">
