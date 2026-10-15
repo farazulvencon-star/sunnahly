@@ -35,11 +35,14 @@ const CategorySlider = () => {
     <section className="py-6 md:py-10 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
-            {sectionTitle}
-          </h2>
+          <div className="inline-flex flex-col items-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+              {sectionTitle}
+            </h2>
+            <div className="h-1 w-14 bg-amber-500 rounded-full mt-2 mx-auto" />
+          </div>
           {gridSettings?.subtitle && (
-            <p className="text-muted-foreground text-sm mt-1.5">{gridSettings.subtitle}</p>
+            <p className="text-muted-foreground text-sm mt-2">{gridSettings.subtitle}</p>
           )}
         </div>
         <style>{`
