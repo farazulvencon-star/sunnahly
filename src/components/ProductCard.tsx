@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Zap } from "lucide-react";
 
 interface ProductCardProps {
   id?: string;
@@ -17,6 +17,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, name, price, originalPrice, image, badge, slug, categoryName }: ProductCardProps) => {
   const { addItem } = useCart();
+  const navigate = useNavigate();
 
   const resolveImage = (img: any) => {
     if (!img) return "/placeholder.svg";
@@ -46,6 +47,13 @@ const ProductCard = ({ id, name, price, originalPrice, image, badge, slug, categ
     e.stopPropagation();
     addItem({ id: id || name, name, price, originalPrice, image: finalImage });
     toast.success(`${name} কার্টে যোগ হয়েছে`);
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({ id: id || name, name, price, originalPrice, image: finalImage });
+    navigate("/checkout");
   };
 
   const content = (
@@ -92,16 +100,27 @@ const ProductCard = ({ id, name, price, originalPrice, image, badge, slug, categ
           )}
         </div>
 
-        {/* Full-width Outline "Add to Cart" Button */}
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full mt-auto h-9 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-2 group-hover:border-primary active:scale-[0.99]"
-          onClick={handleAddToCart}
-        >
-          <ShoppingCart className="w-4 h-4" />
-          <span>Add to Cart</span>
-        </Button>
+        {/* Action Buttons: Add to Cart & Buy Now */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-8 sm:h-9 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Add to Cart</span>
+          </Button>
+
+          <Button
+            type="button"
+            className="w-full h-8 sm:h-9 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
+            onClick={handleBuyNow}
+          >
+            <Zap className="w-3.5 h-3.5 shrink-0 fill-current" />
+            <span className="truncate">Buy Now</span>
+          </Button>
+        </div>
       </div>
     </div>
   );
