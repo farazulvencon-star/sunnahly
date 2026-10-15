@@ -22,15 +22,10 @@ const TopSellingProducts = () => {
         .order("created_at", { ascending: false });
 
       const list = data || [];
-      const bestsellers = list.filter(
+      return list.filter(
         (p: any) => p.is_bestseller === true || p.is_bestseller === 1 || p.is_bestseller === "1"
       );
-
-      // If user has marked bestsellers, display them. Otherwise fallback to featured products so the layout is immediately visible.
-      if (bestsellers.length > 0) return bestsellers;
-      return list.filter((p: any) => p.is_featured === true || p.is_featured === 1 || p.is_featured === "1").slice(0, 4);
     },
-    staleTime: 1000 * 60 * 5,
   });
 
   const getProductImage = (prod: any) => {

@@ -160,6 +160,10 @@ const AdminProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["top-selling-products"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["home-categorized-products"] });
+      queryClient.invalidateQueries({ queryKey: ["header-category-products"] });
       toast.success(editing ? "পণ্য আপডেট হয়েছে" : "পণ্য যোগ হয়েছে");
       setOpen(false);
       setEditing(null);
@@ -176,6 +180,7 @@ const AdminProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["top-selling-products"] });
       toast.success("পণ্য মুছে ফেলা হয়েছে");
     },
   });
@@ -187,6 +192,7 @@ const AdminProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["top-selling-products"] });
       setSelectedIds([]);
       toast.success("নির্বাচিত পণ্য মুছে ফেলা হয়েছে");
     },
@@ -199,6 +205,7 @@ const AdminProducts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["top-selling-products"] });
       setSelectedIds([]);
       toast.success("স্ট্যাটাস আপডেট হয়েছে");
     },
@@ -210,7 +217,10 @@ const AdminProducts = () => {
       name: product.name, slug: product.slug, description: product.description || "", short_description: product.short_description || "",
       price: Number(product.price), original_price: product.original_price ? Number(product.original_price) : null,
       sku: product.sku || "", stock: product.stock, images: product.images || [], badge: product.badge || "",
-      is_featured: product.is_featured, is_bestseller: product.is_bestseller || false, is_active: product.is_active, category_id: product.category_id,
+      is_featured: product.is_featured === true || product.is_featured === 1 || product.is_featured === "1",
+      is_bestseller: product.is_bestseller === true || product.is_bestseller === 1 || product.is_bestseller === "1",
+      is_active: product.is_active === true || product.is_active === 1 || product.is_active === "1" || product.is_active === undefined,
+      category_id: product.category_id,
       meta_title: product.meta_title || "", meta_description: product.meta_description || "", focus_keyword: product.focus_keyword || "",
       video_url: product.video_url || "", video_thumbnail: product.video_thumbnail || "", sort_order: product.sort_order || 0,
       delivery_type: product.delivery_type || "global",
