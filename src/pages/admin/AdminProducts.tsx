@@ -28,7 +28,7 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyProduct);
   const [imageUrl, setImageUrl] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "featured">("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "featured" | "bestseller">("all");
   const [filterCategory, setFilterCategory] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("general");
@@ -129,18 +129,20 @@ const AdminProducts = () => {
       if (filterStatus === "active" && !p.is_active) return false;
       if (filterStatus === "inactive" && p.is_active) return false;
       if (filterStatus === "featured" && !p.is_featured) return false;
+      if (filterStatus === "bestseller" && !p.is_bestseller) return false;
       if (filterCategory && p.category_id !== filterCategory) return false;
       return true;
     });
   }, [products, searchQuery, filterStatus, filterCategory]);
 
   const counts = useMemo(() => {
-    if (!products) return { all: 0, active: 0, inactive: 0, featured: 0 };
+    if (!products) return { all: 0, active: 0, inactive: 0, featured: 0, bestseller: 0 };
     return {
       all: products.length,
       active: products.filter((p: any) => p.is_active).length,
       inactive: products.filter((p: any) => !p.is_active).length,
       featured: products.filter((p: any) => p.is_featured).length,
+      bestseller: products.filter((p: any) => p.is_bestseller).length,
     };
   }, [products]);
 
@@ -296,6 +298,7 @@ const AdminProducts = () => {
           { key: "active", label: "সক্রিয়", count: counts.active },
           { key: "inactive", label: "নিষ্ক্রিয়", count: counts.inactive },
           { key: "featured", label: "ফিচার্ড", count: counts.featured },
+          { key: "bestseller", label: "টপ সেলিং", count: counts.bestseller },
         ].map(tab => (
           <button key={tab.key}
             onClick={() => setFilterStatus(tab.key as any)}
@@ -375,6 +378,7 @@ const AdminProducts = () => {
                     <div className="text-xs text-muted-foreground mt-0.5">/{product.slug}</div>
                     <div className="flex items-center gap-1 mt-1">
                       {product.is_featured && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">ফিচার্ড</Badge>}
+                      {product.is_bestseller && <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] px-1.5 py-0">টপ সেলিং</Badge>}
                       {product.badge && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.badge}</Badge>}
                     </div>
                   </td>
@@ -498,8 +502,8 @@ const AdminProducts = () => {
                   </div>
                   <div className="flex items-center justify-between border rounded-lg p-3">
                     <div>
-                      <Label className="text-sm">বেস্ট সেলার</Label>
-                      <p className="text-xs text-muted-foreground">সবচেয়ে বিক্রিত সেকশনে</p>
+                      <Label className="text-sm font-semibold">টপ সেলিং পণ্য</Label>
+                      <p className="text-xs text-muted-foreground">হোমপেজে Top Selling Products সেকশনে দেখাবে</p>
                     </div>
                     <Switch checked={form.is_bestseller} onCheckedChange={(v) => setForm({ ...form, is_bestseller: v })} />
                   </div>

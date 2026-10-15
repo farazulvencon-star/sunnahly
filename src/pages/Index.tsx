@@ -3,8 +3,7 @@ import Header from "@/components/Header";
 import HeroBanner from "@/components/HeroBanner";
 import CategorySlider from "@/components/CategorySlider";
 import HomeCategorySections from "@/components/HomeCategorySections";
-import FeaturedProducts from "@/components/FeaturedProducts";
-import BestSellers from "@/components/BestSellers";
+import TopSellingProducts from "@/components/TopSellingProducts";
 import PromoBanners from "@/components/PromoBanners";
 import AllProducts from "@/components/AllProducts";
 import CustomerReviews from "@/components/CustomerReviews";
@@ -23,9 +22,8 @@ const Index = () => {
         <HeroBanner />
         <CategorySlider />
         <HomeCategorySections />
+        <TopSellingProducts />
         <AllProducts />
-        <BestSellers />
-        <FeaturedProducts />
         <PromoBanners />
         <CustomerReviews />
         <ShefaTube />

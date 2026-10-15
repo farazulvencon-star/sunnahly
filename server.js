@@ -96,6 +96,19 @@ async function ensureCategoryColumns() {
 }
 ensureCategoryColumns();
 
+// Auto-ensure products.is_bestseller column exists
+async function ensureProductColumns() {
+  try {
+    await pool.query('ALTER TABLE products ADD COLUMN is_bestseller TINYINT(1) DEFAULT 0;');
+    console.log("Column is_bestseller ensured in products");
+  } catch (err) {
+    if (err.code !== 'ER_DUP_FIELDNAME') {
+      console.log("Note on is_bestseller column:", err.message);
+    }
+  }
+}
+ensureProductColumns();
+
 // Example Route: Get All Products
 app.get('/api/products', async (req, res, next) => {
   try {

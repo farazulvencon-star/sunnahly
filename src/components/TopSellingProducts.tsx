@@ -1,0 +1,174 @@
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import { ShoppingCart, Flame, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const TopSellingProducts = () => {
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const { data: products } = useQuery({
+    queryKey: ["top-selling-products"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*, categories(name)")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      const list = data || [];
+      const bestsellers = list.filter(
+        (p: any) => p.is_bestseller === true || p.is_bestseller === 1 || p.is_bestseller === "1"
+      );
+
+      // If user has marked bestsellers, display them. Otherwise fallback to featured products so the layout is immediately visible.
+      if (bestsellers.length > 0) return bestsellers;
+      return list.filter((p: any) => p.is_featured === true || p.is_featured === 1 || p.is_featured === "1").slice(0, 4);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const getProductImage = (prod: any) => {
+    if (Array.isArray(prod?.images) && prod.images[0]) return prod.images[0];
+    if (typeof prod?.images === "string") {
+      try {
+        const parsed = JSON.parse(prod.images);
+        if (Array.isArray(parsed) && parsed[0]) return parsed[0];
+      } catch {
+        if (prod.images.startsWith("http") || prod.images.startsWith("/")) return prod.images;
+      }
+    }
+    return "/placeholder.svg";
+  };
+
+  const handleAddToCart = (e: React.MouseEvent, p: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      originalPrice: p.original_price ? Number(p.original_price) : undefined,
+      image: getProductImage(p),
+    });
+    toast.success(`${p.name} কার্টে যোগ হয়েছে`);
+  };
+
+  const handleBuyNow = (e: React.MouseEvent, p: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      originalPrice: p.original_price ? Number(p.original_price) : undefined,
+      image: getProductImage(p),
+    });
+    navigate("/checkout");
+  };
+
+  if (!products || products.length === 0) return null;
+
+  return (
+    <section className="py-8 md:py-12 bg-background">
+      <div className="container mx-auto px-4 max-w-[1536px]">
+        {/* Section Heading matching reference */}
+        <div className="text-center mb-6 md:mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            Top Selling Products
+          </h2>
+          <div className="h-1 w-16 bg-amber-500 rounded-full mx-auto mt-2" />
+        </div>
+
+        {/* 2 cards per row on both Desktop & Mobile matching reference */}
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+          {products.map((product: any) => {
+            const prodImg = getProductImage(product);
+            const price = Number(product.price);
+            const originalPrice = product.original_price ? Number(product.original_price) : null;
+            const discountAmount = originalPrice && originalPrice > price ? originalPrice - price : 0;
+
+            return (
+              <Link
+                key={product.id}
+                to={`/product/${product.slug}`}
+                className="group bg-white rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all p-2.5 sm:p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 md:gap-6 relative overflow-hidden text-left"
+              >
+                {/* Fire Best Selling Badge */}
+                <span className="absolute top-2 right-2 md:top-3 md:right-3 bg-red-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full flex items-center gap-1 shadow-xs tracking-wide z-10">
+                  <Flame className="h-3 w-3 md:h-3.5 md:w-3.5 fill-amber-300 text-amber-300" />
+                  <span>Best Selling</span>
+                </span>
+
+                {/* Product Image */}
+                <div className="w-full aspect-square md:w-44 md:h-44 lg:w-48 lg:h-48 bg-slate-50/70 rounded-lg md:rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-2 border border-slate-100">
+                  <img
+                    src={prodImg}
+                    alt={product.name}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Product Details */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between md:justify-center">
+                  <div>
+                    <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2 mb-1.5 md:mb-2 min-h-[2rem] md:min-h-0 leading-snug">
+                      {product.name}
+                    </h3>
+
+                    {/* Price row & Savings Badge */}
+                    <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap mb-2.5 md:mb-4">
+                      <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-amber-600">
+                        ৳{price.toLocaleString("en-US")}
+                      </span>
+                      {originalPrice && originalPrice > price && (
+                        <span className="text-xs md:text-sm text-slate-400 line-through">
+                          ৳{originalPrice.toLocaleString("en-US")}
+                        </span>
+                      )}
+                      {discountAmount > 0 && (
+                        <span className="text-[9px] md:text-xs font-semibold bg-lime-100 text-lime-800 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-full border border-lime-200">
+                          Save ৳{discountAmount.toLocaleString("en-US")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Buttons: Stacked on mobile, side-by-side on desktop */}
+                  <div className="flex flex-col sm:flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-2.5 mt-auto pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full md:flex-1 h-8 md:h-9 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      onClick={(e) => handleAddToCart(e, product)}
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+                      <span className="truncate">Add To Cart</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      className="w-full md:flex-1 h-8 md:h-9 bg-amber-500 text-white hover:bg-amber-600 font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
+                      onClick={(e) => handleBuyNow(e, product)}
+                    >
+                      <Zap className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0 fill-current" />
+                      <span className="truncate">Buy now</span>
+                    </Button>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default TopSellingProducts;

@@ -30,6 +30,17 @@ async function migrate() {
       console.error("Categories migration failed:", err);
     }
   }
+
+  try {
+    const [resultBs] = await pool.query('ALTER TABLE products ADD COLUMN is_bestseller TINYINT(1) DEFAULT 0;');
+    console.log("Products is_bestseller migration success:", resultBs);
+  } catch (err) {
+    if (err.code === 'ER_DUP_FIELDNAME') {
+      console.log("Column is_bestseller already exists.");
+    } else {
+      console.error("Products is_bestseller migration failed:", err);
+    }
+  }
   process.exit(0);
 }
 migrate();
