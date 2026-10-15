@@ -100,25 +100,25 @@ const ProductCard = ({ id, name, price, originalPrice, image, badge, slug, categ
           )}
         </div>
 
-        {/* Action Buttons: Add to Cart & Buy Now */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+        {/* Action Buttons: Add to Cart & Buy Now stacked vertically */}
+        <div className="flex flex-col gap-1.5 sm:gap-2 mt-auto pt-1 w-full">
           <Button
             type="button"
             variant="outline"
-            className="w-full h-8 sm:h-9 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            className="w-full h-8 sm:h-9 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Add to Cart</span>
+            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span>Add to Cart</span>
           </Button>
 
           <Button
             type="button"
-            className="w-full h-8 sm:h-9 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
+            className="w-full h-8 sm:h-9 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs sm:text-sm rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
             onClick={handleBuyNow}
           >
-            <Zap className="w-3.5 h-3.5 shrink-0 fill-current" />
-            <span className="truncate">Buy Now</span>
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 fill-current" />
+            <span>Buy Now</span>
           </Button>
         </div>
       </div>
