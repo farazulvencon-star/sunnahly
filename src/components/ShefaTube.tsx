@@ -10,7 +10,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Play } from "lucide-react";
+import { Play, X } from "lucide-react";
 
 const ShefaTube = () => {
   const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
@@ -76,8 +76,19 @@ const ShefaTube = () => {
       </div>
 
       <Dialog open={!!activeId} onOpenChange={(o) => !o && setActiveId(null)}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-0">
+        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-slate-950 border border-white/15 shadow-2xl rounded-2xl [&>button]:hidden">
           <DialogTitle className="sr-only">শেফা টিউব ভিডিও</DialogTitle>
+          <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-white/10">
+            <span className="text-sm font-medium text-white">শেফা টিউব ভিডিও</span>
+            <button
+              type="button"
+              onClick={() => setActiveId(null)}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-500 text-white border-2 border-white/40 shadow-lg cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 group"
+              aria-label="বন্ধ করুন"
+            >
+              <X className="h-4 w-4 stroke-[2.5] transition-transform duration-300 group-hover:rotate-90" />
+            </button>
+          </div>
           {activeId && (
             <div className="aspect-video w-full">
               <iframe

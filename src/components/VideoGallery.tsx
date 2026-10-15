@@ -216,6 +216,23 @@ const VideoGallery = () => {
             animation-play-state: paused;
             transform: translateY(-50%) scale(1.15);
           }
+          @keyframes modalClosePulse {
+            0%, 100% {
+              box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35);
+              transform: scale(1);
+            }
+            50% {
+              box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2), 0 4px 14px rgba(239, 68, 68, 0.5);
+              transform: scale(1.06);
+            }
+          }
+          .modal-close-pulse {
+            animation: modalClosePulse 2.4s infinite ease-in-out;
+          }
+          .modal-close-pulse:hover {
+            animation-play-state: paused;
+            transform: scale(1.15) !important;
+          }
         `}</style>
 
         {/* Section Header - in English with amber accent underline */}
@@ -353,25 +370,32 @@ const VideoGallery = () => {
 
       {/* Video Player Modal */}
       <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border border-white/10 shadow-2xl rounded-2xl text-white">
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-slate-950/95 border border-white/15 shadow-2xl rounded-2xl text-white [&>button]:hidden">
           <DialogTitle className="sr-only">
             {activeVideo?.title || "Video Player"}
           </DialogTitle>
 
           {/* Modal Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
-            <div className="flex items-center gap-2 min-w-0 pr-4">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-              <h4 className="text-xs sm:text-sm font-medium text-white truncate">
-                {activeVideo?.title || "Video Player"}
+          <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
+            <div className="flex items-center gap-2.5 min-w-0 pr-4">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+              </span>
+              <h4 className="text-xs sm:text-sm md:text-base font-medium text-white truncate">
+                {activeVideo?.title || "ভিডিও প্লেয়ার"}
               </h4>
             </div>
+
+            {/* Premium Animated Close Button */}
             <button
+              type="button"
               onClick={() => setActiveVideo(null)}
-              className="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0"
-              aria-label="Close"
+              className="modal-close-pulse group flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-600 hover:bg-red-500 text-white border-2 border-white/40 shadow-lg cursor-pointer shrink-0 transition-all duration-300 active:scale-95 hover:shadow-red-600/50"
+              aria-label="ভিডিও বন্ধ করুন"
+              title="ভিডিও বন্ধ করুন"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4.5 w-4.5 sm:h-5 sm:w-5 stroke-[2.5] transition-transform duration-300 group-hover:rotate-90" />
             </button>
           </div>
 
