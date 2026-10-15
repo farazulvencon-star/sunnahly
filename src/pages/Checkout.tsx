@@ -105,17 +105,12 @@ const Checkout = () => {
   const isPaymentEnabled = typeof settings?.payment_gateway === "string" 
     ? (JSON.parse(settings.payment_gateway)?.enabled || false)
     : (settings?.payment_gateway?.enabled || false);
-  const partialPercent = settings?.partial_payment_percent?.percent || 10;
   let partialAmount = 0;
   if (paymentMethod === "delivery_advance") {
     partialAmount = deliveryCharge;
   } else if (paymentMethod === "full_advance" || paymentMethod === "full" || paymentMethod === "eps") {
     partialAmount = grandTotal;
-  } else if (paymentMethod === "partial") {
-    partialAmount = Math.ceil(Math.max(grandTotal * partialPercent / 100, deliveryCharge));
   }
-  if (reqAdvance && paymentMethod === "partial") partialAmount = deliveryCharge;
-  if (reqFull && paymentMethod === "partial") partialAmount = grandTotal;
 
   useEffect(() => {
     const valid = isPaymentEnabled ? [...allowedMethods, "eps"] : allowedMethods;

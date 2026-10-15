@@ -153,7 +153,6 @@ const AdminSettings = () => {
 
   const [insideDhaka, setInsideDhaka] = useState(60);
   const [outsideDhaka, setOutsideDhaka] = useState(120);
-  const [partialPercent, setPartialPercent] = useState(10);
   const [pixelEnabled, setPixelEnabled] = useState(false);
   const [pixelId, setPixelId] = useState("");
   const [pixelToken, setPixelToken] = useState("");
@@ -620,28 +619,7 @@ const AdminSettings = () => {
                 </p>
               </div>
 
-              {/* Partial Payment Setting */}
-              <div className="pt-2 border-t border-border/60">
-                <Label className="text-xs">আংশিক পেমেন্ট হার (%)</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    type="number"
-                    value={partialPercent}
-                    onChange={(e) => setPartialPercent(+e.target.value)}
-                    className="w-24 text-xs"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateMutation.mutate({ key: "partial_payment_percent", value: { percent: partialPercent } })}
-                  >
-                    সেভ
-                  </Button>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  অনলাইন গেটওয়ের মাধ্যমে কাস্টমার চাইলে মোট অর্ডারের এই % অগ্রিম দিতে পারবে।
-                </p>
-              </div>
+
 
               {/* Actions */}
               <div className="flex items-center gap-2 pt-2">
