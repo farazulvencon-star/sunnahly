@@ -206,11 +206,22 @@ const VideoGallery = () => {
   const scrollByAmount = (direction: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
-    const scrollAmount = el.clientWidth * 0.75;
-    el.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const scrollAmount = Math.max(el.clientWidth * 0.75, 280);
+
+    if (direction === "left") {
+      if (el.scrollLeft <= 15) {
+        el.scrollTo({ left: maxScroll, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      }
+    } else {
+      if (el.scrollLeft >= maxScroll - 15) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      }
+    }
   };
 
   const scrollToDot = (index: number) => {
@@ -225,6 +236,27 @@ const VideoGallery = () => {
   return (
     <section className="py-8 md:py-14 bg-gradient-to-b from-background via-secondary/15 to-background border-b border-border/40">
       <div className="container mx-auto px-4 max-w-[1536px]">
+        {/* Style block for gentle brand pulse animation */}
+        <style>{`
+          @keyframes brandArrowPulse {
+            0%, 100% {
+              box-shadow: 0 0 0 0 rgba(26, 77, 46, 0.4), 0 4px 14px rgba(0, 0, 0, 0.18);
+              transform: translateY(-50%) scale(1);
+            }
+            50% {
+              box-shadow: 0 0 0 8px rgba(26, 77, 46, 0.15), 0 6px 20px rgba(26, 77, 46, 0.35);
+              transform: translateY(-50%) scale(1.08);
+            }
+          }
+          .brand-arrow-pulse {
+            animation: brandArrowPulse 2.6s infinite ease-in-out;
+          }
+          .brand-arrow-pulse:hover {
+            animation-play-state: paused;
+            transform: translateY(-50%) scale(1.15);
+          }
+        `}</style>
+
         {/* Section Header - in English with amber accent underline */}
         <div className="text-center mb-6 md:mb-9">
           <div className="inline-flex flex-col items-center">
@@ -238,31 +270,27 @@ const VideoGallery = () => {
           </p>
         </div>
 
-        {/* Horizontal Slider Track matching Reference Slider structure */}
-        <div className="relative group/slider sm:px-10 md:px-12">
-          {/* Left Arrow Button - outside to the left */}
-          {canScrollLeft && (
-            <button
-              type="button"
-              onClick={() => scrollByAmount("left")}
-              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-110 transition-all cursor-pointer"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-          )}
+        {/* Horizontal Slider Track */}
+        <div className="relative group/slider px-2 sm:px-10 md:px-12">
+          {/* Left Arrow Button - always visible in the middle with brand color & gentle pulse */}
+          <button
+            type="button"
+            onClick={() => scrollByAmount("left")}
+            className="brand-arrow-pulse flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+          </button>
 
-          {/* Right Arrow Button - outside to the right */}
-          {canScrollRight && (
-            <button
-              type="button"
-              onClick={() => scrollByAmount("right")}
-              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-110 transition-all cursor-pointer"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          )}
+          {/* Right Arrow Button - always visible in the middle with brand color & gentle pulse */}
+          <button
+            type="button"
+            onClick={() => scrollByAmount("right")}
+            className="brand-arrow-pulse flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+          </button>
 
           {/* Scrollable Track */}
           <div
