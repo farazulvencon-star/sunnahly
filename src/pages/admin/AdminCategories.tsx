@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2, FolderOpen, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const emptyCategory = { name: "", slug: "", image: "", sort_order: 0, is_active: true };
+const emptyCategory = { name: "", slug: "", image: "", sort_order: 0, is_active: true, show_on_home: false };
 
 const AdminCategories = () => {
   const queryClient = useQueryClient();
@@ -63,6 +63,8 @@ const AdminCategories = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["header-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["home-categorized-products"] });
       toast.success(editing ? "ক্যাটেগরি আপডেট হয়েছে" : "ক্যাটেগরি যোগ হয়েছে");
       setOpen(false);
       setEditing(null);
@@ -78,6 +80,8 @@ const AdminCategories = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["header-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["home-categorized-products"] });
       toast.success("ক্যাটেগরি মুছে ফেলা হয়েছে");
     },
     onError: (err: any) => toast.error(err.message),
@@ -85,7 +89,14 @@ const AdminCategories = () => {
 
   const openEdit = (cat: any) => {
     setEditing(cat);
-    setForm({ name: cat.name, slug: cat.slug, image: cat.image || "", sort_order: cat.sort_order || 0, is_active: cat.is_active });
+    setForm({
+      name: cat.name,
+      slug: cat.slug,
+      image: cat.image || "",
+      sort_order: cat.sort_order || 0,
+      is_active: cat.is_active !== undefined ? !!cat.is_active : true,
+      show_on_home: cat.show_on_home !== undefined ? !!cat.show_on_home : false,
+    });
     setOpen(true);
   };
 
@@ -134,11 +145,21 @@ const AdminCategories = () => {
                 <Label>সর্ট অর্ডার</Label>
                 <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: +e.target.value })} />
               </div>
-              <div className="flex items-center justify-between">
-                <Label>সক্রিয়</Label>
+              <div className="flex items-center justify-between border-t pt-3">
+                <div>
+                  <Label>সক্রিয়</Label>
+                  <p className="text-[11px] text-muted-foreground">ক্যাটাগরি ওয়েবসাইটে সচল থাকবে</p>
+                </div>
                 <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
               </div>
-              <Button className="w-full" onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending || !form.name}>
+              <div className="flex items-center justify-between border-t pt-3">
+                <div>
+                  <Label>হোম পেজে দেখান</Label>
+                  <p className="text-[11px] text-muted-foreground">হোম পেজে এই ক্যাটাগরির প্রোডাক্ট স্লাইডার দেখাবে</p>
+                </div>
+                <Switch checked={form.show_on_home} onCheckedChange={(v) => setForm({ ...form, show_on_home: v })} />
+              </div>
+              <Button className="w-full mt-2" onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending || !form.name}>
                 {saveMutation.isPending ? "সেভ হচ্ছে..." : editing ? "আপডেট করুন" : "যোগ করুন"}
               </Button>
             </div>
@@ -158,10 +179,15 @@ const AdminCategories = () => {
             )}
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-sm text-foreground">{cat.name}</h3>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
                 <span>/{cat.slug}</span>
                 <span>অর্ডার: {cat.sort_order}</span>
-                {!cat.is_active && <span className="text-destructive">নিষ্ক্রিয়</span>}
+                {cat.show_on_home ? (
+                  <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-emerald-200">
+                    হোমে সচল
+                  </span>
+                ) : null}
+                {!cat.is_active && <span className="text-destructive font-medium">নিষ্ক্রিয়</span>}
               </div>
             </div>
             <div className="flex gap-1">

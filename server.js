@@ -83,6 +83,19 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+// Auto-ensure categories.show_on_home column exists
+async function ensureCategoryColumns() {
+  try {
+    await pool.query('ALTER TABLE categories ADD COLUMN show_on_home TINYINT(1) DEFAULT 0;');
+    console.log("Column show_on_home added to categories");
+  } catch (err) {
+    if (err.code !== 'ER_DUP_FIELDNAME') {
+      console.log("Note on show_on_home column:", err.message);
+    }
+  }
+}
+ensureCategoryColumns();
+
 // Example Route: Get All Products
 app.get('/api/products', async (req, res, next) => {
   try {
@@ -246,7 +259,7 @@ app.post('/api/:table', async (req, res, next) => {
         }
       }
       const keys = Object.keys(item);
-      const vals = Object.values(item).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
+      const vals = Object.values(item).map(v => (typeof v === 'boolean' ? (v ? 1 : 0) : typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
       const escapedKeys = keys.map(k => `\`${k}\``).join(', ');
       const placeholders = keys.map(() => '?').join(', ');
       const [result] = await pool.query(`INSERT INTO ?? (${escapedKeys}) VALUES (${placeholders})`, [table, ...vals]);
@@ -279,7 +292,7 @@ app.patch('/api/:table', async (req, res) => {
       }
     }
     const keys = Object.keys(data);
-    const setVals = Object.values(data).map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
+    const setVals = Object.values(data).map(v => (typeof v === 'boolean' ? (v ? 1 : 0) : typeof v === 'object' && v !== null ? JSON.stringify(v) : v));
     const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
     
     await pool.query(`UPDATE ?? SET ${setClause} ${whereClause}`, [table, ...setVals, ...values]);

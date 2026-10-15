@@ -2,6 +2,7 @@ import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
 import HeroBanner from "@/components/HeroBanner";
 import CategorySlider from "@/components/CategorySlider";
+import HomeCategorySections from "@/components/HomeCategorySections";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import BestSellers from "@/components/BestSellers";
 import PromoBanners from "@/components/PromoBanners";
@@ -21,6 +22,7 @@ const Index = () => {
       <main className="flex-1">
         <HeroBanner />
         <CategorySlider />
+        <HomeCategorySections />
         <AllProducts />
         <BestSellers />
         <FeaturedProducts />
