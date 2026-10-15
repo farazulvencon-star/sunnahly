@@ -108,10 +108,13 @@ const Checkout = () => {
   const deliveryCharge = city === "dhaka" ? insideCharge : outsideCharge;
 
   let allowedMethods = ["cod", "delivery_advance", "full_advance"];
-  if (cartProducts) {
+  if (cartProducts && cartProducts.length > 0) {
     cartProducts.forEach(p => {
-      const pMethods = p.payment_requirement ? p.payment_requirement.split(",") : ["cod"];
-      allowedMethods = allowedMethods.filter(m => pMethods.includes(m));
+      const raw = p.payment_requirement ? String(p.payment_requirement).trim() : "";
+      const pMethods = raw ? raw.split(",").map((s: string) => s.trim()).filter(Boolean) : ["cod"];
+      if (pMethods.length > 0) {
+        allowedMethods = allowedMethods.filter(m => pMethods.includes(m));
+      }
     });
   }
   if (allowedMethods.length === 0) allowedMethods = ["cod"]; // Fallback if disjoint sets

@@ -766,8 +766,8 @@ const AdminProducts = () => {
                     <Label className="text-xs font-medium mb-2 block">এই পণ্যের জন্য পেমেন্ট অপশন (একাধিক সিলেক্ট করা যাবে)</Label>
                     <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="checkbox" checked={form.payment_requirement?.includes("cod")} onChange={() => {
-                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                        <input type="checkbox" checked={form.payment_requirement?.split(",").map(c => c.trim()).includes("cod")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",").map(c => c.trim()).filter(Boolean) : [];
                           if (current.includes("cod")) {
                             setForm({ ...form, payment_requirement: current.filter(c => c !== "cod").join(",") });
                           } else {
@@ -777,8 +777,8 @@ const AdminProducts = () => {
                         <span>ক্যাশ অন ডেলিভারি (সম্পূর্ণ টাকা ডেলিভারি ম্যানকে দিবে)</span>
                       </label>
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="checkbox" checked={form.payment_requirement?.includes("delivery_advance")} onChange={() => {
-                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                        <input type="checkbox" checked={form.payment_requirement?.split(",").map(c => c.trim()).includes("delivery_advance")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",").map(c => c.trim()).filter(Boolean) : [];
                           if (current.includes("delivery_advance")) {
                             setForm({ ...form, payment_requirement: current.filter(c => c !== "delivery_advance").join(",") });
                           } else {
@@ -788,8 +788,8 @@ const AdminProducts = () => {
                         <span>ডেলিভারি চার্জ আগে দিতে হবে (অ্যাডভান্সড)</span>
                       </label>
                       <label className="flex items-center gap-2 text-sm border p-3 rounded-lg cursor-pointer hover:bg-muted/50">
-                        <input type="checkbox" checked={form.payment_requirement?.includes("full_advance")} onChange={() => {
-                          const current = form.payment_requirement ? form.payment_requirement.split(",") : [];
+                        <input type="checkbox" checked={form.payment_requirement?.split(",").map(c => c.trim()).includes("full_advance")} onChange={() => {
+                          const current = form.payment_requirement ? form.payment_requirement.split(",").map(c => c.trim()).filter(Boolean) : [];
                           if (current.includes("full_advance")) {
                             setForm({ ...form, payment_requirement: current.filter(c => c !== "full_advance").join(",") });
                           } else {

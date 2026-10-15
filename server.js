@@ -136,33 +136,90 @@ async function ensureShefaVideosTable() {
 }
 ensureShefaVideosTable();
 
-// Auto-ensure orders payment columns exist
+// Auto-ensure orders and products payment/delivery columns exist
 async function ensurePaymentColumns() {
   try { await pool.query('ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT "cod";'); } catch (e) {}
   try { await pool.query('ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) DEFAULT "pending";'); } catch (e) {}
   try { await pool.query('ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;'); } catch (e) {}
   try { await pool.query('ALTER TABLE orders ADD COLUMN eps_redirect_url TEXT NULL;'); } catch (e) {}
+
+  try { await pool.query('ALTER TABLE products ADD COLUMN delivery_type VARCHAR(50) DEFAULT "global";'); } catch (e) {}
+  try { await pool.query('ALTER TABLE products ADD COLUMN delivery_inside_dhaka DECIMAL(10,2) NULL;'); } catch (e) {}
+  try { await pool.query('ALTER TABLE products ADD COLUMN delivery_outside_dhaka DECIMAL(10,2) NULL;'); } catch (e) {}
+  try { await pool.query('ALTER TABLE products ADD COLUMN delivery_nationwide DECIMAL(10,2) NULL;'); } catch (e) {}
+  try { await pool.query('ALTER TABLE products ADD COLUMN payment_requirement VARCHAR(255) DEFAULT "cod";'); } catch (e) {}
 }
 ensurePaymentColumns();
 
-// Example Route: Get All Products
+function buildWhereClause(query, table = '', alias = '') {
+  let whereParts = [];
+  let values = [];
+  for (const [key, value] of Object.entries(query)) {
+    if (key === 'select' || key === 'order' || key === 'single' || key === 'limit') continue;
+    if (typeof value === 'string') {
+      // Map 'key' to 'setting_key' and 'value' to 'setting_value' for site_settings
+      let colName = key;
+      if (table === 'site_settings') {
+        if (key === 'key') colName = 'setting_key';
+        if (key === 'value') colName = 'setting_value';
+      }
+      
+      if (value.startsWith('eq.')) {
+        whereParts.push(`${alias}\`${colName}\` = ?`);
+        let val = value.split('eq.')[1];
+        if (val === 'true') val = 1;
+        else if (val === 'false') val = 0;
+        values.push(val);
+      } else if (value.startsWith('in.(')) {
+        const inVals = value.slice(4, -1).split(',').map(s => s.trim());
+        const placeholders = inVals.map(() => '?').join(',');
+        whereParts.push(`${alias}\`${colName}\` IN (${placeholders})`);
+        values.push(...inVals);
+      } else if (value.startsWith('neq.')) {
+        whereParts.push(`${alias}\`${colName}\` != ?`);
+        let val = value.split('neq.')[1];
+        if (val === 'true') val = 1;
+        else if (val === 'false') val = 0;
+        values.push(val);
+      }
+    }
+  }
+  const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
+  return { whereClause, values };
+}
+
+// Route: Get Products (handles filtering, sorting, limits, categories join)
 app.get('/api/products', async (req, res, next) => {
   try {
-    const isAdmin = Object.keys(req.query).length > 0;
+    const { whereClause, values } = buildWhereClause(req.query, 'products', 'p.');
     
-    let query = `
+    let orderClause = 'ORDER BY p.sort_order ASC, p.created_at DESC';
+    if (req.query.order) {
+      const [col, dir] = req.query.order.split('.');
+      orderClause = `ORDER BY p.\`${col}\` ${dir && dir.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
+    }
+
+    let finalWhere = whereClause;
+    // If no query parameters at all (public default fetch), default to is_active = 1
+    if (!finalWhere && Object.keys(req.query).length === 0) {
+      finalWhere = 'WHERE p.is_active = 1';
+    }
+
+    let limitClause = '';
+    if (req.query.limit && !isNaN(Number(req.query.limit))) {
+      limitClause = `LIMIT ${Number(req.query.limit)}`;
+    }
+
+    const query = `
       SELECT p.*, c.name as category_name, c.slug as category_slug 
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
+      ${finalWhere}
+      ${orderClause}
+      ${limitClause}
     `;
     
-    if (!isAdmin) {
-      query += ` WHERE p.is_active = true ORDER BY p.sort_order ASC`;
-    } else {
-      query += ` ORDER BY p.created_at DESC`;
-    }
-    
-    const [rows] = await pool.query(query);
+    const [rows] = await pool.query(query, values);
     
     // Map to Supabase expected format: categories(name, slug)
     const formatted = rows.map(r => {
@@ -173,59 +230,43 @@ app.get('/api/products', async (req, res, next) => {
       };
     });
     
+    if (req.query.single) {
+      return res.json(formatted[0] || null);
+    }
+
     res.json(formatted);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Example Route: Get Categories
+// Route: Get Categories
 app.get('/api/categories', async (req, res, next) => {
   try {
-    const isAdmin = Object.keys(req.query).length > 0;
-    let query = 'SELECT * FROM categories';
-    if (!isAdmin) {
-      query += ' WHERE is_active = true ORDER BY sort_order ASC';
-    } else {
-      query += ' ORDER BY created_at DESC';
+    const { whereClause, values } = buildWhereClause(req.query, 'categories');
+    let orderClause = 'ORDER BY sort_order ASC, created_at DESC';
+    if (req.query.order) {
+      const [col, dir] = req.query.order.split('.');
+      orderClause = `ORDER BY \`${col}\` ${dir && dir.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
     }
-    const [rows] = await pool.query(query);
+
+    let finalWhere = whereClause;
+    if (!finalWhere && Object.keys(req.query).length === 0) {
+      finalWhere = 'WHERE is_active = 1';
+    }
+
+    let limitClause = '';
+    if (req.query.limit && !isNaN(Number(req.query.limit))) {
+      limitClause = `LIMIT ${Number(req.query.limit)}`;
+    }
+
+    const [rows] = await pool.query(`SELECT * FROM categories ${finalWhere} ${orderClause} ${limitClause}`, values);
+    if (req.query.single) return res.json(rows[0] || null);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
-function buildWhereClause(query, table = '') {
-  let whereParts = [];
-  let values = [];
-  for (const [key, value] of Object.entries(query)) {
-    if (key === 'select' || key === 'order' || key === 'single') continue;
-    if (typeof value === 'string') {
-      // Map 'key' to 'setting_key' and 'value' to 'setting_value' for site_settings
-      let colName = key;
-      if (table === 'site_settings') {
-        if (key === 'key') colName = 'setting_key';
-        if (key === 'value') colName = 'setting_value';
-      }
-      
-      if (value.startsWith('eq.')) {
-        whereParts.push(`\`${colName}\` = ?`);
-        let val = value.split('eq.')[1];
-        if (val === 'true') val = 1;
-        else if (val === 'false') val = 0;
-        values.push(val);
-      } else if (value.startsWith('in.(')) {
-        const inVals = value.slice(4, -1).split(',');
-        const placeholders = inVals.map(() => '?').join(',');
-        whereParts.push(`\`${colName}\` IN (${placeholders})`);
-        values.push(...inVals);
-      }
-    }
-  }
-  const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
-  return { whereClause, values };
-}
 
 app.get('/api/debug_info', (req, res) => {
   res.json({
@@ -247,8 +288,13 @@ app.get('/api/:table', async (req, res, next) => {
     orderClause = `ORDER BY ${col} ${dir.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
   }
 
+  let limitClause = '';
+  if (req.query.limit && !isNaN(Number(req.query.limit))) {
+    limitClause = `LIMIT ${Number(req.query.limit)}`;
+  }
+
   try {
-    const [rows] = await pool.query(`SELECT * FROM ?? ${whereClause} ${orderClause}`, [table, ...values]);
+    const [rows] = await pool.query(`SELECT * FROM ?? ${whereClause} ${orderClause} ${limitClause}`, [table, ...values]);
     if (req.query.single) return res.json(rows[0] || null);
     res.json(rows);
   } catch (error) {

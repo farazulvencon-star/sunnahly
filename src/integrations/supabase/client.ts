@@ -46,6 +46,11 @@ class QueryBuilder {
     return this;
   }
 
+  limit(count: number) {
+    this.queryParams.limit = count;
+    return this;
+  }
+
   // The actual fetch executor
   async then(resolve: any, reject: any) {
     try {
