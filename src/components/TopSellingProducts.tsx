@@ -77,7 +77,7 @@ const TopSellingProducts = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
             Top Selling Products
           </h2>
-          <div className="h-1 w-16 bg-amber-500 rounded-full mx-auto mt-2" />
+          <div className="h-1 w-16 bg-primary rounded-full mx-auto mt-2" />
         </div>
 
         {/* 2 cards per row on both Desktop & Mobile matching reference */}
@@ -92,7 +92,7 @@ const TopSellingProducts = () => {
               <Link
                 key={product.id}
                 to={`/product/${product.slug}`}
-                className="group bg-white rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all p-2.5 sm:p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 md:gap-6 relative overflow-hidden text-left"
+                className="group bg-white rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all p-2.5 sm:p-4 md:p-6 lg:p-7 md:min-h-[250px] lg:min-h-[270px] flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 md:gap-6 lg:gap-7 relative overflow-hidden text-left"
               >
                 {/* Fire Best Selling Badge */}
                 <span className="absolute top-2 right-2 md:top-3 md:right-3 bg-red-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full flex items-center gap-1 shadow-xs tracking-wide z-10">
@@ -100,8 +100,8 @@ const TopSellingProducts = () => {
                   <span>Best Selling</span>
                 </span>
 
-                {/* Product Image */}
-                <div className="w-full aspect-square md:w-44 md:h-44 lg:w-48 lg:h-48 bg-slate-50/70 rounded-lg md:rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-2 border border-slate-100">
+                {/* Product Image - compact on mobile, larger & taller on desktop */}
+                <div className="w-full aspect-square md:w-48 md:h-48 lg:w-56 lg:h-56 bg-slate-50/70 rounded-lg md:rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-2 md:p-3 border border-slate-100">
                   <img
                     src={prodImg}
                     alt={product.name}
@@ -111,15 +111,15 @@ const TopSellingProducts = () => {
                 </div>
 
                 {/* Product Details */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between md:justify-center">
+                <div className="flex-1 min-w-0 flex flex-col justify-between md:justify-center md:py-1">
                   <div>
-                    <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2 mb-1.5 md:mb-2 min-h-[2rem] md:min-h-0 leading-snug">
+                    <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2 mb-1.5 md:mb-2.5 min-h-[2rem] md:min-h-0 leading-snug">
                       {product.name}
                     </h3>
 
-                    {/* Price row & Savings Badge */}
+                    {/* Price row & Savings Badge in Brand Theme */}
                     <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap mb-2.5 md:mb-4">
-                      <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-amber-600">
+                      <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary">
                         ৳{price.toLocaleString("en-US")}
                       </span>
                       {originalPrice && originalPrice > price && (
@@ -128,19 +128,19 @@ const TopSellingProducts = () => {
                         </span>
                       )}
                       {discountAmount > 0 && (
-                        <span className="text-[9px] md:text-xs font-semibold bg-lime-100 text-lime-800 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-full border border-lime-200">
+                        <span className="text-[9px] md:text-xs font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-full border border-emerald-200/80">
                           Save ৳{discountAmount.toLocaleString("en-US")}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Buttons: Stacked on mobile, side-by-side on desktop */}
+                  {/* Buttons: Brand colors, stacked on mobile, side-by-side on desktop */}
                   <div className="flex flex-col sm:flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-2.5 mt-auto pt-1">
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full md:flex-1 h-8 md:h-9 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      className="w-full md:flex-1 h-8 md:h-10 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
                       onClick={(e) => handleAddToCart(e, product)}
                     >
                       <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
@@ -149,7 +149,7 @@ const TopSellingProducts = () => {
 
                     <Button
                       type="button"
-                      className="w-full md:flex-1 h-8 md:h-9 bg-amber-500 text-white hover:bg-amber-600 font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
+                      className="w-full md:flex-1 h-8 md:h-10 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs md:text-sm rounded-md transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
                       onClick={(e) => handleBuyNow(e, product)}
                     >
                       <Zap className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0 fill-current" />
