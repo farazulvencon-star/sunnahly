@@ -96,15 +96,17 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem({
+    const finalImg = currentImage && currentImage !== "/placeholder.svg" ? currentImage : (images[0] || "/placeholder.svg");
+    addItem(
+      {
         id: product.id,
         name: product.name,
         price: Number(product.price),
         originalPrice: product.original_price ? Number(product.original_price) : undefined,
-        image: images[0],
-      });
-    }
+        image: finalImg,
+      },
+      quantity
+    );
     toast.success(`${product.name} কার্টে যোগ হয়েছে`);
   };
 

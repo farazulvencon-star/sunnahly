@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,8 +24,27 @@ const getSessionId = () => {
   return id;
 };
 
+const resolveItemImage = (img?: any) => {
+  if (!img) return "/placeholder.svg";
+  if (typeof img === "string") {
+    const trimmed = img.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed[0]) return parsed[0];
+      } catch {}
+    }
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+      return trimmed.slice(1, -1);
+    }
+    if (trimmed.length > 0) return trimmed;
+  }
+  if (Array.isArray(img) && img[0]) return img[0];
+  return "/placeholder.svg";
+};
+
 const Checkout = () => {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -416,15 +435,58 @@ const Checkout = () => {
               {/* Order Summary */}
               <div className="bg-card border rounded-xl p-5 h-fit sticky top-4">
                 <h3 className="font-bold text-foreground mb-4">অর্ডার সারাংশ</h3>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                   {items.map((item) => (
-                    <div key={item.id} className="flex gap-2 text-sm">
-                      <img src={item.image} alt="" className="w-10 h-10 rounded object-cover" />
-                      <div className="flex-1 min-w-0">
-                        <p className="line-clamp-1 text-foreground">{item.name}</p>
-                        <p className="text-muted-foreground">৳{item.price} x {item.quantity}</p>
+                    <div key={item.id} className="flex gap-2.5 text-sm bg-secondary/20 p-2.5 rounded-lg border border-border/60 items-center">
+                      <div className="w-12 h-12 rounded-md overflow-hidden bg-white border border-border/50 flex-shrink-0 flex items-center justify-center p-0.5">
+                        <img
+                          src={resolveItemImage(item.image)}
+                          alt={item.name}
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
-                      <span className="font-medium">৳{item.price * item.quantity}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="line-clamp-1 font-medium text-foreground text-xs sm:text-sm">{item.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">৳{item.price} x {item.quantity}</p>
+                        
+                        {/* Quantity Stepper & Remove Controls */}
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex items-center border border-border/80 rounded-md bg-background">
+                            <button
+                              type="button"
+                              className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary rounded-l-md transition-colors cursor-pointer"
+                              onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                              title="পরিমাণ কমান"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-7 text-center text-xs font-semibold">{item.quantity}</span>
+                            <button
+                              type="button"
+                              className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary rounded-r-md transition-colors cursor-pointer"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              title="পরিমাণ বাড়ান"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer"
+                            onClick={() => removeItem(item.id)}
+                            title="মুছে ফেলুন"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <span className="font-bold text-foreground text-sm flex-shrink-0">
+                        ৳{item.price * item.quantity}
+                      </span>
                     </div>
                   ))}
                 </div>
