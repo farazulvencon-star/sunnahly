@@ -67,19 +67,19 @@ const CategorySliderItem = ({ category, products }: CategorySliderItemProps) => 
   return (
     <section className="py-6 md:py-9 border-b border-border/40 last:border-b-0">
       <div className="container mx-auto px-4 max-w-[1536px]">
-        {/* Category Header matching reference image */}
-        <div className="flex items-end justify-between mb-4 md:mb-6">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+        {/* Category Header with centered title & accent line */}
+        <div className="relative mb-5 md:mb-7 flex flex-col items-center justify-center text-center">
+          <div className="inline-flex flex-col items-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
               {category.name}
             </h2>
             {/* Orange/Amber accent line underneath category title */}
-            <div className="h-1 w-12 bg-amber-500 rounded-full mt-1.5" />
+            <div className="h-1 w-14 bg-amber-500 rounded-full mt-2 mx-auto" />
           </div>
 
           <Link
             to={`/category/${category.slug}`}
-            className="text-xs sm:text-sm font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1 group transition-colors tracking-wide"
+            className="mt-2.5 sm:mt-0 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2 text-xs sm:text-sm font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1 group transition-colors tracking-wide"
           >
             <span>VIEW ALL ITEMS</span>
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
