@@ -28,50 +28,6 @@ const extractYouTubeId = (url?: string): string | null => {
   return null;
 };
 
-// Fallback demo videos if admin hasn't added any yet
-const sampleVideos: VideoItem[] = [
-  {
-    id: "sample-1",
-    title: "খাঁটি মধুর আসল বৈশিষ্ট্য ও চেনার সহজ উপায়",
-    type: "youtube",
-    youtubeId: "dQw4w9WgXcQ",
-    thumbnail: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&auto=format&fit=crop&q=80",
-    source: "shefa_tube",
-  },
-  {
-    id: "sample-2",
-    title: "প্রাকৃতিক কালোজিরা তেলের বিস্ময়কর স্বাস্থ্য উপকারিতা",
-    type: "youtube",
-    youtubeId: "dQw4w9WgXcQ",
-    thumbnail: "https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=800&auto=format&fit=crop&q=80",
-    source: "shefa_tube",
-  },
-  {
-    id: "sample-3",
-    title: "মদিনার প্রিমিয়াম আজওয়া খেজুরের গুণাগুণ ও পুষ্টিমান",
-    type: "youtube",
-    youtubeId: "dQw4w9WgXcQ",
-    thumbnail: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=800&auto=format&fit=crop&q=80",
-    source: "shefa_tube",
-  },
-  {
-    id: "sample-4",
-    title: "আমাদের অর্গানিক পণ্যের প্যাকেজিং ও কোয়ালিটি চেকিং",
-    type: "youtube",
-    youtubeId: "dQw4w9WgXcQ",
-    thumbnail: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
-    source: "shefa_tube",
-  },
-  {
-    id: "sample-5",
-    title: "গ্রাহকদের রিভিউ ও সন্তুষ্টির গল্প",
-    type: "youtube",
-    youtubeId: "dQw4w9WgXcQ",
-    thumbnail: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
-    source: "shefa_tube",
-  },
-];
-
 const VideoGallery = () => {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -80,7 +36,7 @@ const VideoGallery = () => {
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   // 1. Fetch Shefa Tube videos from admin
-  const { data: shefaVideos } = useQuery({
+  const { data: shefaVideos, isLoading: loadingShefa } = useQuery({
     queryKey: ["video-gallery-shefa-videos"],
     queryFn: async () => {
       const { data } = await supabase
@@ -94,7 +50,7 @@ const VideoGallery = () => {
   });
 
   // 2. Fetch products that have video_url from admin
-  const { data: productVideos } = useQuery({
+  const { data: productVideos, isLoading: loadingProducts } = useQuery({
     queryKey: ["video-gallery-product-videos"],
     queryFn: async () => {
       const { data } = await supabase
@@ -171,11 +127,11 @@ const VideoGallery = () => {
     });
   }
 
-  // Use real videos if available, otherwise sample videos for demonstration
-  const displayVideos = normalizedVideos.length > 0 ? normalizedVideos : sampleVideos;
+  // Only display real videos uploaded/added via admin panel or products
+  const displayVideos = normalizedVideos;
 
   // Pagination dots count based on items
-  const totalDots = Math.min(Math.max(Math.ceil(displayVideos.length / 2), 1), 6);
+  const totalDots = displayVideos.length > 0 ? Math.min(Math.max(Math.ceil(displayVideos.length / 2), 1), 6) : 0;
 
   const updateScrollState = () => {
     const el = scrollRef.current;
@@ -233,6 +189,11 @@ const VideoGallery = () => {
     setActiveDot(index);
   };
 
+  // If loading or if no videos have been added from admin panel, do not render the gallery
+  if (loadingShefa || loadingProducts || displayVideos.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-8 md:py-14 bg-gradient-to-b from-background via-secondary/15 to-background border-b border-border/40">
       <div className="container mx-auto px-4 max-w-[1536px]">
@@ -273,24 +234,28 @@ const VideoGallery = () => {
         {/* Horizontal Slider Track */}
         <div className="relative group/slider px-12 sm:px-16 md:px-20">
           {/* Left Arrow Button */}
-          <button
-            type="button"
-            onClick={() => scrollByAmount("left")}
-            className="brand-arrow-pulse flex absolute left-1 sm:left-2 md:left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
+          {displayVideos.length > 1 && (
+            <button
+              type="button"
+              onClick={() => scrollByAmount("left")}
+              className="brand-arrow-pulse flex absolute left-1 sm:left-2 md:left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+            </button>
+          )}
 
           {/* Right Arrow Button */}
-          <button
-            type="button"
-            onClick={() => scrollByAmount("right")}
-            className="brand-arrow-pulse flex absolute right-1 sm:right-2 md:right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
+          {displayVideos.length > 1 && (
+            <button
+              type="button"
+              onClick={() => scrollByAmount("right")}
+              className="brand-arrow-pulse flex absolute right-1 sm:right-2 md:right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+            </button>
+          )}
 
           {/* Scrollable Track */}
           <div
