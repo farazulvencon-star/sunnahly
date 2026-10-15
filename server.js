@@ -109,6 +109,32 @@ async function ensureProductColumns() {
 }
 ensureProductColumns();
 
+// Auto-ensure shefa_videos table exists
+async function ensureShefaVideosTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shefa_videos (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255),
+        youtube_url TEXT,
+        youtube_id VARCHAR(64),
+        video_url TEXT,
+        thumbnail_url TEXT,
+        is_active TINYINT(1) DEFAULT 1,
+        sort_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
+    console.log("shefa_videos table ensured");
+    try { await pool.query('ALTER TABLE shefa_videos ADD COLUMN video_url TEXT;'); } catch (e) {}
+    try { await pool.query('ALTER TABLE shefa_videos ADD COLUMN thumbnail_url TEXT;'); } catch (e) {}
+  } catch (err) {
+    console.log("Note on shefa_videos table:", err.message);
+  }
+}
+ensureShefaVideosTable();
+
 // Example Route: Get All Products
 app.get('/api/products', async (req, res, next) => {
   try {

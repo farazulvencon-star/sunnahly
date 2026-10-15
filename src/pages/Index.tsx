@@ -7,8 +7,7 @@ import TopSellingProducts from "@/components/TopSellingProducts";
 import PromoBanners from "@/components/PromoBanners";
 import AllProducts from "@/components/AllProducts";
 import CustomerReviews from "@/components/CustomerReviews";
-import ShefaTube from "@/components/ShefaTube";
-import WhyUs from "@/components/WhyUs";
+import VideoGallery from "@/components/VideoGallery";
 import KeyPoints from "@/components/KeyPoints";
 import MoneyBackBanner from "@/components/MoneyBackBanner";
 import Footer from "@/components/Footer";
@@ -26,8 +25,7 @@ const Index = () => {
         <AllProducts />
         <PromoBanners />
         <CustomerReviews />
-        <ShefaTube />
-        <WhyUs />
+        <VideoGallery />
         <KeyPoints />
         <MoneyBackBanner />
       </main>
