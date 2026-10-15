@@ -70,7 +70,7 @@ const CategorySliderItem = ({ category, products }: CategorySliderItemProps) => 
         {/* Category Header with centered title & accent line */}
         <div className="relative mb-5 md:mb-7 flex flex-col items-center justify-center text-center">
           <div className="inline-flex flex-col items-center">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground tracking-normal">
               {category.name}
             </h2>
             {/* Orange/Amber accent line underneath category title */}

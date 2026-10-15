@@ -36,7 +36,7 @@ const CategorySlider = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-6 md:mb-8">
           <div className="inline-flex flex-col items-center">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground tracking-normal">
               {sectionTitle}
             </h2>
             <div className="h-1 w-14 bg-amber-500 rounded-full mt-2 mx-auto" />
