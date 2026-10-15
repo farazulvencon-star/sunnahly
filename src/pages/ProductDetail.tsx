@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Minus, Plus, ShieldCheck, Truck, Clock, CheckCircle2, Shield } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Minus, Plus, ShieldCheck, Truck, Clock, CheckCircle2, Shield, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
@@ -88,6 +88,13 @@ const ProductDetail = () => {
   const safeSelectedImage = selectedImage < images.length ? selectedImage : 0;
   const currentImage = images[safeSelectedImage] ?? images[0] ?? "/placeholder.svg";
 
+  const handlePrevImage = () => {
+    setSelectedImage((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+  };
+  const handleNextImage = () => {
+    setSelectedImage((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+  };
+
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
       addItem({
@@ -111,96 +118,210 @@ const ProductDetail = () => {
             <ArrowLeft className="h-4 w-4" /> হোমপেজে ফিরে যান
           </Link>
 
-          <div className="grid items-start gap-6 lg:grid-cols-12 lg:gap-10 max-w-6xl mx-auto">
-            {/* Images */}
-            <div className="lg:col-span-5 w-full min-w-0 mx-auto max-w-[360px] sm:max-w-[380px] lg:max-w-[400px]">
-              <div className="mb-3 aspect-square w-full overflow-hidden rounded-xl border border-border/60 bg-secondary/20 shadow-xs flex items-center justify-center p-2">
-                <img
-                  key={currentImage}
-                  src={currentImage}
-                  alt={product.name}
-                  loading="eager"
-                  onError={(event) => {
-                    event.currentTarget.src = "/placeholder.svg";
-                  }}
-                  className="block max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              {images.length > 1 && (
-                <div className="flex gap-2.5 overflow-x-auto pb-1 justify-center sm:justify-start">
-                  {images.map((img: string, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedImage(i)}
-                      className={`h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-lg border-2 bg-card flex-shrink-0 transition-all ${safeSelectedImage === i ? "border-primary ring-1 ring-primary/40 shadow-xs" : "border-border/60 hover:border-primary/50"}`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-contain p-1" />
-                    </button>
-                  ))}
+          <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-10 max-w-6xl mx-auto">
+            {/* Gallery Section */}
+            <div className="lg:col-span-6 w-full min-w-0">
+              <div className="flex flex-col lg:flex-row gap-3 items-start justify-center">
+                {/* Desktop Vertical Thumbnails (Shown only on lg and above) */}
+                {images.length > 1 && (
+                  <div className="hidden lg:flex flex-col items-center gap-1.5 flex-shrink-0">
+                    {images.length > 3 && (
+                      <button
+                        type="button"
+                        onClick={handlePrevImage}
+                        className="h-6 w-6 rounded-full border border-border/60 bg-white hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors shadow-2xs cursor-pointer"
+                        title="পূর্ববর্তী ছবি"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <div className="flex flex-col gap-2 max-h-[390px] overflow-y-auto pr-0.5 no-scrollbar">
+                      {images.map((img: string, i: number) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setSelectedImage(i)}
+                          className={`h-16 w-16 overflow-hidden rounded-xl border-2 bg-white flex-shrink-0 transition-all cursor-pointer ${
+                            safeSelectedImage === i
+                              ? "border-primary shadow-xs ring-1 ring-primary/40"
+                              : "border-border/60 hover:border-primary/50 opacity-80 hover:opacity-100"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                    {images.length > 3 && (
+                      <button
+                        type="button"
+                        onClick={handleNextImage}
+                        className="h-6 w-6 rounded-full border border-border/60 bg-white hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors shadow-2xs cursor-pointer"
+                        title="পরবর্তী ছবি"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Main Image Container */}
+                <div className="relative w-full max-w-[420px] mx-auto lg:mx-0">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border/70 bg-white shadow-xs flex items-center justify-center">
+                    <img
+                      key={currentImage}
+                      src={currentImage}
+                      alt={product.name}
+                      loading="eager"
+                      onError={(event) => {
+                        event.currentTarget.src = "/placeholder.svg";
+                      }}
+                      className="block max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-300 hover:scale-105"
+                    />
+
+                    {/* Navigation Arrows on Main Image */}
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handlePrevImage}
+                          className="absolute left-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-foreground shadow-md flex items-center justify-center border border-border/40 transition-all cursor-pointer"
+                          title="পূর্ববর্তী"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleNextImage}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-foreground shadow-md flex items-center justify-center border border-border/40 transition-all cursor-pointer"
+                          title="পরবর্তী"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+
+                        {/* Dots Indicator */}
+                        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/25 backdrop-blur-xs px-2.5 py-1 rounded-full">
+                          {images.map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setSelectedImage(i)}
+                              className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                                safeSelectedImage === i ? "w-4 bg-white" : "w-1.5 bg-white/50"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Mobile Horizontal Thumbnails (Only visible on mobile/tablet, preserving phone UX) */}
+                  {images.length > 1 && (
+                    <div className="flex lg:hidden gap-2 overflow-x-auto pb-1 mt-3">
+                      {images.map((img: string, i: number) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setSelectedImage(i)}
+                          className={`h-14 w-14 overflow-hidden rounded-lg border-2 bg-card flex-shrink-0 transition-all ${
+                            safeSelectedImage === i
+                              ? "border-primary ring-1 ring-primary/40 shadow-xs"
+                              : "border-border/60 hover:border-primary/50"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Details */}
-            <div className="lg:col-span-7 w-full min-w-0 mx-auto">
+            {/* Details Section */}
+            <div className="lg:col-span-6 w-full min-w-0 mx-auto">
               {product.categories?.name && (
-                <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                <span className="text-xs text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-full">
                   {product.categories.name}
                 </span>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-3">{product.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 mb-2">{product.name}</h1>
 
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl font-bold text-primary">৳{Number(product.price)}</span>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl md:text-3xl font-bold text-primary">৳ {Number(product.price)}</span>
                 {product.original_price && (
-                  <span className="text-lg text-muted-foreground line-through">৳{Number(product.original_price)}</span>
+                  <span className="text-lg text-muted-foreground line-through">৳ {Number(product.original_price)}</span>
                 )}
                 {product.original_price && (
-                  <span className="text-sm bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">
-                    {Math.round((1 - Number(product.price) / Number(product.original_price)) * 100)}% ছাড়
+                  <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-md font-bold">
+                    {Math.round((1 - Number(product.price) / Number(product.original_price)) * 100)}% Saved
                   </span>
                 )}
               </div>
 
-              {product.short_description && <p className="text-muted-foreground mb-4">{product.short_description}</p>}
+              {/* Dashed separator like reference */}
+              <div className="border-b border-dashed border-border/70 my-3" />
 
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-sm font-medium">পরিমাণ:</span>
-                <div className="flex items-center border rounded-lg">
+              {product.short_description && (
+                <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+                  {product.short_description}
+                </p>
+              )}
+
+              {/* Action Buttons (Row 1: Quantity + Add to Cart | Row 2: ORDER NOW) */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-3">
+                  {/* Quantity selector */}
+                  <div className="flex items-center border border-border/80 rounded-lg bg-secondary/30 p-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 text-foreground hover:bg-background rounded-md"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-10 text-center font-bold text-base text-foreground">{quantity}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 text-foreground hover:bg-background rounded-md"
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Add to Cart button */}
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    size="lg"
+                    className="flex-1 h-11 text-base font-semibold gap-2 shadow-xs"
+                    onClick={handleAddToCart}
                   >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="w-10 text-center font-medium">{quantity}</span>
-                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQuantity(quantity + 1)}>
-                    <Plus className="h-4 w-4" />
+                    <ShoppingCart className="h-5 w-5" /> Add to Cart (কার্টে যোগ)
                   </Button>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button size="lg" className="flex-1 gap-2 h-12 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
-                  <ShoppingCart className="h-5 w-5 sm:h-4 sm:w-4" /> কার্টে যোগ করুন
-                </Button>
-                <Link to="/checkout" className="flex-1">
-                  <Button size="lg" variant="outline" className="w-full h-12 text-base font-semibold sm:h-11 sm:text-sm" onClick={handleAddToCart}>
-                    এখনই কিনুন
+                {/* ORDER NOW button (Full width) */}
+                <Link to="/checkout" className="block w-full">
+                  <Button
+                    size="lg"
+                    className="w-full h-12 text-base font-bold uppercase tracking-wider bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-sm"
+                    onClick={handleAddToCart}
+                  >
+                    ORDER NOW
                   </Button>
                 </Link>
               </div>
 
-              <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-                <p>SKU: {product.sku || "N/A"}</p>
+              <div className="space-y-1.5 text-xs text-muted-foreground border-t pt-3">
+                <p><span className="font-medium text-foreground">SKU:</span> {product.sku || "N/A"}</p>
                 <p>
-                  স্টক:{" "}
+                  <span className="font-medium text-foreground">স্টক:</span>{" "}
                   {product.stock > 0 ? (
-                    <span className="text-success font-medium">ইন স্টক ({product.stock})</span>
+                    <span className="text-emerald-600 font-semibold">ইন স্টক ({product.stock})</span>
                   ) : (
-                    <span className="text-destructive">স্টক আউট</span>
+                    <span className="text-destructive font-semibold">স্টক আউট</span>
                   )}
                 </p>
               </div>
