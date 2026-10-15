@@ -69,13 +69,20 @@ const VideoGallery = () => {
   if (Array.isArray(shefaVideos) && shefaVideos.length > 0) {
     shefaVideos.forEach((v: any) => {
       const ytId = v.youtube_id || extractYouTubeId(v.youtube_url || v.video_url);
+      let thumb = v.thumbnail_url;
+      if (thumb && (thumb.includes("youtube.com/watch") || thumb.includes("youtu.be/") || thumb.includes("youtube.com/shorts")) && !thumb.includes("ytimg.com") && !thumb.includes("youtube.com/vi/")) {
+        thumb = "";
+      }
+      if (ytId && !thumb) {
+        thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      }
       if (ytId && ytId !== "custom_video") {
         normalizedVideos.push({
           id: `shefa-${v.id}`,
           title: v.title || "ভিডিও",
           type: "youtube",
           youtubeId: ytId,
-          thumbnail: v.thumbnail_url || `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+          thumbnail: thumb || `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
           source: "shefa_tube",
         });
       } else if (v.video_url) {
@@ -84,7 +91,7 @@ const VideoGallery = () => {
           title: v.title || "ভিডিও",
           type: "file",
           videoUrl: v.video_url,
-          thumbnail: v.thumbnail_url || "/placeholder.svg",
+          thumbnail: thumb || "/placeholder.svg",
           source: "shefa_tube",
         });
       }
@@ -95,6 +102,12 @@ const VideoGallery = () => {
     productVideos.forEach((p: any) => {
       const ytId = extractYouTubeId(p.video_url);
       let thumb = p.video_thumbnail;
+      if (thumb && (thumb.includes("youtube.com/watch") || thumb.includes("youtu.be/") || thumb.includes("youtube.com/shorts")) && !thumb.includes("ytimg.com") && !thumb.includes("youtube.com/vi/")) {
+        thumb = "";
+      }
+      if (ytId && !thumb) {
+        thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      }
       if (!thumb && Array.isArray(p.images) && p.images[0]) thumb = p.images[0];
       if (!thumb && typeof p.images === "string") {
         try {

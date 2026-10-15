@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Minus, Plus, ShieldCheck, Truck, Clock, CheckCircle2, Shield, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Minus, Plus, ShieldCheck, Truck, Clock, CheckCircle2, Shield, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Header from "@/components/Header";
@@ -11,6 +11,19 @@ import Footer from "@/components/Footer";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AllProducts from "@/components/AllProducts";
 import { toast } from "sonner";
+
+const extractYouTubeId = (url?: string): string | null => {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+};
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -344,6 +357,36 @@ const ProductDetail = () => {
                   {product.description}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Product Video Section */}
+          {product.video_url && (
+            <div className="mt-8 lg:mt-12 w-full max-w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-border/50">
+              <h3 className="font-bold text-foreground mb-4 text-xl border-b pb-2 inline-flex items-center gap-2 border-primary">
+                <Video className="h-5 w-5 text-primary" /> পণ্যটির ভিডিও রিভিউ
+              </h3>
+              <div className="max-w-3xl mx-auto rounded-xl overflow-hidden border bg-black shadow-md">
+                {extractYouTubeId(product.video_url) ? (
+                  <div className="aspect-video w-full">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${extractYouTubeId(product.video_url)}`}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <video
+                    src={product.video_url}
+                    controls
+                    className="w-full max-h-[480px] mx-auto bg-black"
+                    poster={product.video_thumbnail}
+                  >
+                    আপনার ব্রাউজার ভিডিও সাপোর্ট করে না
+                  </video>
+                )}
+              </div>
             </div>
           )}
 

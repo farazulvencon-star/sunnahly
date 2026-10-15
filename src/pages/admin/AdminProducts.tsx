@@ -21,6 +21,19 @@ const emptyProduct = {
   landing_page_html: "",
 };
 
+const extractYouTubeId = (url?: string): string | null => {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+};
+
 const AdminProducts = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -149,7 +162,12 @@ const AdminProducts = () => {
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^\u0980-\u09FF\w-]/g, "");
-      const payload = { ...data, slug };
+      let video_thumbnail = data.video_thumbnail;
+      const ytId = extractYouTubeId(data.video_url);
+      if (ytId && (!video_thumbnail || video_thumbnail.includes("youtube.com/watch") || video_thumbnail.includes("youtu.be/"))) {
+        video_thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      }
+      const payload = { ...data, slug, video_thumbnail };
       if (editing) {
         const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -650,21 +668,71 @@ const AdminProducts = () => {
                   <div className="space-y-3">
                     <div>
                       <Label className="text-xs font-medium mb-1.5 block">ভিডিও URL</Label>
-                      <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })}
-                        placeholder="YouTube, Cloudinary বা অন্য ভিডিও URL" />
+                      <Input
+                        value={form.video_url}
+                        onChange={(e) => {
+                          const url = e.target.value.trim();
+                          const ytId = extractYouTubeId(url);
+                          let thumb = form.video_thumbnail;
+                          if (ytId && (!thumb || thumb.includes("youtube.com/watch") || thumb.includes("youtu.be/"))) {
+                            thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                          }
+                          setForm({ ...form, video_url: url, video_thumbnail: thumb });
+                        }}
+                        placeholder="যেমন: https://www.youtube.com/watch?v=... বা Cloudinary ভিডিও লিংক"
+                      />
+                      {extractYouTubeId(form.video_url) && (
+                        <p className="text-[11px] text-emerald-600 font-medium mt-1">
+                          ✓ YouTube ভিডিও শনাক্ত হয়েছে (প্লেয়ার ও থাম্বনেইল স্বয়ংক্রিয়ভাবে প্রস্তুত)
+                        </p>
+                      )}
                     </div>
                     <div>
-                      <Label className="text-xs font-medium mb-1.5 block">ভিডিও থাম্বনেইল URL</Label>
-                      <Input value={form.video_thumbnail} onChange={(e) => setForm({ ...form, video_thumbnail: e.target.value })}
-                        placeholder="থাম্বনেইল ছবির URL" />
+                      <Label className="text-xs font-medium mb-1.5 block">ভিডিও থাম্বনেইল URL (ঐচ্ছিক)</Label>
+                      <Input
+                        value={form.video_thumbnail}
+                        onChange={(e) => {
+                          const val = e.target.value.trim();
+                          const ytId = extractYouTubeId(val);
+                          // If user accidentally pasted the video URL in thumbnail input, auto convert to image URL:
+                          if (ytId) {
+                            setForm({ ...form, video_thumbnail: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` });
+                          } else {
+                            setForm({ ...form, video_thumbnail: val });
+                          }
+                        }}
+                        placeholder="YouTube হলে স্বয়ংক্রিয়ভাবে নিয়ে নেবে, অথবা ছবির URL দিন"
+                      />
+                      {form.video_thumbnail && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <img
+                            src={form.video_thumbnail}
+                            alt="Thumbnail preview"
+                            className="w-16 h-10 object-cover rounded border border-border"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          <span className="text-[11px] text-muted-foreground">থাম্বনেইল প্রিভিউ</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {form.video_url && (
-                    <div className="mt-3 border rounded-lg overflow-hidden">
-                      <video src={form.video_url} controls className="w-full max-h-48 bg-black" poster={form.video_thumbnail}>
-                        আপনার ব্রাউজার ভিডিও সাপোর্ট করে না
-                      </video>
+                    <div className="mt-4 border rounded-xl overflow-hidden bg-black shadow-sm">
+                      {extractYouTubeId(form.video_url) ? (
+                        <div className="aspect-video w-full">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${extractYouTubeId(form.video_url)}`}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : (
+                        <video src={form.video_url} controls className="w-full max-h-56 bg-black" poster={form.video_thumbnail}>
+                          আপনার ব্রাউজার ভিডিও সাপোর্ট করে না
+                        </video>
+                      )}
                     </div>
                   )}
                 </div>
