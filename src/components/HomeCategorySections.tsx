@@ -87,13 +87,13 @@ const CategorySliderItem = ({ category, products }: CategorySliderItemProps) => 
         </div>
 
         {/* Products Horizontal Slider */}
-        <div className="relative group/slider">
+        <div className="relative group/slider sm:px-10 md:px-12">
           {/* Left Arrow Button */}
           {canScrollLeft && (
             <button
               type="button"
               onClick={() => scrollByAmount("left")}
-              className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white text-slate-800 shadow-lg border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all"
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-110 transition-all cursor-pointer"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -105,7 +105,7 @@ const CategorySliderItem = ({ category, products }: CategorySliderItemProps) => 
             <button
               type="button"
               onClick={() => scrollByAmount("right")}
-              className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white text-slate-800 shadow-lg border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all"
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-110 transition-all cursor-pointer"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-5 w-5" />
