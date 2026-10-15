@@ -271,22 +271,22 @@ const VideoGallery = () => {
         </div>
 
         {/* Horizontal Slider Track */}
-        <div className="relative group/slider px-2 sm:px-10 md:px-12">
-          {/* Left Arrow Button - always visible in the middle with brand color & gentle pulse */}
+        <div className="relative group/slider px-3 sm:px-12 md:px-14">
+          {/* Left Arrow Button - aligned precisely with the video thumbnail center */}
           <button
             type="button"
             onClick={() => scrollByAmount("left")}
-            className="brand-arrow-pulse flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+            className="brand-arrow-pulse flex absolute left-0 sm:left-1 md:left-2 top-[75px] sm:top-[88px] md:top-[98px] -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
             aria-label="Scroll left"
           >
             <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
 
-          {/* Right Arrow Button - always visible in the middle with brand color & gentle pulse */}
+          {/* Right Arrow Button - aligned precisely with the video thumbnail center */}
           <button
             type="button"
             onClick={() => scrollByAmount("right")}
-            className="brand-arrow-pulse flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
+            className="brand-arrow-pulse flex absolute right-0 sm:right-1 md:right-2 top-[75px] sm:top-[88px] md:top-[98px] -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-lg items-center justify-center hover:bg-primary/90 transition-all cursor-pointer"
             aria-label="Scroll right"
           >
             <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -364,26 +364,26 @@ const VideoGallery = () => {
               </div>
             ))}
           </div>
-
-          {/* Carousel Pagination Dots */}
-          {totalDots > 1 && (
-            <div className="flex items-center justify-center gap-1.5 mt-5">
-              {Array.from({ length: totalDots }).map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => scrollToDot(idx)}
-                  className={`transition-all duration-200 rounded-full ${
-                    activeDot === idx
-                      ? "w-5 h-2 bg-amber-500"
-                      : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* Carousel Pagination Dots - outside of slider track */}
+        {totalDots > 1 && (
+          <div className="flex items-center justify-center gap-1.5 mt-5">
+            {Array.from({ length: totalDots }).map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToDot(idx)}
+                className={`transition-all duration-200 rounded-full ${
+                  activeDot === idx
+                    ? "w-5 h-2 bg-amber-500"
+                    : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Video Player Modal */}
