@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Play, Video as VideoIcon, Youtube, Sparkles, X } from "lucide-react";
+import { Play, Video as VideoIcon, Youtube, Sparkles, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface VideoItem {
   id: string;
@@ -34,7 +34,7 @@ const sampleVideos: VideoItem[] = [
     id: "sample-1",
     title: "খাঁটি মধুর আসল বৈশিষ্ট্য ও চেনার সহজ উপায়",
     type: "youtube",
-    youtubeId: "dQw4w9WgXcQ", // YouTube standard ID
+    youtubeId: "dQw4w9WgXcQ",
     thumbnail: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&auto=format&fit=crop&q=80",
     source: "shefa_tube",
   },
@@ -62,10 +62,22 @@ const sampleVideos: VideoItem[] = [
     thumbnail: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
     source: "shefa_tube",
   },
+  {
+    id: "sample-5",
+    title: "গ্রাহকদের রিভিউ ও সন্তুষ্টির গল্প",
+    type: "youtube",
+    youtubeId: "dQw4w9WgXcQ",
+    thumbnail: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
+    source: "shefa_tube",
+  },
 ];
 
 const VideoGallery = () => {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeDot, setActiveDot] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   // 1. Fetch Shefa Tube videos from admin
   const { data: shefaVideos } = useQuery({
@@ -101,7 +113,7 @@ const VideoGallery = () => {
   if (Array.isArray(shefaVideos) && shefaVideos.length > 0) {
     shefaVideos.forEach((v: any) => {
       const ytId = v.youtube_id || extractYouTubeId(v.youtube_url || v.video_url);
-      if (ytId) {
+      if (ytId && ytId !== "custom_video") {
         normalizedVideos.push({
           id: `shefa-${v.id}`,
           title: v.title || "ভিডিও",
@@ -162,90 +174,187 @@ const VideoGallery = () => {
   // Use real videos if available, otherwise sample videos for demonstration
   const displayVideos = normalizedVideos.length > 0 ? normalizedVideos : sampleVideos;
 
+  // Pagination dots count based on items
+  const totalDots = Math.min(Math.max(Math.ceil(displayVideos.length / 2), 1), 6);
+
+  const updateScrollState = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft < maxScroll - 10);
+
+    if (maxScroll > 0) {
+      const progress = el.scrollLeft / maxScroll;
+      const dotIdx = Math.min(Math.round(progress * (totalDots - 1)), totalDots - 1);
+      setActiveDot(dotIdx);
+    }
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [displayVideos.length, totalDots]);
+
+  const scrollByAmount = (direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollAmount = el.clientWidth * 0.75;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollToDot = (index: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const target = (index / (totalDots - 1)) * maxScroll;
+    el.scrollTo({ left: target, behavior: "smooth" });
+    setActiveDot(index);
+  };
+
   return (
     <section className="py-8 md:py-14 bg-gradient-to-b from-background via-secondary/15 to-background border-b border-border/40">
       <div className="container mx-auto px-4 max-w-[1536px]">
-        {/* Section Header */}
-        <div className="text-center mb-6 md:mb-10">
+        {/* Section Header - in English with amber accent underline */}
+        <div className="text-center mb-6 md:mb-9">
           <div className="inline-flex flex-col items-center">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground tracking-normal">
-              ভিডিও গ্যালারি
+              Video Gallery
             </h2>
             <div className="h-1 w-14 bg-amber-500 rounded-full mt-2 mx-auto" />
           </div>
           <p className="text-muted-foreground text-xs sm:text-sm mt-2 max-w-md mx-auto">
-            আমাদের পণ্য তৈরি, খাঁটি উপাদান ও কাস্টমারদের রিভিউ দেখুন ভিডিওতে
+            Watch our organic product highlights & customer stories
           </p>
         </div>
 
-        {/* Video Cards Grid - Responsive: 2 cols on mobile, 3 on tablet, 4 on desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-          {displayVideos.map((video) => (
-            <div
-              key={video.id}
-              onClick={() => setActiveVideo(video)}
-              className="group relative bg-card rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer flex flex-col hover:-translate-y-1"
+        {/* Horizontal Slider Track matching Reference Slider structure */}
+        <div className="relative group/slider">
+          {/* Left Arrow Button */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => scrollByAmount("left")}
+              className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white text-slate-800 shadow-lg border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all"
+              aria-label="Scroll left"
             >
-              {/* Thumbnail Container */}
-              <div className="relative aspect-[16/10] sm:aspect-video w-full bg-slate-900 overflow-hidden">
-                <img
-                  src={video.thumbnail}
-                  alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                  loading="lazy"
-                  onError={(e: any) => {
-                    // Fallback to placeholder on error
-                    e.target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80";
-                  }}
-                />
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
 
-                {/* Dark Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10 group-hover:from-black/90 transition-colors" />
+          {/* Right Arrow Button */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => scrollByAmount("right")}
+              className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white text-slate-800 shadow-lg border border-slate-200 items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
 
-                {/* Badge (YouTube or Video) */}
-                <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10">
-                  {video.type === "youtube" ? (
-                    <span className="inline-flex items-center gap-1 bg-red-600/95 text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm tracking-wide">
-                      <Youtube className="h-3 w-3 fill-white" />
-                      <span>YouTube</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 bg-primary/95 text-primary-foreground text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
-                      <VideoIcon className="h-3 w-3" />
-                      <span>ভিডিও</span>
-                    </span>
-                  )}
-                </div>
+          {/* Scrollable Track */}
+          <div
+            ref={scrollRef}
+            className="flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto scroll-smooth py-2 px-0.5 no-scrollbar snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {displayVideos.map((video) => (
+              <div
+                key={video.id}
+                onClick={() => setActiveVideo(video)}
+                className="w-[240px] sm:w-[280px] md:w-[320px] lg:w-[340px] shrink-0 snap-start group relative bg-card rounded-xl md:rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer flex flex-col hover:-translate-y-1"
+              >
+                {/* Thumbnail Container */}
+                <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                    loading="lazy"
+                    onError={(e: any) => {
+                      e.target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80";
+                    }}
+                  />
 
-                {/* Center Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/95 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 ring-4 ring-white/30 group-hover:ring-primary/40">
-                    <Play className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-current ml-0.5" />
+                  {/* Dark Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10 group-hover:from-black/90 transition-colors" />
+
+                  {/* Badge (YouTube or Video) */}
+                  <div className="absolute top-2.5 left-2.5 z-10">
+                    {video.type === "youtube" ? (
+                      <span className="inline-flex items-center gap-1 bg-red-600/95 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm tracking-wide">
+                        <Youtube className="h-3 w-3 fill-white" />
+                        <span>YouTube</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 bg-primary/95 text-primary-foreground text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                        <VideoIcon className="h-3 w-3" />
+                        <span>ভিডিও</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Center Play Button */}
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/95 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 ring-4 ring-white/30 group-hover:ring-primary/40">
+                      <Play className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-current ml-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Bottom title inside thumbnail on mobile */}
+                  <div className="absolute bottom-2 left-2 right-2 z-10 sm:hidden">
+                    <p className="text-white text-xs font-medium line-clamp-2 leading-tight drop-shadow-sm">
+                      {video.title}
+                    </p>
                   </div>
                 </div>
 
-                {/* Bottom title inside thumbnail on mobile */}
-                <div className="absolute bottom-2 left-2 right-2 z-10 sm:hidden">
-                  <p className="text-white text-[11px] font-medium line-clamp-2 leading-tight drop-shadow-sm">
+                {/* Title & Info below thumbnail for larger screens */}
+                <div className="hidden sm:flex flex-col flex-1 p-3 md:p-3.5 bg-card">
+                  <h3 className="text-xs sm:text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
                     {video.title}
-                  </p>
+                  </h3>
+                  <div className="mt-2.5 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-slate-100">
+                    <span className="flex items-center gap-1 text-primary font-medium">
+                      <Sparkles className="h-3 w-3" /> দেখতে ক্লিক করুন
+                    </span>
+                    <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-semibold">HD</span>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              {/* Title & Info below thumbnail for larger screens */}
-              <div className="hidden sm:flex flex-col flex-1 p-3 md:p-3.5 bg-card">
-                <h3 className="text-xs sm:text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                  {video.title}
-                </h3>
-                <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-slate-100">
-                  <span className="flex items-center gap-1 text-primary font-medium">
-                    <Sparkles className="h-3 w-3" /> দেখতে ক্লিক করুন
-                  </span>
-                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">HD</span>
-                </div>
-              </div>
+          {/* Carousel Pagination Dots */}
+          {totalDots > 1 && (
+            <div className="flex items-center justify-center gap-1.5 mt-5">
+              {Array.from({ length: totalDots }).map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => scrollToDot(idx)}
+                  className={`transition-all duration-200 rounded-full ${
+                    activeDot === idx
+                      ? "w-5 h-2 bg-amber-500"
+                      : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -253,7 +362,7 @@ const VideoGallery = () => {
       <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border border-white/10 shadow-2xl rounded-2xl text-white">
           <DialogTitle className="sr-only">
-            {activeVideo?.title || "ভিডিও প্লেয়ার"}
+            {activeVideo?.title || "Video Player"}
           </DialogTitle>
 
           {/* Modal Header */}
@@ -261,7 +370,7 @@ const VideoGallery = () => {
             <div className="flex items-center gap-2 min-w-0 pr-4">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
               <h4 className="text-xs sm:text-sm font-medium text-white truncate">
-                {activeVideo?.title || "ভিডিও প্লেয়ার"}
+                {activeVideo?.title || "Video Player"}
               </h4>
             </div>
             <button
